@@ -9,6 +9,7 @@ export default function Admin() {
   // Load leads from localStorage
   const loadLeads = async () => {
     setIsLoading(true);
+    try {
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
       const response = await fetch(`${apiUrl}/api/leads`);
       const data = await response.json();
