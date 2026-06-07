@@ -5,9 +5,12 @@ import { MessageSquare, X, Send, Bot, User, Sparkles } from 'lucide-react';
 export default function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState(() => {
-    const saved = localStorage.getItem('pixeltech_chat_history');
-    if (saved) {
-      try { return JSON.parse(saved); } catch (e) { console.error('Failed to parse chat history', e); }
+    const accepted = localStorage.getItem('pixeltech_cookies_accepted');
+    if (accepted === 'all') {
+      const saved = localStorage.getItem('pixeltech_chat_history');
+      if (saved) {
+        try { return JSON.parse(saved); } catch (e) { console.error('Failed to parse chat history', e); }
+      }
     }
     return [
       { role: 'assistant', content: 'Hi there! I am the Pixeltech AI Assistant. What kind of project are you looking to build?' }
@@ -24,8 +27,11 @@ export default function Chatbot() {
 
   useEffect(() => {
     scrollToBottom();
-    // Save to localStorage whenever messages change
-    localStorage.setItem('pixeltech_chat_history', JSON.stringify(messages));
+    // Only save to localStorage if user explicitly accepted functional cookies
+    const accepted = localStorage.getItem('pixeltech_cookies_accepted');
+    if (accepted === 'all') {
+      localStorage.setItem('pixeltech_chat_history', JSON.stringify(messages));
+    }
   }, [messages, isLoading]);
 
   const handleSubmit = async (e) => {
