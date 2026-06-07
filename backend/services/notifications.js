@@ -21,7 +21,8 @@ const sendLeadNotifications = async (leadData) => {
     try {
       const resend = new Resend(process.env.RESEND_API_KEY);
       const { data, error } = await resend.emails.send({
-        from: 'Pixeltech System <onboarding@resend.dev>', // Use resend.dev until you verify your domain
+        // Use RESEND_FROM_EMAIL env var once domain is verified, otherwise use Resend test address
+        from: process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev',
         to: [process.env.ADMIN_EMAIL || 'mamuneebg@gmail.com'],
         subject: `🚀 New Lead: ${leadData.firstName} ${leadData.lastName}`,
         html: `
