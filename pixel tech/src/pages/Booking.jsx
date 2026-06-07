@@ -69,8 +69,13 @@ export default function Booking() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const needsWebsite = selected && SERVICES.find(s => s.label === selected)?.needsWebsite;
     if (!formData.firstName || !formData.email || !formData.phone || !selected) {
       alert('Please fill out your name, email, WhatsApp number, and select a service.');
+      return;
+    }
+    if (needsWebsite && !formData.website) {
+      alert('Please enter your Website Domain — it is required for the selected service.');
       return;
     }
 
@@ -311,8 +316,18 @@ export default function Booking() {
               {/* Website */}
               {selected && SERVICES.find(s => s.label === selected)?.needsWebsite && (
                 <div className="grid gap-1.5 animate-in fade-in slide-in-from-top-1 duration-300">
-                  <label className="text-[0.7rem] font-semibold text-mut uppercase tracking-[0.08em]">Website Domain</label>
-                  <input type="url" name="website" value={formData.website} onChange={handleInputChange} className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-accent/60 focus:bg-white/[0.06] transition-all duration-300 text-ink placeholder-white/20" placeholder="https://yoursite.com" />
+                  <label className="text-[0.7rem] font-semibold text-mut uppercase tracking-[0.08em]">
+                    Website Domain <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="url"
+                    name="website"
+                    value={formData.website}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-accent/60 focus:bg-white/[0.06] transition-all duration-300 text-ink placeholder-white/20"
+                    placeholder="https://yoursite.com"
+                  />
                 </div>
               )}
 
