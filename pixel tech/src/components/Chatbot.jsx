@@ -139,7 +139,7 @@ export default function Chatbot() {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="Type your message... (Shift+Enter for new line)"
+                  placeholder="Type a message..."
                   rows={input.split('\n').length > 1 ? Math.min(input.split('\n').length, 4) : 1}
                   className="w-full bg-bg2 border border-line rounded-3xl pl-5 pr-12 py-3 text-sm text-ink focus:outline-none focus:border-accent/50 transition-colors shadow-inner resize-none custom-scrollbar"
                   style={{ minHeight: '44px' }}
