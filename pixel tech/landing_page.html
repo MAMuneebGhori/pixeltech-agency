@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Booked Solid System — Stop Losing the Med Spa Leads You Already Pay For</title>
+<style>
+  :root{
+    --bg:#0a0a0f; --bg2:#11111a; --card:#15151f; --line:#262633;
+    --ink:#f4f4f8; --mut:#a3a3b2; --accent:#e0a3c0; --accent2:#c77fa6;
+    --good:#5ec98a; --bad:#e06a6a; --gold:#e8c46b;
+    --grad:linear-gradient(135deg,#e0a3c0,#c77fa6);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg); color:var(--ink); line-height:1.6; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1080px;margin:0 auto;padding:0 22px}
+  .narrow{max-width:780px;margin:0 auto;padding:0 22px}
+  section{padding:86px 0;border-bottom:1px solid var(--line)}
+  h1{font-size:clamp(2.2rem,6vw,4rem);line-height:1.08;font-weight:800;letter-spacing:-.02em}
+  h2{font-size:clamp(1.7rem,4vw,2.8rem);line-height:1.12;font-weight:800;letter-spacing:-.02em;margin-bottom:14px}
+  h3{font-size:1.25rem;font-weight:700;margin-bottom:8px}
+  p{color:var(--mut);font-size:1.05rem}
+  .grad{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .eyebrow{display:inline-block;font-size:.78rem;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);
+    border:1px solid var(--line);border-radius:999px;padding:7px 16px;margin-bottom:22px;background:var(--bg2)}
+  .btn{display:inline-block;background:var(--grad);color:#1a0d14;font-weight:800;font-size:1.05rem;
+    padding:17px 34px;border-radius:12px;text-decoration:none;border:none;cursor:pointer;
+    box-shadow:0 10px 34px rgba(199,127,166,.35);transition:transform .15s ease}
+  .btn:hover{transform:translateY(-2px)}
+  .btn-sub{display:block;font-size:.82rem;color:var(--mut);margin-top:12px;font-weight:500}
+  .ctaline{font-size:.82rem;color:var(--mut);margin-top:10px}
+  /* HEADER */
+  header{position:sticky;top:0;z-index:50;background:rgba(10,10,15,.82);backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--line)}
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:15px 22px;max-width:1080px;margin:0 auto}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.05rem}
+  .logo .dot{width:30px;height:30px;border-radius:8px;background:var(--grad);display:grid;place-items:center}
+  .navbtn{background:var(--grad);color:#1a0d14;font-weight:700;padding:10px 20px;border-radius:10px;
+    text-decoration:none;font-size:.92rem}
+  /* HERO */
+  .hero{text-align:center;padding:96px 0 80px;
+    background:radial-gradient(900px 480px at 50% -10%,rgba(199,127,166,.16),transparent 70%)}
+  .hero p.lead{font-size:1.22rem;max-width:640px;margin:24px auto 32px;color:#cfcfdb}
+  .pill-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:30px}
+  .pill{font-size:.82rem;color:var(--mut);background:var(--bg2);border:1px solid var(--line);
+    border-radius:999px;padding:8px 15px}
+  .mock{margin:54px auto 0;max-width:560px;background:var(--card);border:1px solid var(--line);
+    border-radius:18px;padding:22px;box-shadow:0 30px 80px rgba(0,0,0,.5);text-align:left}
+  .chatrow{display:flex;gap:10px;margin:10px 0;align-items:flex-start}
+  .ava{width:34px;height:34px;border-radius:9px;flex:0 0 34px;display:grid;place-items:center;font-size:.9rem;font-weight:700}
+  .ava.lead{background:#23232f;color:var(--accent)}
+  .ava.sys{background:var(--grad);color:#1a0d14}
+  .bub{background:#1d1d29;border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-size:.94rem;color:#e7e7ef}
+  .bub.sys{background:rgba(199,127,166,.12);border-color:rgba(199,127,166,.3)}
+  .time{font-size:.72rem;color:#6f6f80;margin-left:6px}
+  /* TRAP */
+  .trap-card{background:linear-gradient(180deg,#1a1119,#15151f);border:1px solid var(--line);
+    border-radius:18px;padding:40px;text-align:center}
+  .stat{font-size:clamp(2.4rem,7vw,3.6rem);font-weight:800}
+  /* IMAGINE */
+  .dream{display:grid;gap:14px;max-width:760px;margin:34px auto 0}
+  .dream .row{display:flex;gap:16px;align-items:flex-start;background:var(--card);border:1px solid var(--line);
+    border-radius:14px;padding:18px 20px}
+  .dream .yes{color:var(--good);font-weight:700;font-size:1.05rem}
+  .dream .no{color:#80808f;font-size:.92rem;text-decoration:line-through;text-decoration-color:#55555f}
+  .tick{flex:0 0 26px;width:26px;height:26px;border-radius:7px;background:rgba(94,201,138,.15);
+    color:var(--good);display:grid;place-items:center;font-weight:800;margin-top:2px}
+  /* MECHANISM */
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:40px}
+  .step{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px}
+  .step .num{width:40px;height:40px;border-radius:10px;background:var(--grad);color:#1a0d14;
+    font-weight:800;display:grid;place-items:center;margin-bottom:14px}
+  .step .arrow{font-size:1.6rem;color:var(--accent)}
+  /* FEATURES */
+  .feat{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-top:40px}
+  .fcard{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px}
+  .fcard .ic{width:46px;height:46px;border-radius:11px;background:rgba(199,127,166,.13);
+    display:grid;place-items:center;margin-bottom:14px}
+  .tag{display:inline-block;font-size:.72rem;color:var(--accent);background:rgba(199,127,166,.12);
+    border-radius:6px;padding:3px 9px;margin-top:10px}
+  /* SOCIAL */
+  .quotes{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:36px}
+  .q{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px}
+  .q .who{display:flex;align-items:center;gap:11px;margin-top:16px}
+  .q .pic{width:40px;height:40px;border-radius:50%;background:var(--grad);display:grid;place-items:center;
+    font-weight:800;color:#1a0d14}
+  .q .name{font-weight:700;font-size:.92rem;color:var(--ink)}
+  .q .role{font-size:.78rem;color:var(--mut)}
+  .q p{color:#dcdce6;font-size:.96rem}
+  /* VALUE STACK */
+  .price-wrap{max-width:560px;margin:40px auto 0;background:var(--card);border:1px solid var(--line);
+    border-radius:20px;overflow:hidden}
+  .price-head{background:linear-gradient(180deg,rgba(199,127,166,.18),transparent);padding:30px;text-align:center;
+    border-bottom:1px solid var(--line)}
+  .stack{padding:8px 30px}
+  .stackrow{display:flex;justify-content:space-between;align-items:center;padding:15px 0;border-bottom:1px solid var(--line)}
+  .stackrow:last-child{border-bottom:none}
+  .stackrow .val{color:var(--mut);font-size:.9rem;white-space:nowrap;margin-left:14px}
+  .price-foot{padding:28px 30px 34px;text-align:center}
+  .strike{color:#70707f;text-decoration:line-through;font-size:1.1rem}
+  .bignum{font-size:3rem;font-weight:800;line-height:1}
+  .anchor-note{font-size:.85rem;color:var(--gold);margin:8px 0 18px}
+  /* FORQUAL */
+  .twocol{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:36px}
+  .qual{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:28px}
+  .qual h3{display:flex;align-items:center;gap:10px}
+  .qual ul{list-style:none;margin-top:14px;display:grid;gap:12px}
+  .qual li{display:flex;gap:11px;color:#d6d6e0;font-size:.97rem}
+  .ymark{color:var(--good);font-weight:800}
+  .nmark{color:var(--bad);font-weight:800}
+  /* GUARANTEE */
+  .guarantee{background:linear-gradient(135deg,rgba(232,196,107,.1),rgba(199,127,166,.08));
+    border:1px solid rgba(232,196,107,.3);border-radius:20px;padding:42px;text-align:center;max-width:760px;margin:0 auto}
+  .seal{width:72px;height:72px;border-radius:50%;border:2px solid var(--gold);color:var(--gold);
+    display:grid;place-items:center;margin:0 auto 18px;font-weight:800;font-size:.8rem;text-align:center;line-height:1.1}
+  /* FAQ */
+  details{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:0 22px;margin-bottom:12px}
+  summary{cursor:pointer;font-weight:700;padding:20px 0;list-style:none;display:flex;justify-content:space-between;align-items:center}
+  summary::-webkit-details-marker{display:none}
+  summary::after{content:"+";font-size:1.5rem;color:var(--accent)}
+  details[open] summary::after{content:"–"}
+  details p{padding:0 0 20px}
+  /* FINAL CTA */
+  .final{text-align:center;background:radial-gradient(700px 360px at 50% 120%,rgba(199,127,166,.18),transparent 70%)}
+  footer{padding:40px 0;text-align:center;color:#6f6f80;font-size:.85rem}
+  .center{text-align:center}
+  @media(max-width:760px){
+    .steps,.feat,.quotes,.twocol{grid-template-columns:1fr}
+    section{padding:60px 0}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="nav">
+    <div class="logo">
+      <span class="dot">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#1a0d14" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+      PixelTech&nbsp;Systems
+    </div>
+    <a href="#pricing" class="navbtn">Book a Free Audit</a>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="wrap">
+    <span class="eyebrow">For Med Spas &amp; Aesthetic Clinics Running Ads</span>
+    <h1>You're paying for leads.<br><span class="grad">You're losing them anyway.</span></h1>
+    <p class="lead">The Booked Solid System follows up with every new lead in under 60 seconds — by text and email — and books them straight into your calendar. So the leads you already pay for stop slipping away.</p>
+    <a href="#pricing" class="btn">Get My Free Lead-Leak Audit
+      <span class="btn-sub">See exactly where your clinic is losing leads — in a 5-min video. No charge.</span>
+    </a>
+    <div class="pill-row">
+      <span class="pill">⚡ Replies in &lt;60 seconds</span>
+      <span class="pill">📅 Auto-booking calendar</span>
+      <span class="pill">🔔 No-show reminders</span>
+      <span class="pill">📞 Missed-call text-back</span>
+    </div>
+
+    <!-- chat mock -->
+    <div class="mock">
+      <div class="chatrow">
+        <div class="ava lead">L</div>
+        <div><div class="bub">Hi, I saw your ad for lip filler — how much is it?<span class="time">9:42 PM</span></div></div>
+      </div>
+      <div class="chatrow">
+        <div class="ava sys">BS</div>
+        <div><div class="bub sys">Hi Sarah! 💕 Thanks for reaching out. Lip filler starts at $X. I can hold a consultation for you — does Thursday 2pm or Friday 11am work? Tap to book 👉 [link]<span class="time">9:42 PM · auto-sent in 14s</span></div></div>
+      </div>
+      <div class="chatrow">
+        <div class="ava lead">L</div>
+        <div><div class="bub">Thursday works! Just booked 🙌<span class="time">9:44 PM</span></div></div>
+      </div>
+      <p class="center" style="margin-top:14px;font-size:.85rem">↑ This happened at 9:42 PM. With most clinics, Sarah waits until morning, gets distracted, and books with a competitor.</p>
+    </div>
+  </div>
+</section>
+
+<!-- THE TRAP / PROBLEM -->
+<section>
+  <div class="narrow center">
+    <span class="eyebrow">The Real Problem</span>
+    <h2>It's not your ads.<br><span class="grad">It's what happens after the lead comes in.</span></h2>
+    <div class="trap-card" style="margin-top:34px">
+      <div class="stat grad">30–50%</div>
+      <h3 style="margin-top:6px">of paid leads are lost to slow follow-up</h3>
+      <p style="margin-top:14px">Leads come in at night, on weekends, mid-treatment. By the time someone replies — hours later — they've gone cold or booked elsewhere. You already paid for that lead. Now it's gone, and your cost-per-booking quietly doubles.</p>
+    </div>
+    <p style="margin-top:24px;font-size:1.05rem;color:#cfcfdb">More ad spend won't fix a leaky bucket. <strong style="color:var(--ink)">Plugging the leak does.</strong></p>
+  </div>
+</section>
+
+<!-- IMAGINE -->
+<section style="background:var(--bg2)">
+  <div class="narrow center">
+    <span class="eyebrow">Imagine This</span>
+    <h2>Every lead handled. <span class="grad">Automatically.</span></h2>
+    <div class="dream">
+      <div class="row"><div class="tick">✓</div><div><div class="yes">Every new lead gets a reply in seconds — even at 11 PM.</div><div class="no">Not "we'll get back to them tomorrow."</div></div></div>
+      <div class="row"><div class="tick">✓</div><div><div class="yes">Your calendar fills itself while you treat clients.</div><div class="no">Not chasing DMs and missed calls between appointments.</div></div></div>
+      <div class="row"><div class="tick">✓</div><div><div class="yes">No-shows drop with automatic reminders.</div><div class="no">Not empty chairs you can't get back.</div></div></div>
+      <div class="row"><div class="tick">✓</div><div><div class="yes">Old, cold leads get reactivated on autopilot.</div><div class="no">Not a spreadsheet of names you'll "follow up with someday."</div></div></div>
+      <div class="row"><div class="tick">✓</div><div><div class="yes">Your front desk stops drowning in messages.</div><div class="no">Not staff burning out on manual follow-up.</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- MECHANISM -->
+<section>
+  <div class="narrow center">
+    <span class="eyebrow">How It Works</span>
+    <h2>Three steps. <span class="grad">Zero manual work for you.</span></h2>
+    <p style="max-width:560px;margin:0 auto">We install it for you in about a week. Then it just runs.</p>
+  </div>
+  <div class="wrap">
+    <div class="steps">
+      <div class="step">
+        <div class="num">1</div>
+        <h3>Capture</h3>
+        <p>Every lead — from your ads, website, Instagram DMs, or a missed call — is captured instantly in one place. Nothing slips through.</p>
+      </div>
+      <div class="step">
+        <div class="num">2</div>
+        <h3>Respond &amp; Book</h3>
+        <p>The system texts and emails the lead in under 60 seconds with a booking link, then sends confirmations and reminders so they actually show up.</p>
+      </div>
+      <div class="step">
+        <div class="num">3</div>
+        <h3>Convert &amp; Track</h3>
+        <p>Booked appointments land on your calendar. You see every lead, response time, and booking in one simple dashboard. We optimize it monthly.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section style="background:var(--bg2)">
+  <div class="narrow center">
+    <span class="eyebrow">What You Get</span>
+    <h2>Built to fill chairs. <span class="grad">Not just look pretty.</span></h2>
+  </div>
+  <div class="wrap">
+    <div class="feat">
+      <div class="fcard">
+        <div class="ic">⚡</div>
+        <h3>60-Second Lead Response</h3>
+        <p>Instant SMS + email to every new lead, day or night. Speed-to-lead is the #1 driver of bookings — and we make yours instant.</p>
+        <span class="tag">Done-for-you</span>
+      </div>
+      <div class="fcard">
+        <div class="ic">📅</div>
+        <h3>Self-Booking Calendar</h3>
+        <p>Leads pick a slot themselves. Confirmations and reminders go out automatically. Your calendar fills without your front desk lifting a finger.</p>
+        <span class="tag">Fully automated</span>
+      </div>
+      <div class="fcard">
+        <div class="ic">🔔</div>
+        <h3>No-Show Protection</h3>
+        <p>Automated 24-hour and 1-hour reminders plus easy rescheduling — so booked appointments turn into people in your chair.</p>
+        <span class="tag">Recover lost revenue</span>
+      </div>
+      <div class="fcard">
+        <div class="ic">📞</div>
+        <h3>Missed-Call Text-Back</h3>
+        <p>Every missed call instantly gets a text: "Sorry we missed you! How can we help?" You never lose a caller to voicemail again.</p>
+        <span class="tag">Never miss a lead</span>
+      </div>
+      <div class="fcard">
+        <div class="ic">♻️</div>
+        <h3>Lead Reactivation</h3>
+        <p>We mine your old leads and past inquiries with an automated win-back campaign — often booking appointments in week one, at no extra ad spend.</p>
+        <span class="tag">Free revenue</span>
+      </div>
+      <div class="fcard">
+        <div class="ic">📊</div>
+        <h3>Dashboard + Monthly Optimization</h3>
+        <p>One clear view of leads, response times, and bookings. Each month we review the numbers and improve the system to book even more.</p>
+        <span class="tag">Ongoing support</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SOCIAL PROOF -->
+<section>
+  <div class="narrow center">
+    <span class="eyebrow">Why Clinics Switch</span>
+    <h2>The math is simple.</h2>
+    <p style="max-width:600px;margin:0 auto">One recovered lead a week can cover the entire system. Here's the kind of impact instant follow-up creates.</p>
+  </div>
+  <div class="wrap">
+    <div class="quotes">
+      <div class="q">
+        <p>"We were spending thousands on ads but only replying to leads the next morning. Once follow-up became instant, our booked consults jumped — same ad budget."</p>
+        <div class="who"><div class="pic">MS</div><div><div class="name">Med Spa Owner</div><div class="role">Example outcome*</div></div></div>
+      </div>
+      <div class="q">
+        <p>"The missed-call text-back alone paid for it. Every call we used to lose now turns into a booking conversation automatically."</p>
+        <div class="who"><div class="pic">AC</div><div><div class="name">Aesthetic Clinic</div><div class="role">Example outcome*</div></div></div>
+      </div>
+      <div class="q">
+        <p>"The reactivation campaign pulled bookings out of old leads we'd given up on — in the first week. That part felt like free money."</p>
+        <div class="who"><div class="pic">DS</div><div><div class="name">Derm &amp; Skin Studio</div><div class="role">Example outcome*</div></div></div>
+      </div>
+    </div>
+    <p style="margin-top:20px;font-size:.78rem;color:#6f6f80" class="center">*Illustrative examples of typical results. Replace with your real client testimonials and screenshots as you collect them — this is the single biggest lever on conversions.</p>
+  </div>
+</section>
+
+<!-- VALUE STACK / PRICING -->
+<section id="pricing" style="background:var(--bg2)">
+  <div class="narrow center">
+    <span class="eyebrow">The Offer</span>
+    <h2>Everything installed. <span class="grad">For you.</span></h2>
+    <p>One setup. One simple monthly fee to run and optimize it.</p>
+  </div>
+  <div class="price-wrap">
+    <div class="price-head">
+      <h3 style="font-size:1.5rem">The Booked Solid System</h3>
+      <p style="margin-top:4px">Done-for-you. Live in ~7 days.</p>
+    </div>
+    <div class="stack">
+      <div class="stackrow"><span>⚡ 60-Second Lead Response (SMS + Email)</span><span class="val">$1,200 value</span></div>
+      <div class="stackrow"><span>📅 Self-Booking Calendar + Confirmations</span><span class="val">$600 value</span></div>
+      <div class="stackrow"><span>🔔 No-Show Reminder Automation</span><span class="val">$400 value</span></div>
+      <div class="stackrow"><span>📞 Missed-Call Text-Back</span><span class="val">$300 value</span></div>
+      <div class="stackrow"><span>♻️ Lead Reactivation Campaign</span><span class="val">$700 value</span></div>
+      <div class="stackrow"><span>📊 Dashboard + Monthly Optimization</span><span class="val">$500 value</span></div>
+    </div>
+    <div class="price-foot">
+      <div class="strike">Total value: $3,700</div>
+      <div class="anchor-note">⏳ Founding-client pricing — limited spots while we build case studies</div>
+      <div class="bignum"><span class="grad">$1,250</span></div>
+      <p style="margin:6px 0 0">one-time setup &nbsp;+&nbsp; <strong style="color:var(--ink)">$650/mo</strong> to run &amp; optimize</p>
+      <a href="#" class="btn" style="margin-top:22px">Book My Free Lead-Leak Audit</a>
+      <p class="ctaline">No commitment. We show you the leak first — you decide after.</p>
+    </div>
+  </div>
+</section>
+
+<!-- IS THIS FOR YOU -->
+<section>
+  <div class="narrow center">
+    <span class="eyebrow">Honest Fit Check</span>
+    <h2>Is this right for your clinic?</h2>
+  </div>
+  <div class="wrap">
+    <div class="twocol">
+      <div class="qual">
+        <h3><span class="ymark">✓</span> This is for you if…</h3>
+        <ul>
+          <li><span class="ymark">✓</span> You spend money on Meta/Google ads to get leads.</li>
+          <li><span class="ymark">✓</span> Leads sometimes wait hours (or never) for a reply.</li>
+          <li><span class="ymark">✓</span> No-shows and missed calls are costing you bookings.</li>
+          <li><span class="ymark">✓</span> You want more appointments without more ad spend.</li>
+          <li><span class="ymark">✓</span> You'd rather have it built for you than DIY it.</li>
+        </ul>
+      </div>
+      <div class="qual">
+        <h3><span class="nmark">✕</span> This is not for you if…</h3>
+        <ul>
+          <li><span class="nmark">✕</span> You don't run ads and have no incoming leads.</li>
+          <li><span class="nmark">✕</span> You're booked solid with a 3-month waitlist already.</li>
+          <li><span class="nmark">✕</span> You want a cheap DIY template to configure yourself.</li>
+          <li><span class="nmark">✕</span> You're not willing to give system access to set it up.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GUARANTEE -->
+<section style="background:var(--bg2)">
+  <div class="wrap">
+    <div class="guarantee">
+      <div class="seal">14-DAY<br>GO-LIVE</div>
+      <h2>If it's not live in 14 days, I work free until it is.</h2>
+      <p style="max-width:560px;margin:14px auto 0">Once you give me access, your system will be built, tested, and working within 14 days — or I keep working at no extra cost until it is. The risk is on me, not you.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section>
+  <div class="narrow">
+    <div class="center"><span class="eyebrow">Questions</span><h2>You're probably wondering…</h2></div>
+    <div style="margin-top:34px">
+      <details open><summary>Do I need to be technical?</summary><p>No. This is fully done-for-you. You give us access to your lead sources and calendar, and we build, test, and launch the whole thing. You just start seeing booked appointments.</p></details>
+      <details><summary>Will this replace my front desk?</summary><p>No — it makes them faster and stops anything slipping through after hours or during busy periods. Your team handles the human conversations; the system handles the instant first response and reminders.</p></details>
+      <details><summary>How fast will I see results?</summary><p>The system is live in about a week. The reactivation campaign often books appointments from old leads in the first few days. Faster follow-up improves your booking rate immediately.</p></details>
+      <details><summary>What does the monthly fee cover?</summary><p>Running, monitoring, and optimizing the system, all messaging/automation upkeep, support, and a monthly review where we improve it to book more. It's an ongoing performance partnership, not a one-and-done setup.</p></details>
+      <details><summary>What's the free audit?</summary><p>I record a short personalized video showing exactly how a new lead experiences your clinic right now — and where you're losing them. It's genuinely useful even if we never work together. No cost, no obligation.</p></details>
+      <details><summary>Do you also run my ads?</summary><p>The Booked Solid System fixes the follow-up first. Once leads are converting, ad management is available as an add-on — with 6 years of Meta Ads experience behind it.</p></details>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="final">
+  <div class="narrow center">
+    <h2>Stop paying for leads<br><span class="grad">you never even talk to.</span></h2>
+    <p style="max-width:540px;margin:18px auto 30px">Let me show you exactly where your clinic is leaking leads — free, in a 5-minute video. If you want it fixed, I'll build the system for you.</p>
+    <a href="#" class="btn">Book My Free Lead-Leak Audit</a>
+    <p class="ctaline">Limited founding-client spots · 14-day go-live guarantee</p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="logo" style="justify-content:center;margin-bottom:10px">
+      <span class="dot"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#1a0d14" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      PixelTech Systems
+    </div>
+    © 2026 PixelTech Systems · The Booked Solid System for Med Spas · hello@pixeltechsystems.com
+  </div>
+</footer>
+
+</body>
+</html>
