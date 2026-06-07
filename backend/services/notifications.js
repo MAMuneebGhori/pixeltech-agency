@@ -1,27 +1,45 @@
-const twilio = require('twilio');
 const { Resend } = require('resend');
 
-// NOTE: Render free tier blocks ALL outbound SMTP (ports 25, 465, 587).
-// We use Resend (HTTPS API) instead of Nodemailer to send emails.
+// ─── Green API WhatsApp Helper ─────────────────────────────────────────────
+// Uses your own WhatsApp number — free, no daily limits, HTTPS-based
+const sendWhatsAppViaGreenAPI = async (phoneNumber, message) => {
+  const instanceId = process.env.GREEN_API_INSTANCE;
+  const token = process.env.GREEN_API_TOKEN;
 
-// Lazy Twilio client
-let twilioClient;
-const getTwilioClient = () => {
-  if (!twilioClient && process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN) {
-    twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+  if (!instanceId || !token) {
+    console.log('⚠️ GREEN_API_INSTANCE or GREEN_API_TOKEN not set — skipping WhatsApp.');
+    return false;
   }
-  return twilioClient;
+
+  // Format: remove + sign and add @c.us (e.g. +923336424891 → 923336424891@c.us)
+  const chatId = phoneNumber.replace('+', '') + '@c.us';
+
+  const url = `https://api.green-api.com/waInstance${instanceId}/sendMessage/${token}`;
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ chatId, message })
+  });
+
+  const data = await response.json();
+
+  if (!response.ok || data.error) {
+    throw new Error(data.error || `HTTP ${response.status}`);
+  }
+
+  return data.idMessage;
 };
 
+// ─── Main Notification Function ────────────────────────────────────────────
 const sendLeadNotifications = async (leadData) => {
   const results = { email: false, whatsapp: false };
 
-  // ─── 1. EMAIL via Resend HTTPS API ─────────────────────────────────────────
+  // 1. EMAIL via Resend HTTPS API
   if (process.env.RESEND_API_KEY) {
     try {
       const resend = new Resend(process.env.RESEND_API_KEY);
       const { data, error } = await resend.emails.send({
-        // Use RESEND_FROM_EMAIL env var once domain is verified, otherwise use Resend test address
         from: process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev',
         to: [process.env.ADMIN_EMAIL || 'mamuneebg@gmail.com'],
         subject: `🚀 New Lead: ${leadData.firstName} ${leadData.lastName}`,
@@ -57,33 +75,25 @@ const sendLeadNotifications = async (leadData) => {
       console.error('❌ Email failed:', err.message);
     }
   } else {
-    console.log('⚠️ RESEND_API_KEY not set — skipping email. Get a free key at https://resend.com');
+    console.log('⚠️ RESEND_API_KEY not set — skipping email.');
   }
 
-  // ─── 2. WHATSAPP via Twilio HTTPS API ──────────────────────────────────────
-  const client = getTwilioClient();
-  if (client && process.env.TWILIO_WHATSAPP_NUMBER && process.env.ADMIN_WHATSAPP_NUMBERS) {
-    try {
-      const numbers = process.env.ADMIN_WHATSAPP_NUMBERS.split(',');
-      const msg = `🚀 *New Pixeltech Lead!*\n\n*Name:* ${leadData.firstName} ${leadData.lastName}\n*Email:* ${leadData.email}\n*Phone:* ${leadData.phone}\n*Budget:* ${leadData.budget || 'N/A'}\n*Service:* ${leadData.service || 'N/A'}\n*Source:* ${leadData.source}\n\nCheck your Admin Portal for full details.`;
+  // 2. WHATSAPP via Green API (free, uses your own WhatsApp number)
+  if (process.env.GREEN_API_INSTANCE && process.env.GREEN_API_TOKEN && process.env.ADMIN_WHATSAPP_NUMBERS) {
+    const numbers = process.env.ADMIN_WHATSAPP_NUMBERS.split(',');
+    const msg = `🚀 *New Pixeltech Lead!*\n\n*Name:* ${leadData.firstName} ${leadData.lastName}\n*Email:* ${leadData.email}\n*Phone:* ${leadData.phone}\n*Budget:* ${leadData.budget || 'N/A'}\n*Service:* ${leadData.service || 'N/A'}\n*Source:* ${leadData.source}\n\nCheck your Admin Portal for full details.`;
 
-      const sendPromises = numbers.map(num =>
-        client.messages.create({
-          from: `whatsapp:${process.env.TWILIO_WHATSAPP_NUMBER}`,
-          to: `whatsapp:${num.trim()}`,
-          body: msg
-        })
-        .then(m => console.log(`✅ WhatsApp sent to ${num.trim()} — SID: ${m.sid}`))
-        .catch(e => console.error(`❌ WhatsApp failed for ${num.trim()}:`, e.message))
-      );
-
-      await Promise.allSettled(sendPromises);
-      results.whatsapp = true;
-    } catch (err) {
-      console.error('❌ WhatsApp error:', err.message);
+    for (const num of numbers) {
+      try {
+        const msgId = await sendWhatsAppViaGreenAPI(num.trim(), msg);
+        console.log(`✅ WhatsApp sent to ${num.trim()} — ID: ${msgId}`);
+        results.whatsapp = true;
+      } catch (err) {
+        console.error(`❌ WhatsApp failed for ${num.trim()}:`, err.message);
+      }
     }
   } else {
-    console.log('⚠️ Twilio not configured — skipping WhatsApp.');
+    console.log('⚠️ Green API not configured — skipping WhatsApp.');
   }
 
   return results;
