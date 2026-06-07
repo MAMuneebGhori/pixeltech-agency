@@ -4,7 +4,7 @@ import { Inbox, CheckCircle, Trash2, MessageSquare, Mail, Link as LinkIcon, Refr
 
 export default function Admin() {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return localStorage.getItem('pixeltech_admin_auth') === 'true';
+    return sessionStorage.getItem('pixeltech_admin_auth') === 'true';
   });
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -70,7 +70,7 @@ export default function Admin() {
     e.preventDefault();
     if (username === 'does234' && password === '@gga Miash 09') {
       setIsAuthenticated(true);
-      localStorage.setItem('pixeltech_admin_auth', 'true');
+      sessionStorage.setItem('pixeltech_admin_auth', 'true');
       setLoginError('');
     } else {
       setLoginError('Invalid credentials');
@@ -79,7 +79,7 @@ export default function Admin() {
 
   const handleLogout = () => {
     setIsAuthenticated(false);
-    localStorage.removeItem('pixeltech_admin_auth');
+    sessionStorage.removeItem('pixeltech_admin_auth');
   };
 
   if (!isAuthenticated) {
