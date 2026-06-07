@@ -12,6 +12,7 @@ import TopNavBar from './components/TopNavBar';
 import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
 import Chatbot from './components/Chatbot';
+import CookieConsent from './components/CookieConsent';
 import Admin from './pages/Admin';
 
 function App() {
@@ -33,6 +34,7 @@ function App() {
         </Routes>
         <Footer />
         <Chatbot />
+        <CookieConsent />
       </div>
     </Router>
   );
