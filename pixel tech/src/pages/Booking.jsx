@@ -155,8 +155,8 @@ export default function Booking() {
                 {/* Name Row */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                   <div className="grid gap-1.5">
-                    <label className="text-[0.7rem] font-semibold text-mut uppercase tracking-[0.08em]">First Name</label>
-                    <input type="text" name="firstName" value={formData.firstName} onChange={handleInputChange} className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-accent/60 focus:bg-white/[0.06] transition-all duration-300 text-ink placeholder-white/20" placeholder="John" />
+                    <label className="text-[0.7rem] font-semibold text-mut uppercase tracking-[0.08em]">First Name <span className="text-red-500">*</span></label>
+                    <input required type="text" name="firstName" value={formData.firstName} onChange={handleInputChange} className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-accent/60 focus:bg-white/[0.06] transition-all duration-300 text-ink placeholder-white/20" placeholder="John" />
                   </div>
                   <div className="grid gap-1.5">
                     <label className="text-[0.7rem] font-semibold text-mut uppercase tracking-[0.08em]">Last Name</label>
@@ -166,7 +166,7 @@ export default function Booking() {
 
               {/* Select Service */}
               <div className="grid gap-1.5">
-                <label className="text-[0.7rem] font-semibold text-mut uppercase tracking-[0.08em]">Select Service</label>
+                <label className="text-[0.7rem] font-semibold text-mut uppercase tracking-[0.08em]">Select Service <span className="text-red-500">*</span></label>
                 <div className="relative" ref={dropdownRef}>
                   <button
                     type="button"
@@ -281,12 +281,12 @@ export default function Booking() {
               {/* Email and Phone */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                 <div className="grid gap-1.5">
-                  <label className="text-[0.7rem] font-semibold text-mut uppercase tracking-[0.08em]">Email Address</label>
-                  <input type="email" name="email" value={formData.email} onChange={handleInputChange} className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-accent/60 focus:bg-white/[0.06] transition-all duration-300 text-ink placeholder-white/20" placeholder="john@example.com" />
+                  <label className="text-[0.7rem] font-semibold text-mut uppercase tracking-[0.08em]">Email Address <span className="text-red-500">*</span></label>
+                  <input required type="email" name="email" value={formData.email} onChange={handleInputChange} className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-accent/60 focus:bg-white/[0.06] transition-all duration-300 text-ink placeholder-white/20" placeholder="john@example.com" />
                 </div>
                 <div className="grid gap-1.5">
-                  <label className="text-[0.7rem] font-semibold text-mut uppercase tracking-[0.08em]">WhatsApp / Phone</label>
-                  <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-accent/60 focus:bg-white/[0.06] transition-all duration-300 text-ink placeholder-white/20" placeholder="+1 (555) 000-0000" />
+                  <label className="text-[0.7rem] font-semibold text-mut uppercase tracking-[0.08em]">WhatsApp / Phone <span className="text-red-500">*</span></label>
+                  <input required type="tel" name="phone" value={formData.phone} onChange={handleInputChange} className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-accent/60 focus:bg-white/[0.06] transition-all duration-300 text-ink placeholder-white/20" placeholder="+1 (555) 000-0000" />
                 </div>
               </div>
 
