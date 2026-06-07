@@ -1,5 +1,6 @@
 const nodemailer = require('nodemailer');
 const twilio = require('twilio');
+require('dns').setDefaultResultOrder('ipv4first');
 
 // Transporter for Nodemailer
 const transporter = nodemailer.createTransport({
