@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const { OpenAI } = require('openai');
 
 const Lead = require('./models/Lead');
 const { sendLeadNotifications } = require('./services/notifications');
@@ -25,8 +25,11 @@ if (process.env.MONGODB_URI) {
   console.log('⚠️ MONGODB_URI not found in .env. Please set it to connect to the database.');
 }
 
-// Initialize Gemini API
-const ai = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || 'fake-key');
+// Initialize DeepSeek via OpenRouter
+const ai = new OpenAI({
+  baseURL: "https://openrouter.ai/api/v1",
+  apiKey: process.env.DEEPSEEK_API_KEY || 'fake-key'
+});
 
 // ==========================================
 // CHATBOT API
@@ -35,18 +38,18 @@ app.post('/api/chat', async (req, res) => {
   try {
     const { message, history } = req.body;
     
-    if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === 'your_api_key_here') {
+    if (!process.env.DEEPSEEK_API_KEY) {
       return res.status(500).json({ error: 'API_KEY_MISSING' });
     }
 
     const formattedHistory = history.map(msg => ({
-      role: msg.role === 'user' ? 'user' : 'model',
-      parts: [{ text: msg.content }]
+      role: msg.role === 'user' ? 'user' : 'assistant',
+      content: msg.content
     }));
 
     // INTERCEPT: If the AI recently sent an offline fallback message, and user replied with contact info
     const historyForCheck = [...formattedHistory].reverse();
-    const lastAssistantMsg = historyForCheck.find(m => m.role === 'model')?.parts[0].text || '';
+    const lastAssistantMsg = historyForCheck.find(m => m.role === 'assistant')?.content || '';
     const isOfflineFallback = lastAssistantMsg.includes('human team') || lastAssistantMsg.includes('high traffic');
     
     if (isOfflineFallback && (message.includes('@') || /\d{7,}/.test(message))) {
@@ -71,9 +74,7 @@ app.post('/api/chat', async (req, res) => {
     }
 
     try {
-      const model = ai.getGenerativeModel({ 
-        model: 'gemini-1.5-flash',
-        systemInstruction: `You are an AI sales assistant for Pixeltech Agency. Your goal is to be helpful, professional, and ultimately collect the user's name, email, phone number, budget, and a brief description of what they want to build (their goal). Pixeltech builds custom full-stack web applications and automated lead systems. Don't be too pushy, be conversational. Ask for these details naturally.
+      const systemInstruction = `You are an AI sales assistant for Pixeltech Agency. Your goal is to be helpful, professional, and ultimately collect the user's name, email, phone number, budget, and a brief description of what they want to build (their goal). Pixeltech builds custom full-stack web applications and automated lead systems. Don't be too pushy, be conversational. Ask for these details naturally.
 
 CRITICAL INSTRUCTIONS:
 1. Pay close attention to numbers. A phone number will typically have 10+ digits or start with a +. An email will always have an @ symbol. Do NOT mix them up.
@@ -83,17 +84,20 @@ CRITICAL INSTRUCTIONS:
 \`\`\`json
 {"lead_captured": true, "firstName": "...", "lastName": "...", "email": "...", "phone": "...", "budget": "...", "goal": "..."}
 \`\`\`
-`
-      });
+`;
 
-      const response = await model.generateContent({
-        contents: [
-          ...formattedHistory,
-          { role: 'user', parts: [{ text: message }] }
-        ]
+      const messages = [
+        { role: 'system', content: systemInstruction },
+        ...formattedHistory,
+        { role: 'user', content: message }
+      ];
+
+      const response = await ai.chat.completions.create({
+        model: 'deepseek/deepseek-chat',
+        messages: messages
       });
       
-      let responseText = response.response.text();
+      let responseText = response.choices[0].message.content;
       
       // Check if lead was captured
       const jsonMatch = responseText.match(/```json\n([\s\S]*?)\n```/);
@@ -105,14 +109,14 @@ CRITICAL INSTRUCTIONS:
             // Generate a quick summary of the conversation
             let chatSummary = leadData.goal;
             try {
-              const summaryModel = ai.getGenerativeModel({ model: 'gemini-1.5-flash' });
-              const summaryResponse = await summaryModel.generateContent({
-                contents: [
+              const summaryResponse = await ai.chat.completions.create({
+                model: 'deepseek/deepseek-chat',
+                messages: [
                   ...formattedHistory,
-                  { role: 'user', parts: [{ text: "Summarize this entire conversation and what the user wants to build in 2-3 short sentences for our sales team." }] }
+                  { role: 'user', content: "Summarize this entire conversation and what the user wants to build in 2-3 short sentences for our sales team." }
                 ]
               });
-              chatSummary = summaryResponse.response.text();
+              chatSummary = summaryResponse.choices[0].message.content;
             } catch (sumErr) {
               console.error("Failed to summarize chat", sumErr);
             }
