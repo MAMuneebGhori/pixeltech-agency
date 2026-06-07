@@ -3,6 +3,13 @@ import { motion } from 'framer-motion';
 import { Inbox, CheckCircle, Trash2, MessageSquare, Mail, Link as LinkIcon, RefreshCw } from 'lucide-react';
 
 export default function Admin() {
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return localStorage.getItem('pixeltech_admin_auth') === 'true';
+  });
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
+
   const [leads, setLeads] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -59,6 +66,62 @@ export default function Admin() {
     }
   };
 
+  const handleLogin = (e) => {
+    e.preventDefault();
+    if (username === 'does234' && password === '@gga Miash 09') {
+      setIsAuthenticated(true);
+      localStorage.setItem('pixeltech_admin_auth', 'true');
+      setLoginError('');
+    } else {
+      setLoginError('Invalid credentials');
+    }
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    localStorage.removeItem('pixeltech_admin_auth');
+  };
+
+  if (!isAuthenticated) {
+    return (
+      <main className="min-h-screen bg-bg pt-[90px] pb-20 px-6 relative flex items-center justify-center">
+        <div className="absolute top-0 left-0 w-[600px] h-[600px] bg-accent/5 blur-[150px] rounded-full pointer-events-none -translate-x-1/2 -translate-y-1/2" />
+        <div className="relative z-10 w-full max-w-md bg-bg2 border border-line rounded-2xl p-8 shadow-2xl">
+          <h1 className="text-2xl font-bold text-center mb-6">Admin Login</h1>
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-mut uppercase tracking-wider mb-1.5">Username</label>
+              <input 
+                type="text" 
+                value={username} 
+                onChange={e => setUsername(e.target.value)}
+                className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors text-ink"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-mut uppercase tracking-wider mb-1.5">Password</label>
+              <input 
+                type="password" 
+                value={password} 
+                onChange={e => setPassword(e.target.value)}
+                className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors text-ink"
+                required
+              />
+            </div>
+            {loginError && <p className="text-red-400 text-sm text-center">{loginError}</p>}
+            <button 
+              type="submit" 
+              className="w-full bg-accent text-white font-semibold py-3 rounded-lg hover:bg-accent/90 transition-colors mt-2"
+            >
+              Login
+            </button>
+          </form>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-bg pt-[90px] pb-20 px-6 relative">
       <div className="absolute top-0 left-0 w-[600px] h-[600px] bg-accent/5 blur-[150px] rounded-full pointer-events-none -translate-x-1/2 -translate-y-1/2" />
@@ -88,6 +151,12 @@ export default function Admin() {
               title="Refresh Leads"
             >
               <RefreshCw className="w-5 h-5 text-mut" />
+            </button>
+            <button 
+              onClick={handleLogout}
+              className="bg-red-500/10 border border-red-500/20 text-red-500 rounded-lg px-4 py-2 flex items-center justify-center hover:bg-red-500/20 transition-colors text-sm font-semibold"
+            >
+              Logout
             </button>
           </div>
         </div>
