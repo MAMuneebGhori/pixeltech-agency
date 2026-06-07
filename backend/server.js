@@ -44,6 +44,32 @@ app.post('/api/chat', async (req, res) => {
       parts: [{ text: msg.content }]
     }));
 
+    // INTERCEPT: If the AI recently sent an offline fallback message, and user replied with contact info
+    const historyForCheck = [...formattedHistory].reverse();
+    const lastAssistantMsg = historyForCheck.find(m => m.role === 'model')?.parts[0].text || '';
+    const isOfflineFallback = lastAssistantMsg.includes('human team') || lastAssistantMsg.includes('high traffic');
+    
+    if (isOfflineFallback && (message.includes('@') || /\d{7,}/.test(message))) {
+      // Save offline lead
+      if (mongoose.connection.readyState === 1) {
+        const newLead = new Lead({
+          firstName: 'Offline',
+          lastName: 'Lead',
+          email: message.includes('@') ? message : 'Provided Phone',
+          phone: /\d{7,}/.test(message) ? message : '-',
+          budget: 'N/A',
+          service: 'AI Chatbot Inquiry',
+          source: 'AI Chatbot',
+          goal: 'User provided details after AI went offline.',
+          chatHistory: history,
+          chatSummary: 'AI went offline. User provided contact details directly.'
+        });
+        const savedLead = await newLead.save();
+        sendLeadNotifications(savedLead).catch(console.error);
+      }
+      return res.json({ response: "Thank you! I've securely saved your details and sent them to our team. They will reach out to you shortly." });
+    }
+
     try {
       const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash',

@@ -48,15 +48,6 @@ export default function Chatbot() {
       
       if (response.ok) {
         setMessages(prev => [...prev, { role: 'assistant', content: data.response }]);
-        
-        // Simple heuristic: If the AI asks for an email, and the user provided it, or if it says "in touch"
-        // In a production app, we would use structured output to capture the lead strictly.
-        if (data.response.toLowerCase().includes('in touch') || data.response.toLowerCase().includes('thank you') || (userMessage.includes('@') && messages.length > 3)) {
-          if (!leadCaptured) {
-            captureLeadFromChat(userMessage);
-            setLeadCaptured(true);
-          }
-        }
       } else {
         setMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, I am having trouble connecting to my brain right now. Are you sure the backend server is running and the API key is set?' }]);
       }
@@ -72,27 +63,6 @@ export default function Chatbot() {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSubmit(e);
-    }
-  };
-
-  const captureLeadFromChat = async (lastMsg) => {
-    try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-      await fetch(`${apiUrl}/api/leads`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          firstName: 'AI Captured',
-          lastName: 'Lead',
-          email: lastMsg.includes('@') ? lastMsg : 'Captured via Chat',
-          phone: '-',
-          service: 'Custom Request',
-          budget: 'TBD',
-          source: 'AI Chatbot'
-        })
-      });
-    } catch (e) {
-      console.error("Failed to save lead", e);
     }
   };
 
