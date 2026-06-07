@@ -85,6 +85,7 @@ CRITICAL INSTRUCTIONS:
 \`\`\`json
 {"lead_captured": true, "firstName": "...", "lastName": "...", "email": "...", "phone": "...", "budget": "...", "goal": "..."}
 \`\`\`
+6. If the user mentions an existing website they have, you MUST ask them for the domain URL and verify any instructions they give you regarding that website. Ensure this domain and their instructions are summarized in the "goal" field.
 `;
 
       const messages = [
