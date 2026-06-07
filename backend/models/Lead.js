@@ -12,7 +12,9 @@ const leadSchema = new mongoose.Schema({
   service: { type: String },
   goal: { type: String },
   source: { type: String, default: 'Booking Form' },
-  status: { type: String, default: 'new', enum: ['new', 'contacted'] }
+  status: { type: String, default: 'new', enum: ['new', 'contacted'] },
+  chatHistory: { type: Array, default: [] },
+  chatSummary: { type: String }
 });
 
 module.exports = mongoose.model('Lead', leadSchema);

@@ -244,6 +244,29 @@ export default function Admin() {
                         <p className="text-[0.85rem] text-mut truncate hover:text-clip hover:whitespace-normal transition-all" title={lead.goal}>
                           {lead.goal}
                         </p>
+                        
+                        {lead.chatSummary && (
+                          <div className="mt-3 p-3 bg-bg border border-line rounded-lg">
+                            <p className="text-xs text-accent font-bold mb-1">AI Chat Summary:</p>
+                            <p className="text-xs text-mut leading-relaxed">{lead.chatSummary}</p>
+                            
+                            {lead.chatHistory && lead.chatHistory.length > 0 && (
+                              <details className="mt-2">
+                                <summary className="text-[0.7rem] uppercase font-bold tracking-wider text-mut hover:text-ink cursor-pointer transition-colors">
+                                  View Full Transcript
+                                </summary>
+                                <div className="mt-2 space-y-2 max-h-[200px] overflow-y-auto custom-scrollbar pr-2">
+                                  {lead.chatHistory.map((msg, i) => (
+                                    <div key={i} className={`p-2 rounded text-xs ${msg.role === 'user' ? 'bg-white/5 border border-white/10' : 'bg-accent/5 border border-accent/10'}`}>
+                                      <span className="font-bold opacity-50 block mb-0.5">{msg.role === 'user' ? 'User' : 'AI'}</span>
+                                      {msg.content || msg.text}
+                                    </div>
+                                  ))}
+                                </div>
+                              </details>
+                            )}
+                          </div>
+                        )}
                       </td>
                       <td className="px-6 py-5 whitespace-nowrap text-sm text-mut">
                         {new Date(lead.date || lead.timestamp).toLocaleDateString()}<br/>

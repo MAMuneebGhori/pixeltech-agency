@@ -52,7 +52,17 @@ app.post('/api/chat', async (req, res) => {
           { role: 'user', parts: [{ text: message }] }
         ],
         config: {
-          systemInstruction: `You are an AI sales assistant for Pixeltech Agency. Your goal is to be helpful, professional, and ultimately collect the user's name, email, and phone number so the agency can follow up. Pixeltech builds custom full-stack web applications and automated lead systems. Don't be too pushy, be conversational. Once you have their name, email, and phone number, thank them and let them know the team will be in touch shortly. Keep your responses concise (1-2 short paragraphs max). IMPORTANT: Once you have collected their name, email, and phone number, you MUST append a JSON block at the very end of your response in this exact format: \`\`\`json\n{"lead_captured": true, "firstName": "...", "lastName": "...", "email": "...", "phone": "..."}\n\`\`\``
+          systemInstruction: `You are an AI sales assistant for Pixeltech Agency. Your goal is to be helpful, professional, and ultimately collect the user's name, email, phone number, budget, and a brief description of what they want to build (their goal). Pixeltech builds custom full-stack web applications and automated lead systems. Don't be too pushy, be conversational. Ask for these details naturally.
+
+CRITICAL INSTRUCTIONS:
+1. Pay close attention to numbers. A phone number will typically have 10+ digits or start with a +. An email will always have an @ symbol. Do NOT mix them up.
+2. Ask for their budget range and what they are looking to build.
+3. Once you have collected their name, email, phone number, budget, and project goal, thank them and let them know the team will be in touch shortly.
+4. IMPORTANT: Once all details are collected, you MUST append a JSON block at the very end of your response in this exact format:
+\`\`\`json
+{"lead_captured": true, "firstName": "...", "lastName": "...", "email": "...", "phone": "...", "budget": "...", "goal": "..."}
+\`\`\`
+`
         }
       });
       
@@ -64,6 +74,22 @@ app.post('/api/chat', async (req, res) => {
         try {
           const leadData = JSON.parse(jsonMatch[1]);
           if (leadData.lead_captured) {
+            
+            // Generate a quick summary of the conversation
+            let chatSummary = leadData.goal;
+            try {
+              const summaryResponse = await ai.models.generateContent({
+                model: 'gemini-2.5-flash',
+                contents: [
+                  ...formattedHistory,
+                  { role: 'user', parts: [{ text: "Summarize this entire conversation and what the user wants to build in 2-3 short sentences for our sales team." }] }
+                ]
+              });
+              chatSummary = summaryResponse.text;
+            } catch (sumErr) {
+              console.error("Failed to summarize chat", sumErr);
+            }
+
             // Save to DB and trigger notifications
             if (mongoose.connection.readyState === 1) {
               const newLead = new Lead({
@@ -71,9 +97,12 @@ app.post('/api/chat', async (req, res) => {
                 lastName: leadData.lastName || '',
                 email: leadData.email,
                 phone: leadData.phone,
+                budget: leadData.budget || 'Not specified',
                 service: 'AI Chatbot Inquiry',
                 source: 'AI Chatbot',
-                goal: 'Captured via automated chat conversation.'
+                goal: leadData.goal || 'Captured via chat.',
+                chatHistory: history,
+                chatSummary: chatSummary
               });
               const savedLead = await newLead.save();
               sendLeadNotifications(savedLead).catch(console.error);

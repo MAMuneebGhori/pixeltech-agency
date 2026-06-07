@@ -62,9 +62,16 @@ export default function Chatbot() {
       }
     } catch (error) {
       console.error("Chat API Error:", error);
-      setMessages(prev => [...prev, { role: 'assistant', content: 'Network error. Please make sure the backend server is running on port 3001.' }]);
+      setMessages(prev => [...prev, { role: 'assistant', content: 'Network error. Please make sure the backend server is running.' }]);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit(e);
     }
   };
 
@@ -123,12 +130,12 @@ export default function Chatbot() {
             <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-bg2 custom-scrollbar">
               {messages.map((msg, idx) => (
                 <div key={idx} className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-md border ${
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-md border overflow-hidden ${
                     msg.role === 'user' 
                       ? 'bg-line border-line/50' 
-                      : 'bg-accent/10 border-accent/20 text-accent'
+                      : 'bg-[#05050A] border-accent/20'
                   }`}>
-                    {msg.role === 'user' ? <User className="w-4 h-4 text-ink" /> : <Bot className="w-4 h-4" />}
+                    {msg.role === 'user' ? <User className="w-4 h-4 text-ink" /> : <img src="/Pixeltech.png" alt="AI" className="w-full h-full object-cover" />}
                   </div>
                   <div className={`max-w-[75%] rounded-2xl px-4 py-3 shadow-md ${
                     msg.role === 'user'
@@ -142,8 +149,8 @@ export default function Chatbot() {
               
               {isLoading && (
                 <div className="flex gap-3">
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-md border bg-accent/10 border-accent/20 text-accent">
-                    <Bot className="w-4 h-4" />
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-md border overflow-hidden bg-[#05050A] border-accent/20">
+                    <img src="/Pixeltech.png" alt="AI" className="w-full h-full object-cover" />
                   </div>
                   <div className="bg-card border border-line rounded-2xl rounded-tl-sm px-4 py-3 shadow-md flex items-center gap-1.5">
                     <motion.div className="w-2 h-2 rounded-full bg-accent" animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0 }} />
@@ -158,12 +165,14 @@ export default function Chatbot() {
             {/* Input Area */}
             <form onSubmit={handleSubmit} className="p-4 bg-card border-t border-line">
               <div className="relative flex items-center">
-                <input
-                  type="text"
+                <textarea
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder="Type your message..."
-                  className="w-full bg-bg2 border border-line rounded-full pl-5 pr-12 py-3 text-sm text-ink focus:outline-none focus:border-accent/50 transition-colors shadow-inner"
+                  onKeyDown={handleKeyDown}
+                  placeholder="Type your message... (Shift+Enter for new line)"
+                  rows={input.split('\n').length > 1 ? Math.min(input.split('\n').length, 4) : 1}
+                  className="w-full bg-bg2 border border-line rounded-3xl pl-5 pr-12 py-3 text-sm text-ink focus:outline-none focus:border-accent/50 transition-colors shadow-inner resize-none custom-scrollbar"
+                  style={{ minHeight: '44px' }}
                 />
                 <button 
                   type="submit"
