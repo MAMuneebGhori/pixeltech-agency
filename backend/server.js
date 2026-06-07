@@ -72,7 +72,7 @@ app.post('/api/chat', async (req, res) => {
 
     try {
       const response = await ai.models.generateContent({
-        model: 'gemini-1.5-flash',
+        model: 'gemini-2.0-flash',
         contents: [
           ...formattedHistory,
           { role: 'user', parts: [{ text: message }] }
@@ -105,7 +105,7 @@ CRITICAL INSTRUCTIONS:
             let chatSummary = leadData.goal;
             try {
               const summaryResponse = await ai.models.generateContent({
-                model: 'gemini-1.5-flash',
+                model: 'gemini-2.0-flash',
                 contents: [
                   ...formattedHistory,
                   { role: 'user', parts: [{ text: "Summarize this entire conversation and what the user wants to build in 2-3 short sentences for our sales team." }] }
