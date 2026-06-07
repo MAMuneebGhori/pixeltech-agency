@@ -52,10 +52,41 @@ app.post('/api/chat', async (req, res) => {
           { role: 'user', parts: [{ text: message }] }
         ],
         config: {
-          systemInstruction: `You are an AI sales assistant for Pixeltech Agency. Your goal is to be helpful, professional, and ultimately collect the user's name, email, and phone number so the agency can follow up. Pixeltech builds custom full-stack web applications and automated lead systems. Don't be too pushy, be conversational. Once you have their name, email, and phone number, thank them and let them know the team will be in touch shortly. Keep your responses concise (1-2 short paragraphs max).`
+          systemInstruction: `You are an AI sales assistant for Pixeltech Agency. Your goal is to be helpful, professional, and ultimately collect the user's name, email, and phone number so the agency can follow up. Pixeltech builds custom full-stack web applications and automated lead systems. Don't be too pushy, be conversational. Once you have their name, email, and phone number, thank them and let them know the team will be in touch shortly. Keep your responses concise (1-2 short paragraphs max). IMPORTANT: Once you have collected their name, email, and phone number, you MUST append a JSON block at the very end of your response in this exact format: \`\`\`json\n{"lead_captured": true, "firstName": "...", "lastName": "...", "email": "...", "phone": "..."}\n\`\`\``
         }
       });
-      res.json({ response: response.text });
+      
+      let responseText = response.text;
+      
+      // Check if lead was captured
+      const jsonMatch = responseText.match(/```json\n([\s\S]*?)\n```/);
+      if (jsonMatch) {
+        try {
+          const leadData = JSON.parse(jsonMatch[1]);
+          if (leadData.lead_captured) {
+            // Save to DB and trigger notifications
+            if (mongoose.connection.readyState === 1) {
+              const newLead = new Lead({
+                firstName: leadData.firstName,
+                lastName: leadData.lastName || '',
+                email: leadData.email,
+                phone: leadData.phone,
+                service: 'AI Chatbot Inquiry',
+                source: 'AI Chatbot',
+                goal: 'Captured via automated chat conversation.'
+              });
+              const savedLead = await newLead.save();
+              sendLeadNotifications(savedLead).catch(console.error);
+            }
+            // Remove the JSON block from the user-facing response
+            responseText = responseText.replace(/```json\n[\s\S]*?\n```/, '').trim();
+          }
+        } catch (e) {
+          console.error("Failed to parse chatbot lead JSON:", e);
+        }
+      }
+
+      res.json({ response: responseText });
       
     } catch (aiError) {
       console.error('Gemini API Error:', aiError.status, aiError.message);
