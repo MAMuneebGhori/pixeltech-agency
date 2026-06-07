@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
-const { GoogleGenAI } = require('@google/genai');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 const Lead = require('./models/Lead');
 const { sendLeadNotifications } = require('./services/notifications');
@@ -26,7 +26,7 @@ if (process.env.MONGODB_URI) {
 }
 
 // Initialize Gemini API
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || 'fake-key' });
+const ai = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || 'fake-key');
 
 // ==========================================
 // CHATBOT API
@@ -71,14 +71,9 @@ app.post('/api/chat', async (req, res) => {
     }
 
     try {
-      const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: [
-          ...formattedHistory,
-          { role: 'user', parts: [{ text: message }] }
-        ],
-        config: {
-          systemInstruction: `You are an AI sales assistant for Pixeltech Agency. Your goal is to be helpful, professional, and ultimately collect the user's name, email, phone number, budget, and a brief description of what they want to build (their goal). Pixeltech builds custom full-stack web applications and automated lead systems. Don't be too pushy, be conversational. Ask for these details naturally.
+      const model = ai.getGenerativeModel({ 
+        model: 'gemini-1.5-flash',
+        systemInstruction: `You are an AI sales assistant for Pixeltech Agency. Your goal is to be helpful, professional, and ultimately collect the user's name, email, phone number, budget, and a brief description of what they want to build (their goal). Pixeltech builds custom full-stack web applications and automated lead systems. Don't be too pushy, be conversational. Ask for these details naturally.
 
 CRITICAL INSTRUCTIONS:
 1. Pay close attention to numbers. A phone number will typically have 10+ digits or start with a +. An email will always have an @ symbol. Do NOT mix them up.
@@ -89,10 +84,16 @@ CRITICAL INSTRUCTIONS:
 {"lead_captured": true, "firstName": "...", "lastName": "...", "email": "...", "phone": "...", "budget": "...", "goal": "..."}
 \`\`\`
 `
-        }
+      });
+
+      const response = await model.generateContent({
+        contents: [
+          ...formattedHistory,
+          { role: 'user', parts: [{ text: message }] }
+        ]
       });
       
-      let responseText = response.text;
+      let responseText = response.response.text();
       
       // Check if lead was captured
       const jsonMatch = responseText.match(/```json\n([\s\S]*?)\n```/);
@@ -104,14 +105,14 @@ CRITICAL INSTRUCTIONS:
             // Generate a quick summary of the conversation
             let chatSummary = leadData.goal;
             try {
-              const summaryResponse = await ai.models.generateContent({
-                model: 'gemini-2.5-flash',
+              const summaryModel = ai.getGenerativeModel({ model: 'gemini-1.5-flash' });
+              const summaryResponse = await summaryModel.generateContent({
                 contents: [
                   ...formattedHistory,
                   { role: 'user', parts: [{ text: "Summarize this entire conversation and what the user wants to build in 2-3 short sentences for our sales team." }] }
                 ]
               });
-              chatSummary = summaryResponse.text;
+              chatSummary = summaryResponse.response.text();
             } catch (sumErr) {
               console.error("Failed to summarize chat", sumErr);
             }
