@@ -7,7 +7,6 @@ export default function HeroSection() {
   const rotatingText = [
     "booked appointments.",
     "predictable growth.",
-    "automated systems.",
     "loyal clients."
   ];
   const [currentTextIndex, setCurrentTextIndex] = useState(0);
@@ -79,9 +78,9 @@ export default function HeroSection() {
           >
             {/* Badge removed as requested */}
             
-            <motion.h1 variants={h1Variants} className="mb-6 text-xl sm:text-2xl md:text-3xl lg:text-[2rem] font-extrabold leading-[1.3] tracking-tight">
+            <motion.h1 variants={h1Variants} className="mb-6 text-[2rem] sm:text-4xl md:text-5xl lg:text-[4rem] font-extrabold leading-[1.1] tracking-tight">
               <span className="block mb-2">
-                Never miss another patient inquiry. Turn every lead into{' '}
+                Turn leads into{' '}
                 <span className="inline-block min-h-[1.5em] align-top">
                   <AnimatePresence mode="wait">
                     <motion.span
