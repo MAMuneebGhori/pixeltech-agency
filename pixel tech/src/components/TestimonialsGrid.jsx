@@ -23,7 +23,7 @@ export default function TestimonialsGrid() {
     },
     {
       quote: "PixelTech gave us a clear picture of where leads were falling through the cracks. Their team handled everything from setup to testing, and we immediately noticed a smoother experience for patients.",
-      src: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1000&auto=format&fit=crop",
+      src: "https://api.dicebear.com/7.x/micah/svg?seed=Amanda&backgroundColor=0B1120",
       name: "Amanda Lewis",
       designation: "Owner, Glow Aesthetics & Wellness"
     }
