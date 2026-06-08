@@ -238,22 +238,37 @@ export default function PricingSection() {
                 className="pt-6 border-t border-line"
               >
                 <div className="flex flex-col mb-8">
-                  <div className="flex items-baseline gap-3 mb-2">
+                  <div className="flex items-baseline gap-2">
                     <span className="text-5xl font-extrabold text-ink tracking-tight flex items-center">
-                      $
-                      <NumberFlow
-                        value={currentPrice}
-                        className="text-5xl font-extrabold"
-                      />
+                      $1,250
                     </span>
-                    <span className="text-xl text-mut font-medium relative before:content-[''] before:absolute before:-left-1 before:-right-1 before:top-1/2 before:-translate-y-1/2 before:h-0.5 before:bg-mut before:z-10">
-                      $
-                      <NumberFlow
-                        value={originalPrice}
-                      />
+                    <span className="text-xl text-mut font-medium">
+                      setup
                     </span>
                   </div>
-                  <span className="text-sm text-mut font-medium uppercase tracking-wider">One-time flat fee</span>
+                  <div className="flex items-baseline gap-2 mt-2">
+                    <span className="text-3xl font-bold text-accent tracking-tight">
+                      +$650
+                    </span>
+                    <span className="text-mut font-medium">
+                      /mo to run & optimize
+                    </span>
+                  </div>
+
+                  {hasLandingPage && (
+                    <motion.div 
+                      initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                      animate={{ opacity: 1, height: 'auto', marginTop: 16 }}
+                      className="flex items-baseline gap-2 pt-4 border-t border-line/50"
+                    >
+                      <span className="text-2xl font-bold text-ink tracking-tight">
+                        +$1,000
+                      </span>
+                      <span className="text-sm text-mut font-medium uppercase tracking-wider">
+                        One-time for Landing Page
+                      </span>
+                    </motion.div>
+                  )}
                 </div>
                 
                 <Link to="/booking" className="block w-full">
