@@ -81,7 +81,7 @@ export default function HeroSection() {
             
             <motion.h1 variants={h1Variants} className="mb-6 text-xl sm:text-2xl md:text-3xl lg:text-[2rem] font-extrabold leading-[1.3] tracking-tight">
               <span className="block mb-2">
-                Turn the leads your clinic already pays for into{' '}
+                Never miss another patient inquiry. Turn every lead into{' '}
                 <span className="inline-block min-h-[1.5em] align-top">
                   <AnimatePresence mode="wait">
                     <motion.span
