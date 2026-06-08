@@ -37,6 +37,8 @@ export default function Home() {
 
       {/* Rest of the content has been moved to dedicated pages */}
 
+      <TestimonialsGrid />
+
       <div id="booking-section">
         <Booking />
       </div>
