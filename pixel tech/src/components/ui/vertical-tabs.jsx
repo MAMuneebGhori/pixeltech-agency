@@ -8,31 +8,31 @@ const SERVICES = [
     id: "01",
     title: "Under 60-Second Response",
     description: "When a new lead fills out a form on your website or Facebook ad, our system detects it instantly. Within 60 seconds, it sends a personalized, conversational SMS and Email to the lead.",
-    image: "https://images.unsplash.com/photo-1587614382346-4ec70e388b28?q=80&w=1200",
+    image: "/step1.png",
   },
   {
     id: "02",
     title: "AI Qualification",
     description: "The system engages the lead in a natural conversation to answer basic questions, pre-qualify their needs, and guide them towards booking a consultation.",
-    image: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1200",
+    image: "/step2.png",
   },
   {
     id: "03",
     title: "Automated Booking",
     description: "Leads are provided a direct link to your calendar. They pick a time that works for them without you or your front desk having to play phone tag.",
-    image: "https://images.unsplash.com/photo-1506784951205-33f7cc24a356?q=80&w=1200",
+    image: "/step3.png",
   },
   {
     id: "04",
     title: "Missed Call Text-Back",
     description: "If your clinic misses a call during a busy rush or after hours, the system immediately texts the caller: 'Hi, we just missed your call! How can we help you today?'",
-    image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=1200",
+    image: "/step4.png",
   },
   {
     id: "05",
     title: "No-Show Prevention",
     description: "Automated email and SMS reminders are sent 24 hours and 1 hour before the appointment, drastically reducing your no-show rate.",
-    image: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=1200",
+    image: "/step5.png",
   }
 ];
 
