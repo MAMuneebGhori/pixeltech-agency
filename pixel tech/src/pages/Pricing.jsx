@@ -1,120 +1,105 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import PricingSection from '../components/PricingSection';
-import { CheckCircle2, X } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
 
 export default function Pricing() {
-  const comparisonRows = [
-    { feature: 'Custom React/Next.js Build', us: true, them: false },
-    { feature: 'Full-Stack Backend (Node.js)', us: true, them: false },
-    { feature: 'Automated Lead Follow-up', us: true, them: false },
-    { feature: 'Self-Booking Calendar', us: true, them: false },
-    { feature: 'Core Web Vitals Optimized', us: true, them: 'Varies' },
-    { feature: 'Ongoing Monthly Optimization', us: true, them: false },
-    { feature: 'Custom API Integrations', us: true, them: 'Extra cost' },
-    { feature: 'Dedicated Technical Support', us: true, them: 'Email only' },
-  ];
-
   return (
-    <main className="min-h-screen bg-bg">
-      {/* Hero */}
-      <section className="pt-[140px] pb-[80px] relative overflow-hidden border-b border-line">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-accent/8 blur-[150px] rounded-full pointer-events-none" />
-        
-        <motion.div 
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, ease: 'easeOut' }}
-          className="max-w-[780px] mx-auto px-6 text-center relative z-10"
-        >
-          <div className="w-full text-left">
-            <span className="text-accent text-sm font-bold tracking-[0.15em] uppercase border-l-2 border-accent pl-4 inline-block mb-6">
-              Transparent Pricing
-            </span>
-          </div>
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6">
-            Enterprise engineering.{' '}
-            <span className="text-gradient">Accessible pricing.</span>
+    <main className="min-h-screen pt-[120px] pb-[80px] bg-bg relative overflow-hidden">
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-accent/5 blur-[120px] rounded-full pointer-events-none" />
+
+      <div className="max-w-[800px] mx-auto px-6 relative z-10">
+        <div className="text-center mb-12">
+          <h1 className="text-4xl md:text-5xl font-extrabold mb-6">
+            One system. <span className="text-gradient">One simple price.</span>
           </h1>
-          <p className="text-mut text-lg max-w-[580px] mx-auto leading-relaxed">
-            No hidden fees. No surprise invoices. Choose the plan that fits your stage and scale — we'll handle the rest.
+          <p className="text-mut text-[1.1rem] md:text-[1.2rem] max-w-[600px] mx-auto">
+            No confusing tiers. No hidden fees. Just a flat setup rate and a predictable monthly retainer to keep your clinic's lead system optimized and running smoothly.
           </p>
-        </motion.div>
-      </section>
-
-      <PricingSection />
-
-      {/* Comparison Table */}
-      <section className="py-[100px] border-b border-line bg-bg relative overflow-hidden">
-        <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-accent/5 blur-[120px] rounded-full pointer-events-none" />
+        </div>
         
-        <div className="max-w-[780px] mx-auto px-6 text-center relative z-10 mb-16">
-          <div className="w-full text-left">
-            <span className="text-accent text-sm font-bold tracking-[0.15em] uppercase border-l-2 border-accent pl-4 inline-block mb-6">
-              Why Pixeltech
+        <div className="bg-card border border-accent/30 rounded-3xl p-8 md:p-12 shadow-[0_0_40px_rgba(0,242,254,0.1)] relative">
+          <div className="absolute top-0 right-8 -translate-y-1/2">
+            <span className="bg-gradient-brand text-[#05050A] text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider">
+              Core Offer
             </span>
           </div>
-          <h2 className="mb-3.5">
-            Pixeltech vs. <span className="text-gradient">Generic Agencies</span>
-          </h2>
-        </div>
-
-        <div className="max-w-[800px] mx-auto px-6 relative z-10">
-          <div className="bg-card border border-line rounded-2xl overflow-hidden shadow-2xl">
-            {/* Table Header */}
-            <div className="grid grid-cols-3 bg-bg2 border-b border-line">
-              <div className="p-5 font-bold text-mut text-sm uppercase tracking-wider">Feature</div>
-              <div className="p-5 font-bold text-accent text-sm uppercase tracking-wider text-center">Pixeltech</div>
-              <div className="p-5 font-bold text-mut text-sm uppercase tracking-wider text-center">Others</div>
+          
+          <h3 className="text-2xl font-bold mb-2">The Booked Solid System</h3>
+          <p className="text-mut mb-6">Automated lead follow-up + booking, fully done-for-you.</p>
+          
+          <div className="flex flex-wrap items-end gap-2 mb-8 border-b border-line pb-8">
+            <span className="text-4xl md:text-5xl font-extrabold">$1,250</span>
+            <span className="text-mut font-medium mb-1 md:mb-2">setup</span>
+            <span className="text-mut font-medium mb-1 md:mb-2 mx-2">+</span>
+            <span className="text-3xl md:text-4xl font-bold text-accent">$650</span>
+            <span className="text-mut font-medium mb-1 md:mb-2">/mo to run & optimize</span>
+          </div>
+          
+          <div className="grid md:grid-cols-2 gap-8 mb-8">
+            <div>
+              <h4 className="font-bold text-lg mb-4 text-ink">What's Included (Setup)</h4>
+              <ul className="space-y-3">
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-accent shrink-0 mt-0.5" />
+                  <span className="text-mut text-sm">Under 60-second SMS/Email follow-up build</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-accent shrink-0 mt-0.5" />
+                  <span className="text-mut text-sm">Automated booking calendar integration</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-accent shrink-0 mt-0.5" />
+                  <span className="text-mut text-sm">Missed-call text-back setup</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-accent shrink-0 mt-0.5" />
+                  <span className="text-mut text-sm">Go-live in ~7 days</span>
+                </li>
+              </ul>
             </div>
-            
-            {/* Table Rows */}
-            {comparisonRows.map((row, idx) => (
-              <motion.div
-                key={row.feature}
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.05 }}
-                className={`grid grid-cols-3 border-b border-line/50 last:border-b-0 ${
-                  idx % 2 === 0 ? 'bg-card' : 'bg-bg2/50'
-                }`}
-              >
-                <div className="p-5 text-[0.95rem] font-medium">{row.feature}</div>
-                <div className="p-5 flex items-center justify-center">
-                  <CheckCircle2 className="w-5 h-5 text-accent drop-shadow-[0_0_6px_rgba(0,242,254,0.5)]" />
-                </div>
-                <div className="p-5 flex items-center justify-center">
-                  {row.them === true ? (
-                    <CheckCircle2 className="w-5 h-5 text-green-500/50" />
-                  ) : row.them === false ? (
-                    <X className="w-5 h-5 text-red-500/50" />
-                  ) : (
-                    <span className="text-mut text-sm">{row.them}</span>
-                  )}
-                </div>
-              </motion.div>
-            ))}
+            <div>
+              <h4 className="font-bold text-lg mb-4 text-ink">What's Included (Monthly)</h4>
+              <ul className="space-y-3">
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-accent shrink-0 mt-0.5" />
+                  <span className="text-mut text-sm">Premium reliable hosting for the system</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-accent shrink-0 mt-0.5" />
+                  <span className="text-mut text-sm">Continuous system optimizations</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-accent shrink-0 mt-0.5" />
+                  <span className="text-mut text-sm">Dedicated priority support for your clinic</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-accent shrink-0 mt-0.5" />
+                  <span className="text-mut text-sm">Lead flow monitoring</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+          
+          <div className="p-6 bg-[#0a0a0f] border border-line rounded-2xl">
+            <h4 className="font-bold text-lg mb-2 flex items-center gap-2">
+              Optional Add-on
+              <span className="text-[0.65rem] bg-white/10 text-white/80 px-2 py-0.5 rounded-full uppercase tracking-wider">Only if you need it</span>
+            </h4>
+            <p className="text-mut text-sm">
+              <strong className="text-ink">High-Converting Landing Page.</strong> If your website isn't converting clicks into leads, we'll build one. +$500–$1,500 one-time.
+              <br/><br/>
+              <span className="text-ink text-[0.8rem] font-bold uppercase tracking-wider">Free SSL & Premium Hosting Included:</span> We automatically provision secure SSL certificates and host your new landing page on blazing-fast infrastructure. You don't have to worry about security warnings or server costs.
+            </p>
+          </div>
+          
+          <div className="mt-8 text-center">
+            <Link to="/booking" className="btn-primary w-full md:w-auto inline-block text-lg py-4 px-12">
+              Book My Free Lead-Leak Audit
+            </Link>
           </div>
         </div>
-      </section>
-
-      {/* CTA */}
-      <section className="text-center bg-[radial-gradient(700px_360px_at_50%_120%,rgba(0,242,254,0.15),transparent_70%)] py-[86px] border-b border-line bg-bg">
-        <div className="max-w-[780px] mx-auto px-6 text-center">
-          <h2 className="mb-3.5 text-4xl md:text-5xl">
-            Stop paying for templates.<br />
-            <span className="text-gradient">Invest in systems.</span>
-          </h2>
-          <p className="max-w-[580px] mx-auto mt-5 mb-8 text-mut text-[1.1rem]">
-            Book a free consultation and we'll build a custom quote based on your exact needs — no generic packages.
-          </p>
-          <Link to="/booking" className="btn-primary inline-block text-lg shadow-[0_0_20px_rgba(0,242,254,0.2)]">
-            Get My Custom Quote
-          </Link>
-        </div>
-      </section>
+      </div>
     </main>
   );
 }

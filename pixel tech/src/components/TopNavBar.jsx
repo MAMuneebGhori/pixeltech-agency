@@ -7,10 +7,10 @@ export default function TopNavBar() {
   const [mobileOpen, setMobileOpen] = React.useState(false);
 
   const navLinks = [
-    { href: '/#problem', label: 'The Problem' },
-    { href: '/#what-we-do', label: 'What We Do' },
-    { href: '/#pricing', label: 'Pricing' },
-    { href: '/#testimonials', label: 'Proof' },
+    { path: '/how-it-works', label: 'How It Works' },
+    { path: '/pricing', label: 'Pricing' },
+    { path: '/proof', label: 'Proof' },
+    { path: '/about', label: 'About' },
   ];
 
   return (
@@ -24,15 +24,22 @@ export default function TopNavBar() {
         {/* Desktop Navigation */}
         {!isBookingPage && (
           <nav className="hidden lg:flex items-center gap-1">
-            {navLinks.map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
-                className="text-[0.85rem] font-medium px-3.5 py-2 rounded-lg transition-all duration-300 text-mut hover:text-ink hover:bg-white/5"
-              >
-                {link.label}
-              </a>
-            ))}
+            {navLinks.map((link) => {
+              const isActive = location.pathname === link.path;
+              return (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  className={`text-[0.85rem] font-medium px-3.5 py-2 rounded-lg transition-all duration-300 ${
+                    isActive
+                      ? 'text-accent bg-accent/10'
+                      : 'text-mut hover:text-ink hover:bg-white/5'
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
           </nav>
         )}
 
@@ -75,16 +82,23 @@ export default function TopNavBar() {
           }`}
         >
           <nav className="px-6 pb-6 pt-2 flex flex-col gap-1 border-t border-line/50">
-            {navLinks.map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
-                onClick={() => setMobileOpen(false)}
-                className="text-[0.95rem] font-medium px-4 py-3 rounded-xl transition-all duration-300 text-mut hover:text-ink hover:bg-white/5"
-              >
-                {link.label}
-              </a>
-            ))}
+            {navLinks.map((link) => {
+              const isActive = location.pathname === link.path;
+              return (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  onClick={() => setMobileOpen(false)}
+                  className={`text-[0.95rem] font-medium px-4 py-3 rounded-xl transition-all duration-300 ${
+                    isActive
+                      ? 'text-accent bg-accent/10 border border-accent/20'
+                      : 'text-mut hover:text-ink hover:bg-white/5'
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
             <div className="mt-3 pt-3 border-t border-line/50">
               <Link
                 to="/booking"

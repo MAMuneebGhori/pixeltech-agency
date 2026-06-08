@@ -1,163 +1,96 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import ThreeStepsCards from '../components/ThreeStepsCards';
-import Testimonial1 from '../components/ui/testimonial-1';
+import { Clock, Calendar, CheckCircle2, Bot, PhoneCall, ArrowRight } from 'lucide-react';
 
 export default function HowItWorks() {
-  const timeline = [
+  const steps = [
     {
-      phase: 'Phase 1',
-      title: 'Discovery & Strategy',
-      duration: 'Week 1',
-      items: [
-        'Deep-dive into your business model and goals',
-        'Audit current digital infrastructure',
-        'Map out the technical architecture',
-        'Define KPIs and conversion targets'
-      ]
+      icon: <Clock className="w-6 h-6 text-[#05050A]" />,
+      title: "Under 60-Second Response",
+      description: "When a new lead fills out a form on your website or Facebook ad, our system detects it instantly. Within 60 seconds, it sends a personalized, conversational SMS and Email to the lead.",
+      delay: 0.1
     },
     {
-      phase: 'Phase 2',
-      title: 'Engineering & Build',
-      duration: 'Weeks 2–4',
-      items: [
-        'Custom React/Next.js frontend development',
-        'Backend API and database architecture',
-        'Automation engine integration',
-        'CRM and third-party connections'
-      ]
+      icon: <Bot className="w-6 h-6 text-[#05050A]" />,
+      title: "AI Qualification",
+      description: "The system engages the lead in a natural conversation to answer basic questions, pre-qualify their needs, and guide them towards booking a consultation.",
+      delay: 0.2
     },
     {
-      phase: 'Phase 3',
-      title: 'Launch & Optimize',
-      duration: 'Week 5+',
-      items: [
-        'QA testing and performance audits',
-        'Go-live deployment and monitoring',
-        'Monthly conversion optimization',
-        'Ongoing technical support and scaling'
-      ]
+      icon: <Calendar className="w-6 h-6 text-[#05050A]" />,
+      title: "Automated Booking",
+      description: "Leads are provided a direct link to your calendar. They pick a time that works for them without you or your front desk having to play phone tag.",
+      delay: 0.3
+    },
+    {
+      icon: <PhoneCall className="w-6 h-6 text-[#05050A]" />,
+      title: "Missed Call Text-Back",
+      description: "If your clinic misses a call during a busy rush or after hours, the system immediately texts the caller: 'Hi, we just missed your call! How can we help you today?'",
+      delay: 0.4
+    },
+    {
+      icon: <CheckCircle2 className="w-6 h-6 text-[#05050A]" />,
+      title: "No-Show Prevention",
+      description: "Automated email and SMS reminders are sent 24 hours and 1 hour before the appointment, drastically reducing your no-show rate.",
+      delay: 0.5
     }
   ];
 
   return (
-    <main className="min-h-screen bg-bg">
-      {/* Hero */}
-      <section className="pt-[140px] pb-[80px] relative overflow-hidden border-b border-line">
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-accent/8 blur-[150px] rounded-full pointer-events-none" />
+    <main className="min-h-screen pt-[120px] pb-[80px] bg-bg2 relative overflow-hidden">
+      <div className="max-w-[800px] mx-auto px-6 relative z-10">
         
-        <motion.div 
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, ease: 'easeOut' }}
-          className="max-w-[780px] mx-auto px-6 text-center relative z-10"
-        >
-          <div className="w-full text-left">
-            <span className="text-accent text-sm font-bold tracking-[0.15em] uppercase border-l-2 border-accent pl-4 inline-block mb-6">
-              Our Process
-            </span>
-          </div>
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6">
-            How we turn ideas into{' '}
-            <span className="text-gradient">revenue machines.</span>
+        <div className="text-center mb-16">
+          <h1 className="text-4xl md:text-5xl font-extrabold mb-6">
+            How the <span className="text-gradient">System Works</span>
           </h1>
-          <p className="text-mut text-lg max-w-[580px] mx-auto leading-relaxed">
-            A battle-tested, three-phase process that takes you from concept to a fully automated, high-converting digital system.
+          <p className="text-mut text-[1.1rem] md:text-[1.2rem] max-w-[600px] mx-auto leading-relaxed">
+            We don't just give you software. We build a fully automated, invisible employee for your clinic that works 24/7.
           </p>
-        </motion.div>
-      </section>
-
-      <ThreeStepsCards />
-
-      {/* Detailed Timeline */}
-      <section className="py-[100px] border-b border-line bg-bg2 relative overflow-hidden">
-        <div className="absolute top-1/2 left-0 -translate-y-1/2 w-[600px] h-[600px] bg-accent/5 blur-[120px] rounded-full pointer-events-none" />
-        
-        <div className="max-w-[780px] mx-auto px-6 text-center relative z-10 mb-16">
-          <div className="w-full text-left">
-            <span className="text-accent text-sm font-bold tracking-[0.15em] uppercase border-l-2 border-accent pl-4 inline-block mb-6">
-              The Timeline
-            </span>
-          </div>
-          <h2 className="mb-3.5">
-            From zero to live in <span className="text-gradient">5 weeks.</span>
-          </h2>
         </div>
 
-        <div className="max-w-[900px] mx-auto px-6 relative z-10">
-          {/* Vertical line */}
-          <div className="absolute left-1/2 top-0 bottom-0 w-px bg-line hidden md:block" />
+        {/* Vertical Timeline */}
+        <div className="relative">
+          {/* Central Line */}
+          <div className="absolute left-6 md:left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-accent/50 via-line to-transparent md:-translate-x-1/2" />
 
-          <div className="grid gap-12 md:gap-0">
-            {timeline.map((phase, idx) => (
-              <motion.div
-                key={phase.phase}
-                initial={{ opacity: 0, y: 40 }}
+          {steps.map((step, index) => {
+            const isEven = index % 2 === 0;
+            return (
+              <motion.div 
+                key={index}
+                initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-50px" }}
-                transition={{ delay: idx * 0.15, type: 'spring', stiffness: 80 }}
-                className={`relative md:grid md:grid-cols-2 md:gap-12 ${idx > 0 ? 'md:mt-16' : ''}`}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ delay: step.delay, type: 'spring', stiffness: 100, damping: 20 }}
+                className={`relative flex items-center mb-12 md:mb-20 ${isEven ? 'md:flex-row' : 'md:flex-row-reverse'}`}
               >
-                {/* Dot on timeline */}
-                <div className="hidden md:block absolute left-1/2 top-6 -translate-x-1/2 w-4 h-4 rounded-full bg-accent shadow-[0_0_15px_rgba(0,242,254,0.5)] z-10" />
-                
-                {idx % 2 === 0 ? (
-                  <>
-                    <div className="md:text-right md:pr-12">
-                      <span className="text-accent text-sm font-bold tracking-wide uppercase">{phase.phase} · {phase.duration}</span>
-                      <h3 className="text-2xl font-bold mt-2 mb-4">{phase.title}</h3>
-                      <ul className="grid gap-3">
-                        {phase.items.map((item, i) => (
-                          <li key={i} className="text-mut text-[0.95rem] leading-relaxed flex items-start gap-2 md:justify-end">
-                            <span className="md:order-2 text-accent/50 mt-1 shrink-0">›</span>
-                            <span className="md:order-1">{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                    <div className="hidden md:block" />
-                  </>
-                ) : (
-                  <>
-                    <div className="hidden md:block" />
-                    <div className="md:pl-12">
-                      <span className="text-accent text-sm font-bold tracking-wide uppercase">{phase.phase} · {phase.duration}</span>
-                      <h3 className="text-2xl font-bold mt-2 mb-4">{phase.title}</h3>
-                      <ul className="grid gap-3">
-                        {phase.items.map((item, i) => (
-                          <li key={i} className="text-mut text-[0.95rem] leading-relaxed flex items-start gap-2">
-                            <span className="text-accent/50 mt-1 shrink-0">›</span>
-                            <span>{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </>
-                )}
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
+                {/* Timeline Node */}
+                <div className="absolute left-6 md:left-1/2 w-12 h-12 rounded-full bg-gradient-brand shadow-[0_0_20px_rgba(0,242,254,0.4)] flex items-center justify-center z-10 -translate-x-1/2">
+                  {step.icon}
+                </div>
 
-      <Testimonial1 />
-      
-      {/* CTA */}
-      <section className="text-center bg-[radial-gradient(700px_360px_at_50%_120%,rgba(0,242,254,0.15),transparent_70%)] py-[86px] border-b border-line bg-bg">
-        <div className="max-w-[780px] mx-auto px-6 text-center">
-          <h2 className="mb-3.5 text-4xl md:text-5xl">
-            Ready to get started?<br />
-            <span className="text-gradient">Let's map it out.</span>
-          </h2>
-          <p className="max-w-[580px] mx-auto mt-5 mb-8 text-mut text-[1.1rem]">
-            Book a free 15-minute strategy call. We'll review your current setup and show you exactly how the system works for your business.
-          </p>
-          <Link to="/booking" className="btn-primary inline-block text-lg shadow-[0_0_20px_rgba(0,242,254,0.2)]">
-            Book My Free Strategy Call
+                {/* Content Card */}
+                <div className={`w-full pl-16 md:pl-0 md:w-1/2 ${isEven ? 'md:pr-12 text-left md:text-right' : 'md:pl-12 text-left'}`}>
+                  <div className="bg-card border border-line p-6 rounded-2xl shadow-lg hover:border-accent/40 transition-colors">
+                    <h3 className="text-xl font-bold mb-3 text-ink">{step.title}</h3>
+                    <p className="text-mut leading-relaxed text-[0.95rem]">{step.description}</p>
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+        
+        <div className="mt-16 text-center">
+          <Link to="/booking" className="btn-primary inline-flex items-center gap-2 text-lg px-8 py-4">
+            Book My Free Lead-Leak Audit
+            <ArrowRight className="w-5 h-5" />
           </Link>
         </div>
-      </section>
+
+      </div>
     </main>
   );
 }
