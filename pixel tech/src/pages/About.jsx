@@ -2,10 +2,12 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ShieldCheck, Target, Zap } from 'lucide-react';
+import SEO from '../components/SEO';
 
 export default function About() {
   return (
     <main className="min-h-screen pt-[120px] pb-[80px] bg-bg relative overflow-hidden">
+      <SEO title="About Us" description="Learn how Pixeltech Agency helps clinics grow predictably." url="/about" />
       {/* Background Glow */}
       <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-accent/5 blur-[120px] rounded-full pointer-events-none" />
 
@@ -14,6 +16,7 @@ export default function About() {
         {/* Header Section */}
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-1.5 text-[0.65rem] tracking-[0.18em] uppercase text-accent border border-accent/20 rounded-full px-3.5 py-1.5 mb-6 bg-accent/5">
+            <img src="/avatar-2.jpg" alt="Client" className="w-16 h-16 rounded-full border-2 border-accent mx-auto mb-4 object-cover" loading="lazy" />
             <span className="w-1 h-1 rounded-full bg-accent animate-pulse" />
             Our Mission
           </div>

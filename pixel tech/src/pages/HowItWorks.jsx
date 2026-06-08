@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Clock, Calendar, CheckCircle2, Bot, PhoneCall, ArrowRight } from 'lucide-react';
+import SEO from '../components/SEO';
 
 export default function HowItWorks() {
   const steps = [
@@ -39,6 +40,7 @@ export default function HowItWorks() {
 
   return (
     <main className="min-h-screen pt-[120px] pb-[80px] bg-bg2 relative overflow-hidden">
+      <SEO title="How It Works" description="See exactly how our automated follow-up system integrates with your clinic." url="/how-it-works" />
       <div className="max-w-[800px] mx-auto px-6 relative z-10">
         
         <div className="text-center mb-16">

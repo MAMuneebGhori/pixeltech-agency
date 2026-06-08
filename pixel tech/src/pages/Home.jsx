@@ -5,10 +5,12 @@ import HeroSection from '../components/HeroSection';
 import TestimonialsGrid from '../components/TestimonialsGrid';
 import FinalCtaSection from '../components/FinalCtaSection';
 import { MessageCircle, CalendarDays, CheckCircle2 } from 'lucide-react';
+import SEO from '../components/SEO';
 
 export default function Home() {
   return (
     <main>
+      <SEO title="Home" url="/" />
       <HeroSection />
 
       {/* SECTION 2 — The Problem */}

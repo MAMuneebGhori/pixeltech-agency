@@ -12,6 +12,7 @@ import ScrollToTop from './components/ScrollToTop';
 import Chatbot from './components/Chatbot';
 import CookieConsent from './components/CookieConsent';
 import Admin from './pages/Admin';
+import NotFound from './pages/NotFound';
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
           <Route path="/about" element={<About />} />
           <Route path="/booking" element={<Booking />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
         <Footer />
         <Chatbot />

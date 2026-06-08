@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
+import SEO from '../components/SEO';
 
 // Services removed, form is hardcoded to the single offer
 
@@ -91,7 +92,8 @@ export default function Booking() {
   };
 
   return (
-    <main className="min-h-screen pt-[90px] pb-[50px] flex items-center justify-center relative overflow-hidden">
+    <main className="pt-[100px] lg:pt-[120px] pb-[80px] bg-bg relative overflow-hidden">
+      <SEO title="Book a Call" description="Schedule your free lead-leak audit." url="/booking" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(0,242,254,0.06),transparent_50%)]" />
 
       <div className="max-w-[520px] w-full mx-auto px-5 relative z-10">

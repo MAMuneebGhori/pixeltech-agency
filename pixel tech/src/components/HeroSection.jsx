@@ -8,7 +8,7 @@ export default function HeroSection() {
     "booked appointments.",
     "predictable growth.",
     "automated systems.",
-    "loyal patients."
+    "loyal clients."
   ];
   const [currentTextIndex, setCurrentTextIndex] = useState(0);
 
@@ -79,7 +79,7 @@ export default function HeroSection() {
           >
             {/* Badge removed as requested */}
             
-            <motion.h1 variants={h1Variants} className="mb-6 text-[1.4rem] sm:text-2xl md:text-3xl lg:text-4xl font-extrabold leading-[1.3] tracking-tight">
+            <motion.h1 variants={h1Variants} className="mb-6 text-xl sm:text-2xl md:text-3xl lg:text-[2rem] font-extrabold leading-[1.3] tracking-tight">
               <span className="block mb-2">
                 Turn the leads your clinic already pays for into{' '}
                 <span className="inline-block min-h-[1.5em] align-top">

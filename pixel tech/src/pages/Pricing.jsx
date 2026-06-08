@@ -2,10 +2,12 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { CheckCircle2 } from 'lucide-react';
+import SEO from '../components/SEO';
 
 export default function Pricing() {
   return (
     <main className="min-h-screen pt-[120px] pb-[80px] bg-bg relative overflow-hidden">
+      <SEO title="Pricing" description="Transparent, flat-fee pricing for automated lead follow-up systems." url="/pricing" />
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-accent/5 blur-[120px] rounded-full pointer-events-none" />
 
       <div className="max-w-[800px] mx-auto px-6 relative z-10">

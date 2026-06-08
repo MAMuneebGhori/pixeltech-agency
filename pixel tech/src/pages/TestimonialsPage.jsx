@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import TestimonialsGrid from '../components/TestimonialsGrid';
+import SEO from '../components/SEO';
 import { Star, MessageSquarePlus } from 'lucide-react';
 
 export default function TestimonialsPage() {
@@ -63,6 +65,7 @@ export default function TestimonialsPage() {
 
   return (
     <main className="min-h-screen pt-[120px] pb-[80px] bg-bg relative overflow-hidden">
+      <SEO title="Client Results" description="Read reviews from clinic owners who stopped losing leads." url="/proof" />
       {/* Background Gradients */}
       <div className="absolute top-1/4 left-0 w-[500px] h-[500px] bg-accent/5 blur-[100px] rounded-full pointer-events-none -translate-x-1/2" />
       <div className="absolute bottom-1/4 right-0 w-[500px] h-[500px] bg-accent/5 blur-[100px] rounded-full pointer-events-none translate-x-1/2" />
