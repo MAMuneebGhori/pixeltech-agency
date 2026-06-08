@@ -50,12 +50,8 @@ export default function Booking() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.firstName || !formData.email || !formData.phone) {
-      alert('Please fill out your name, email, and WhatsApp number.');
-      return;
-    }
-    if (formData.selectedPackage === 'core_and_landing_page' && !formData.website) {
-      alert('Please enter your existing Website Domain so we know what needs replacing.');
+    if (!formData.firstName || !formData.email || !formData.phone || !formData.website) {
+      alert('Please fill out your name, email, phone, and website.');
       return;
     }
     if (!formData.selectedPackage) {
@@ -205,14 +201,14 @@ export default function Booking() {
               {/* Website */}
               <div className="grid gap-1.5 transition-all duration-300">
                 <label className="text-[0.7rem] font-semibold text-mut uppercase tracking-[0.08em]">
-                  Website Domain {formData.selectedPackage === 'core_and_landing_page' && <span className="text-red-500">*</span>}
+                  Website Domain <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="url"
                   name="website"
                   value={formData.website}
                   onChange={handleInputChange}
-                  required={formData.selectedPackage === 'core_and_landing_page'}
+                  required
                   className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-accent/60 focus:bg-white/[0.06] transition-all duration-300 text-ink placeholder-white/20"
                   placeholder="https://yoursite.com"
                 />
