@@ -30,7 +30,7 @@ export default function TestimonialsGrid() {
   ];
 
   return (
-    <section className="py-[120px] border-b border-line bg-bg overflow-hidden relative">
+    <section id="testimonials" className="py-[120px] border-b border-line bg-bg overflow-hidden relative">
       <div className="absolute top-1/2 right-0 -translate-y-1/2 w-[800px] h-[800px] bg-accent/5 blur-[120px] rounded-full pointer-events-none" />
       
       <div className="max-w-[1280px] mx-auto px-[22px] relative z-10">

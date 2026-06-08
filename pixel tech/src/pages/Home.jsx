@@ -12,7 +12,7 @@ export default function Home() {
       <HeroSection />
 
       {/* SECTION 2 — The Problem */}
-      <section className="py-[100px] border-b border-line bg-bg2 relative overflow-hidden">
+      <section id="problem" className="py-[100px] border-b border-line bg-bg2 relative overflow-hidden">
         <div className="max-w-[800px] mx-auto px-6 relative z-10 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -36,7 +36,7 @@ export default function Home() {
       </section>
 
       {/* SECTION 3 — What We Do */}
-      <section className="py-[100px] border-b border-line bg-bg relative overflow-hidden">
+      <section id="what-we-do" className="py-[100px] border-b border-line bg-bg relative overflow-hidden">
          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-accent/5 blur-[120px] rounded-full pointer-events-none" />
          
          <div className="max-w-[1080px] mx-auto px-6 relative z-10">
@@ -89,7 +89,7 @@ export default function Home() {
       </section>
 
       {/* SECTION 4 — The Offer + Upsell */}
-      <section className="py-[100px] border-b border-line bg-bg2 relative overflow-hidden">
+      <section id="pricing" className="py-[100px] border-b border-line bg-bg2 relative overflow-hidden">
         <div className="max-w-[800px] mx-auto px-6 relative z-10">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-extrabold mb-4">One system. <span className="text-gradient">One simple price.</span></h2>

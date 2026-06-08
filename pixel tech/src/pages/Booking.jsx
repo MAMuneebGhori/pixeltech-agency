@@ -1,20 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
-const SERVICES = [
-  { label: 'Full-Stack Web App', tag: 'Popular', details: 'End-to-end custom web application tailored to your business needs.', needsWebsite: false },
-  { label: 'Custom Web Applications', tag: 'Code', details: 'Bespoke React/Next.js frontends paired with robust Node.js backends.', needsWebsite: false },
-  { label: 'Introduce AI to Your Website', tag: 'Trending', details: 'Integrate smart AI agents, chatbots, and automation into your platform.', needsWebsite: true },
-  { label: 'Take Your Web to the Next Level', tag: null, details: 'Upgrade your current site with modern tech, animations, and blazing fast performance.', needsWebsite: true },
-  { label: 'Automated Lead Generation', tag: null, details: 'Set up automated funnels and systems to capture and convert more leads.', needsWebsite: true },
-  { label: '60-Second Lead Response', tag: 'Speed', details: 'Instant SMS + email to every new lead, day or night.', needsWebsite: true },
-  { label: 'Self-Booking Infrastructure', tag: 'Growth', details: 'Leads pick a slot themselves. Confirmations and reminders go out automatically.', needsWebsite: true },
-  { label: 'Lead Reactivation', tag: 'Sales', details: 'Automated win-back campaign for old leads and past inquiries.', needsWebsite: true },
-  { label: 'Lightning Performance', tag: 'Perf', details: 'Optimized Core Web Vitals, edge caching, and semantic HTML.', needsWebsite: true },
-  { label: 'Dashboard & Analytics', tag: 'Data', details: 'One clear view of traffic, leads, response times, and bookings.', needsWebsite: true },
-  { label: 'Pixeltech AI Chatbot', tag: 'New', details: 'A fully functional conversational AI to capture leads and qualify them automatically.', needsWebsite: true },
-  { label: 'Custom Solution', tag: null, details: 'Have a unique idea? We will architect and build a bespoke solution for you.', needsWebsite: false },
-];
+// Services removed, form is hardcoded to the single offer
 
 export default function Booking() {
   const location = useLocation();
@@ -29,22 +16,14 @@ export default function Booking() {
     company: '',
     budget: '',
     website: '',
-    goal: ''
+    goal: '',
+    wantsLandingPage: false
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const dropdownRef = useRef(null);
 
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const serviceFromUrl = params.get('service');
-    if (serviceFromUrl) {
-      const match = SERVICES.find(s => s.label === serviceFromUrl);
-      if (match) {
-        setSelected(match.label);
-      }
-    }
-  }, [location.search]);
+  // Search params logic removed as it's a single service
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -57,11 +36,7 @@ export default function Booking() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleSelect = (service) => {
-    setSelected(service);
-    setIsOpen(false);
-    setHoveredIdx(-1);
-  };
+// Selection logic removed
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -69,13 +44,12 @@ export default function Booking() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const needsWebsite = selected && SERVICES.find(s => s.label === selected)?.needsWebsite;
-    if (!formData.firstName || !formData.email || !formData.phone || !selected) {
-      alert('Please fill out your name, email, WhatsApp number, and select a service.');
+    if (!formData.firstName || !formData.email || !formData.phone) {
+      alert('Please fill out your name, email, and WhatsApp number.');
       return;
     }
-    if (needsWebsite && !formData.website) {
-      alert('Please enter your Website Domain — it is required for the selected service.');
+    if (formData.wantsLandingPage && !formData.website) {
+      alert('Please enter your existing Website Domain so we know what needs replacing.');
       return;
     }
 
@@ -98,7 +72,7 @@ export default function Booking() {
           company: formData.company,
           budget: formData.budget,
           website: formData.website,
-          service: selected,
+          service: formData.wantsLandingPage ? 'Booked Solid System + Landing Page' : 'Booked Solid System',
           goal: formData.goal,
           source: 'Booking Form'
         })
@@ -169,118 +143,31 @@ export default function Booking() {
                   </div>
                 </div>
 
-              {/* Select Service */}
-              <div className="grid gap-1.5">
-                <label className="text-[0.7rem] font-semibold text-mut uppercase tracking-[0.08em]">Select Service <span className="text-red-500">*</span></label>
-                <div className="relative" ref={dropdownRef}>
-                  <button
-                    type="button"
-                    onClick={() => setIsOpen(!isOpen)}
-                    className="w-full flex items-center justify-between bg-white/[0.04] border rounded-lg px-3 py-2.5 text-sm text-left transition-all duration-300 cursor-pointer focus:outline-none"
-                    style={{
-                      borderColor: isOpen ? 'rgba(0,242,254,0.5)' : 'rgba(255,255,255,0.08)',
-                      boxShadow: isOpen ? '0 0 12px rgba(0,242,254,0.06)' : 'none',
-                    }}
-                  >
-                    <span style={{ color: selected ? '#F8FAFC' : 'rgba(255,255,255,0.2)' }}>
-                      {selected || 'Choose your service...'}
-                    </span>
-                    <svg
-                      width="12" height="12" viewBox="0 0 16 16" fill="none"
-                      className="transition-transform duration-300 flex-shrink-0"
-                      style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
-                    >
-                      <path d="M4 6L8 10L12 6" stroke="rgba(148,163,184,0.6)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  </button>
-
-                  {/* Dropdown */}
-                  <div
-                    className="absolute z-50 top-[calc(100%+5px)] left-0 w-full rounded-lg border border-white/[0.08] overflow-hidden transition-all duration-300 origin-top"
-                    style={{
-                      background: 'linear-gradient(180deg, rgba(11,17,32,0.98), rgba(8,12,24,0.98))',
-                      backdropFilter: 'blur(24px)',
-                      boxShadow: '0 16px 48px rgba(0,0,0,0.5), 0 0 1px rgba(0,242,254,0.1)',
-                      opacity: isOpen ? 1 : 0,
-                      transform: isOpen ? 'scaleY(1) translateY(0)' : 'scaleY(0.95) translateY(-4px)',
-                      pointerEvents: isOpen ? 'auto' : 'none',
-                    }}
-                  >
-                    <div className="py-1 max-h-56 overflow-y-auto custom-scrollbar">
-                      {SERVICES.map((svc, index) => {
-                        const isSelected = selected === svc.label;
-                        const isHovered = hoveredIdx === index;
-                        return (
-                          <div key={svc.label}>
-                            <button
-                              type="button"
-                              onClick={() => handleSelect(svc.label)}
-                              onMouseEnter={() => setHoveredIdx(index)}
-                              onMouseLeave={() => setHoveredIdx(-1)}
-                              className="w-full flex items-center gap-2 px-3.5 py-2 text-left text-[0.8rem] transition-all duration-200 cursor-pointer relative"
-                              style={{
-                                color: isSelected ? '#00F2FE' : isHovered ? '#E2E8F0' : '#94A3B8',
-                                background: isHovered ? 'rgba(0,242,254,0.06)' : isSelected ? 'rgba(0,242,254,0.04)' : 'transparent',
-                              }}
-                            >
-                              <div
-                                className="absolute left-0 top-[25%] bottom-[25%] w-[2px] rounded-full transition-all duration-300"
-                                style={{
-                                  background: isSelected || isHovered ? '#00F2FE' : 'transparent',
-                                  boxShadow: isSelected || isHovered ? '0 0 6px rgba(0,242,254,0.4)' : 'none',
-                                }}
-                              />
-                              <span className="flex-1">{svc.label}</span>
-                              {svc.tag && (
-                                <span className="text-[0.55rem] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full"
-                                  style={{
-                                    background: svc.tag === 'Popular' ? 'rgba(0,242,254,0.12)' : svc.tag === 'Trending' ? 'rgba(168,85,247,0.12)' : 'rgba(16,185,129,0.12)',
-                                    color: svc.tag === 'Popular' ? '#00F2FE' : svc.tag === 'Trending' ? '#A855F7' : '#10B981',
-                                  }}
-                                >
-                                  {svc.tag}
-                                </span>
-                              )}
-                              {isSelected && (
-                                <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
-                                  <path d="M4 8L7 11L12 5" stroke="#00F2FE" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                </svg>
-                              )}
-                            </button>
-                            {index < SERVICES.length - 1 && (
-                              <div
-                                className="mx-3.5 h-px transition-all duration-300"
-                                style={{
-                                  background: isHovered
-                                    ? 'linear-gradient(90deg, transparent, rgba(0,242,254,0.25), transparent)'
-                                    : 'rgba(255,255,255,0.04)',
-                                  boxShadow: isHovered ? '0 0 4px rgba(0,242,254,0.1)' : 'none',
-                                }}
-                              />
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
+              {/* Services Selection */}
+              <div className="grid gap-3">
+                <label className="text-[0.7rem] font-semibold text-mut uppercase tracking-[0.08em]">Select Options <span className="text-red-500">*</span></label>
+                
+                {/* Booked Solid System (Required) */}
+                <label className="flex items-start gap-3 p-4 rounded-xl border border-accent/30 bg-accent/5 cursor-not-allowed">
+                  <div className="mt-0.5">
+                    <input type="checkbox" checked readOnly className="w-4 h-4 accent-accent" />
                   </div>
-                </div>
-              </div>
-
-              {/* Service Details (Shows when a service is selected) */}
-              <div className={`overflow-hidden transition-all duration-300 ${selected ? 'max-h-24 opacity-100' : 'max-h-0 opacity-0 -mt-2'}`}>
-                {selected && (
-                  <div className="flex items-start gap-2.5 bg-accent/[0.04] border border-accent/20 rounded-lg px-3.5 py-3 shadow-[inset_0_0_20px_rgba(0,242,254,0.02)]">
-                    <div className="mt-[2px] text-accent">
-                      <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                        <path d="M8 15A7 7 0 108 1a7 7 0 000 14zm0-10v3m0 3h.01" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                    </div>
-                    <p className="text-[0.72rem] text-mut leading-relaxed">
-                      <strong className="text-accent font-semibold mr-1.5 uppercase tracking-wider text-[0.68rem]">Includes:</strong> 
-                      {SERVICES.find(s => s.label === selected)?.details}
-                    </p>
+                  <div>
+                    <div className="font-bold text-ink text-sm">The Booked Solid System <span className="ml-2 text-[0.6rem] uppercase tracking-wider text-accent border border-accent/30 px-2 py-0.5 rounded-full">Core</span></div>
+                    <div className="text-mut text-xs mt-1 leading-relaxed">Automated 60-second follow-up & self-booking infrastructure.</div>
                   </div>
-                )}
+                </label>
+
+                {/* Landing Page Add-on (Optional) */}
+                <label className={`flex items-start gap-3 p-4 rounded-xl border cursor-pointer transition-colors ${formData.wantsLandingPage ? 'border-accent/40 bg-accent/[0.03]' : 'border-white/10 bg-white/[0.02] hover:border-white/20'}`}>
+                  <div className="mt-0.5">
+                    <input type="checkbox" name="wantsLandingPage" checked={formData.wantsLandingPage} onChange={(e) => setFormData({...formData, wantsLandingPage: e.target.checked})} className="w-4 h-4 accent-accent" />
+                  </div>
+                  <div>
+                    <div className="font-bold text-ink text-sm">Include High-Converting Landing Page <span className="ml-2 text-[0.6rem] uppercase tracking-wider text-mut border border-line px-2 py-0.5 rounded-full">Optional Add-on</span></div>
+                    <div className="text-mut text-xs mt-1 leading-relaxed">We'll build, host, and secure a new landing page for your clinic.</div>
+                  </div>
+                </label>
               </div>
 
               {/* Email and Phone */}
@@ -314,22 +201,20 @@ export default function Booking() {
               </div>
 
               {/* Website */}
-              {selected && SERVICES.find(s => s.label === selected)?.needsWebsite && (
-                <div className="grid gap-1.5 animate-in fade-in slide-in-from-top-1 duration-300">
-                  <label className="text-[0.7rem] font-semibold text-mut uppercase tracking-[0.08em]">
-                    Website Domain <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="url"
-                    name="website"
-                    value={formData.website}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-accent/60 focus:bg-white/[0.06] transition-all duration-300 text-ink placeholder-white/20"
-                    placeholder="https://yoursite.com"
-                  />
-                </div>
-              )}
+              <div className="grid gap-1.5 transition-all duration-300">
+                <label className="text-[0.7rem] font-semibold text-mut uppercase tracking-[0.08em]">
+                  Website Domain {formData.wantsLandingPage && <span className="text-red-500">*</span>}
+                </label>
+                <input
+                  type="url"
+                  name="website"
+                  value={formData.website}
+                  onChange={handleInputChange}
+                  required={formData.wantsLandingPage}
+                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-accent/60 focus:bg-white/[0.06] transition-all duration-300 text-ink placeholder-white/20"
+                  placeholder="https://yoursite.com"
+                />
+              </div>
 
               {/* Goal */}
               <div className="grid gap-1.5">

@@ -4,6 +4,14 @@ import { Link, useLocation } from 'react-router-dom';
 export default function TopNavBar() {
   const location = useLocation();
   const isBookingPage = location.pathname === '/booking';
+  const [mobileOpen, setMobileOpen] = React.useState(false);
+
+  const navLinks = [
+    { href: '/#problem', label: 'The Problem' },
+    { href: '/#what-we-do', label: 'What We Do' },
+    { href: '/#pricing', label: 'Pricing' },
+    { href: '/#testimonials', label: 'Proof' },
+  ];
 
   return (
     <header className="sticky top-0 z-50 bg-[#05050A]/80 backdrop-blur-md border-b border-line w-full">
@@ -13,6 +21,21 @@ export default function TopNavBar() {
           <span className="hidden sm:inline">Pixeltech Agency</span>
         </Link>
         
+        {/* Desktop Navigation */}
+        {!isBookingPage && (
+          <nav className="hidden lg:flex items-center gap-1">
+            {navLinks.map((link) => (
+              <a
+                key={link.href}
+                href={link.href}
+                className="text-[0.85rem] font-medium px-3.5 py-2 rounded-lg transition-all duration-300 text-mut hover:text-ink hover:bg-white/5"
+              >
+                {link.label}
+              </a>
+            ))}
+          </nav>
+        )}
+
         <div className="flex items-center gap-4">
           {/* CTA Button */}
           {isBookingPage ? (
@@ -26,8 +49,54 @@ export default function TopNavBar() {
               <div className="absolute inset-0 w-[150%] h-full -translate-x-full group-hover:translate-x-full bg-gradient-to-r from-transparent via-white/60 to-transparent transition-transform duration-700 ease-in-out pointer-events-none skew-x-[-20deg]" />
             </Link>
           )}
+
+          {/* Mobile Hamburger */}
+          {!isBookingPage && (
+            <button
+              className="lg:hidden text-ink hover:text-accent transition-colors p-1"
+              onClick={() => setMobileOpen(!mobileOpen)}
+              aria-label="Toggle navigation menu"
+            >
+              <div className="w-6 h-6 flex flex-col justify-center items-center gap-1.5">
+                <span className={`block w-5 h-0.5 bg-current transition-transform ${mobileOpen ? 'rotate-45 translate-y-2' : ''}`} />
+                <span className={`block w-5 h-0.5 bg-current transition-opacity ${mobileOpen ? 'opacity-0' : ''}`} />
+                <span className={`block w-5 h-0.5 bg-current transition-transform ${mobileOpen ? '-rotate-45 -translate-y-2' : ''}`} />
+              </div>
+            </button>
+          )}
         </div>
       </div>
+
+      {/* Mobile Menu */}
+      {!isBookingPage && (
+        <div
+          className={`lg:hidden overflow-hidden transition-all duration-500 ease-in-out ${
+            mobileOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
+          }`}
+        >
+          <nav className="px-6 pb-6 pt-2 flex flex-col gap-1 border-t border-line/50">
+            {navLinks.map((link) => (
+              <a
+                key={link.href}
+                href={link.href}
+                onClick={() => setMobileOpen(false)}
+                className="text-[0.95rem] font-medium px-4 py-3 rounded-xl transition-all duration-300 text-mut hover:text-ink hover:bg-white/5"
+              >
+                {link.label}
+              </a>
+            ))}
+            <div className="mt-3 pt-3 border-t border-line/50">
+              <Link
+                to="/booking"
+                onClick={() => setMobileOpen(false)}
+                className="btn-primary w-full text-center text-[0.95rem] py-3"
+              >
+                Book My Free Audit
+              </Link>
+            </div>
+          </nav>
+        </div>
+      )}
     </header>
   );
 }
