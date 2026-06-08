@@ -4,6 +4,21 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 
 export default function HeroSection() {
+  const rotatingText = [
+    "booked appointments.",
+    "predictable growth.",
+    "automated systems.",
+    "high-converting websites."
+  ];
+  const [currentTextIndex, setCurrentTextIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTextIndex((prev) => (prev + 1) % rotatingText.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
   const catchphrases = [];
 
   const containerVariants = {
@@ -64,9 +79,23 @@ export default function HeroSection() {
           >
             {/* Badge removed as requested */}
             
-            <motion.h1 variants={h1Variants} className="mb-6 text-[1.75rem] sm:text-3xl md:text-4xl lg:text-[2.5rem] xl:text-[3.2rem] font-extrabold leading-[1.3] tracking-tight">
+            <motion.h1 variants={h1Variants} className="mb-6 text-[1.5rem] sm:text-2xl md:text-3xl lg:text-[2.2rem] xl:text-[2.8rem] font-extrabold leading-[1.3] tracking-tight">
               <span className="block mb-2">
-                Turn the leads your clinic already pays for into <span className="text-gradient">booked appointments.</span>
+                Turn the leads your clinic already pays for into <br className="hidden md:block" />
+                <span className="text-gradient inline-flex items-center min-w-[300px]">
+                  <AnimatePresence mode="wait">
+                    <motion.span
+                      key={currentTextIndex}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.3 }}
+                      className="inline-block"
+                    >
+                      {rotatingText[currentTextIndex]}
+                    </motion.span>
+                  </AnimatePresence>
+                </span>
               </span>
             </motion.h1>
             
