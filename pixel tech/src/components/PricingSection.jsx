@@ -246,7 +246,7 @@ export default function PricingSection() {
                         className="text-5xl font-extrabold"
                       />
                     </span>
-                    <span className="text-xl text-mut font-medium line-through">
+                    <span className="text-xl text-mut font-medium relative before:content-[''] before:absolute before:-left-1 before:-right-1 before:top-1/2 before:-translate-y-1/2 before:h-0.5 before:bg-mut before:z-10">
                       $
                       <NumberFlow
                         value={originalPrice}
