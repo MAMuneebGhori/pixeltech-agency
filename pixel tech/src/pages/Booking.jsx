@@ -7,6 +7,10 @@ import SEO from '../components/SEO';
 
 export default function Booking() {
   const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const initialService = searchParams.get('service');
+  const defaultPackage = (initialService === 'core' || initialService === 'core_and_landing_page') ? initialService : '';
+
   const [isOpen, setIsOpen] = useState(false);
   const [selected, setSelected] = useState('');
   const [hoveredIdx, setHoveredIdx] = useState(-1);
@@ -19,7 +23,7 @@ export default function Booking() {
     budget: '',
     website: '',
     goal: '',
-    selectedPackage: ''
+    selectedPackage: defaultPackage
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -28,12 +32,6 @@ export default function Booking() {
   // Search params logic removed as it's a single service
 
   useEffect(() => {
-    const searchParams = new URLSearchParams(location.search);
-    const service = searchParams.get('service');
-    if (service === 'core' || service === 'core_and_landing_page') {
-      setFormData(prev => ({ ...prev, selectedPackage: service }));
-    }
-
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setIsOpen(false);
@@ -42,7 +40,7 @@ export default function Booking() {
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [location.search]);
+  }, []);
 
 // Selection logic removed
 
@@ -159,7 +157,7 @@ export default function Booking() {
               {/* Services Selection */}
               <div className="grid gap-1.5">
                 <label className="text-[0.7rem] font-semibold text-mut uppercase tracking-[0.08em]">Select Options <span className="text-red-500">*</span></label>
-                <Select required value={formData.selectedPackage} onValueChange={(val) => setFormData({...formData, selectedPackage: val})}>
+                <Select required value={formData.selectedPackage || undefined} onValueChange={(val) => setFormData({...formData, selectedPackage: val})}>
                   <SelectTrigger className="w-full h-[42px] bg-white/[0.04] border-white/[0.08] rounded-lg px-3 py-2.5 text-sm focus-visible:border-accent/60 focus-visible:bg-white/[0.06] transition-all duration-300 text-ink">
                     <SelectValue placeholder="Choose a package..." />
                   </SelectTrigger>
