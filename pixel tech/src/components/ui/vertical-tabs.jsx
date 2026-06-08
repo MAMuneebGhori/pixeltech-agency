@@ -88,7 +88,7 @@ export default function VerticalTabs() {
   };
 
   return (
-    <section className="w-full bg-bg py-8 md:py-16 lg:py-24">
+    <section className="w-full bg-transparent py-8 md:py-16 lg:py-24">
       <div className="w-full max-w-[1200px] mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
           {/* Left Column: Content */}

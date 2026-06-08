@@ -20,7 +20,7 @@ export default function HowItWorks() {
         </div>
       </div>
 
-      <div className="relative z-10 w-full bg-bg">
+      <div className="relative z-10 w-full">
         <VerticalTabs />
       </div>
         
