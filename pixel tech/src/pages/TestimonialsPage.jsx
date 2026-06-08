@@ -1,9 +1,35 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Star } from 'lucide-react';
+import { Star, MessageSquarePlus } from 'lucide-react';
 
 export default function TestimonialsPage() {
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [reviewSubmitted, setReviewSubmitted] = useState(false);
+  const [formData, setFormData] = useState({ name: '', clinic: '', review: '', rating: 5 });
+
+  const handleReviewSubmit = (e) => {
+    e.preventDefault();
+    setReviewSubmitted(true);
+    
+    // Attempt to save to backend silently as a feedback lead
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+    fetch(`${apiUrl}/api/leads`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        firstName: formData.name,
+        lastName: formData.clinic,
+        email: 'review@pixeltech.agency', // Placeholder for DB constraints
+        phone: 'N/A',
+        budget: `Rating: ${formData.rating} Stars`,
+        goal: `CLIENT REVIEW: ${formData.review}`,
+        service: 'Client Feedback',
+        source: 'Review Form'
+      })
+    }).catch(err => console.error('Failed to submit review lead:', err));
+  };
+
   const testimonials = [
     {
       quote: "We were spending thousands on ads every month, but leads would sit for hours before anyone replied. After PixelTech installed the system, every lead started getting an immediate response, even after business hours. Our booking rate doubled in the first 30 days.",
@@ -97,9 +123,78 @@ export default function TestimonialsPage() {
           ))}
         </div>
 
-        <div className="text-center">
+        {/* Review Submission Form */}
+        <div className="mb-20 max-w-[800px] mx-auto bg-card border border-line rounded-3xl p-8 md:p-12 text-center shadow-[0_0_40px_rgba(0,0,0,0.5)]">
+          {!showReviewForm && !reviewSubmitted ? (
+            <div>
+              <MessageSquarePlus className="w-12 h-12 text-accent mx-auto mb-6" />
+              <h3 className="text-2xl font-bold mb-4">Are you a PixelTech client?</h3>
+              <p className="text-mut mb-8 max-w-[500px] mx-auto">
+                We'd love to hear about your experience. Share your results and help other clinic owners discover predictable growth.
+              </p>
+              <button 
+                onClick={() => setShowReviewForm(true)}
+                className="btn-primary px-8 py-3 bg-transparent border-2 border-accent text-accent hover:bg-accent hover:text-[#05050A]"
+              >
+                Write a Review
+              </button>
+            </div>
+          ) : reviewSubmitted ? (
+            <div className="py-8 animate-in fade-in zoom-in duration-300">
+              <div className="w-16 h-16 rounded-full bg-accent/20 flex items-center justify-center mx-auto mb-6">
+                <Star className="w-8 h-8 text-accent fill-accent" />
+              </div>
+              <h3 className="text-2xl font-bold mb-2">Thank you!</h3>
+              <p className="text-mut">Your review has been securely submitted. It will be published shortly after moderation.</p>
+            </div>
+          ) : (
+            <form onSubmit={handleReviewSubmit} className="text-left animate-in fade-in slide-in-from-bottom-4 duration-300">
+              <h3 className="text-2xl font-bold mb-8 text-center">Submit Your Review</h3>
+              
+              <div className="grid md:grid-cols-2 gap-6 mb-6">
+                <div>
+                  <label className="block text-xs font-bold text-mut uppercase tracking-wider mb-2">Your Name</label>
+                  <input required type="text" placeholder="Dr. John Doe" className="w-full bg-bg border border-line rounded-xl px-4 py-3 text-ink focus:border-accent outline-none transition-colors" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-mut uppercase tracking-wider mb-2">Clinic Name</label>
+                  <input required type="text" placeholder="Lumina Med Spa" className="w-full bg-bg border border-line rounded-xl px-4 py-3 text-ink focus:border-accent outline-none transition-colors" value={formData.clinic} onChange={(e) => setFormData({...formData, clinic: e.target.value})} />
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <label className="block text-xs font-bold text-mut uppercase tracking-wider mb-2">Rating</label>
+                <div className="flex gap-2 bg-bg border border-line rounded-xl px-4 py-3 w-max">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button 
+                      type="button" 
+                      key={star} 
+                      onClick={() => setFormData({...formData, rating: star})}
+                      className="hover:scale-110 transition-transform focus:outline-none"
+                    >
+                      <Star className={`w-8 h-8 ${star <= formData.rating ? 'text-yellow-400 fill-yellow-400 shadow-yellow-400 drop-shadow-md' : 'text-mut'}`} />
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mb-8">
+                <label className="block text-xs font-bold text-mut uppercase tracking-wider mb-2">Your Experience</label>
+                <textarea required rows="4" placeholder="How has PixelTech's automated system impacted your clinic?" className="w-full bg-bg border border-line rounded-xl px-4 py-3 text-ink focus:border-accent outline-none resize-none transition-colors" value={formData.review} onChange={(e) => setFormData({...formData, review: e.target.value})}></textarea>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-4">
+                <button type="submit" className="btn-primary sm:flex-1 py-4 text-lg">Submit Review</button>
+                <button type="button" onClick={() => setShowReviewForm(false)} className="px-8 py-4 border border-line rounded-full text-mut hover:text-ink hover:bg-white/5 transition-colors font-bold">Cancel</button>
+              </div>
+            </form>
+          )}
+        </div>
+
+        <div className="text-center pb-8 border-t border-line/50 pt-16">
+          <h2 className="text-3xl font-bold mb-6">Ready to stop losing leads?</h2>
           <Link to="/booking" className="btn-primary inline-flex items-center gap-2 text-lg px-8 py-4">
-            Get Results Like These
+            Book My Free Lead-Leak Audit
           </Link>
         </div>
 

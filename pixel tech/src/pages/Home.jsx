@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import HeroSection from '../components/HeroSection';
 import TestimonialsGrid from '../components/TestimonialsGrid';
-import Booking from './Booking';
+import FinalCtaSection from '../components/FinalCtaSection';
 import { MessageCircle, CalendarDays, CheckCircle2 } from 'lucide-react';
 
 export default function Home() {
@@ -39,9 +39,7 @@ export default function Home() {
 
       <TestimonialsGrid />
 
-      <div id="booking-section">
-        <Booking />
-      </div>
+      <FinalCtaSection />
     </main>
   );
 }
