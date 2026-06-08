@@ -1,142 +1,278 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useId, useRef, useState } from "react";
 import { Link } from 'react-router-dom';
-import { Button } from './ui/button';
-import * as PricingCard from './ui/pricing-card';
-import { CheckCircle2, Terminal, Layers, Cpu } from 'lucide-react';
+import { motion } from "framer-motion";
+import NumberFlow from "@number-flow/react";
+import { CheckCheck, Zap } from "lucide-react";
+import { TimelineContent } from "./ui/timeline-animation";
+import { VerticalCutReveal } from "./ui/vertical-cut-reveal";
+import { cn } from "../lib/utils";
+
+const PricingSwitch = ({
+  button1,
+  button2,
+  onSwitch,
+  className,
+  layoutId,
+}) => {
+  const [selected, setSelected] = useState("0");
+  const uniqueId = useId();
+  const switchLayoutId = layoutId || `switch-${uniqueId}`;
+
+  const handleSwitch = (value) => {
+    setSelected(value);
+    onSwitch(value);
+  };
+
+  return (
+    <div
+      className={cn(
+        "relative z-10 w-full flex rounded-full bg-bg2 border border-line p-1 shadow-inner",
+        className,
+      )}
+    >
+      <button
+        onClick={() => handleSwitch("0")}
+        className={cn(
+          "relative z-10 w-full sm:h-14 h-10 rounded-full sm:px-6 px-3 sm:py-2 py-1 font-medium transition-colors outline-none",
+          selected === "0"
+            ? "text-ink"
+            : "text-mut hover:text-ink",
+        )}
+      >
+        {selected === "0" && (
+          <motion.span
+            layoutId={switchLayoutId}
+            className="absolute top-0 left-0 sm:h-14 h-10 w-full rounded-full border border-line shadow-md bg-card"
+            transition={{ type: "spring", stiffness: 500, damping: 30 }}
+          />
+        )}
+        <span className="relative">{button1}</span>
+      </button>
+
+      <button
+        onClick={() => handleSwitch("1")}
+        className={cn(
+          "relative z-10 w-full sm:h-14 h-10 flex-shrink-0 rounded-full sm:px-6 px-3 sm:py-2 py-1 font-medium transition-colors outline-none",
+          selected === "1"
+            ? "text-ink"
+            : "text-mut hover:text-ink",
+        )}
+      >
+        {selected === "1" && (
+          <motion.span
+            layoutId={switchLayoutId}
+            className="absolute top-0 left-0 sm:h-14 h-10 w-full rounded-full border border-line shadow-md bg-card"
+            transition={{ type: "spring", stiffness: 500, damping: 30 }}
+          />
+        )}
+        <span className="relative flex justify-center items-center gap-2">
+          {button2}
+        </span>
+      </button>
+    </div>
+  );
+};
 
 export default function PricingSection() {
-  const plans = [
-    {
-      icon: <Terminal />,
-      name: 'Digital Presence',
-      description: 'Perfect for startups needing an immediate, high-performing footprint.',
-      price: '$1.5k',
-      period: ' starting',
-      variant: 'outline',
-      features: [
-        'High-converting Landing Page',
-        'Next.js & React Framework',
-        'Core Web Vitals Optimization',
-        'Lead Capture Integration',
-        'Basic SEO Setup'
-      ],
+  const [hasLandingPage, setHasLandingPage] = useState(false);
+  const pricingRef = useRef(null);
+
+  const revealVariants = {
+    visible: (i) => ({
+      y: 0,
+      opacity: 1,
+      filter: "blur(0px)",
+      transition: {
+        delay: i * 0.3,
+        duration: 0.5,
+      },
+    }),
+    hidden: {
+      filter: "blur(10px)",
+      y: -20,
+      opacity: 0,
     },
-    {
-      icon: <Layers />,
-      name: 'Pixeltech System',
-      description: 'The complete automated machine for established businesses.',
-      badge: 'Popular',
-      price: 'Custom',
-      original: '',
-      period: ' quote',
-      variant: 'accent',
-      features: [
-        'Custom Full-Stack Web App',
-        'React/Next.js Frontend & Node Backend',
-        'Booked Solid Automation Integration',
-        'Missed-Call Text-Back & SMS Follow-up',
-        'Self-Booking Calendar Infrastructure',
-        'Dashboard + Monthly Optimization'
-      ],
+  };
+
+  const timelineVaraints = {
+    visible: (i) => ({
+      y: 0,
+      opacity: 1,
+      filter: "blur(0px)",
+      transition: {
+        delay: i * 0.1,
+        duration: 0.5,
+      },
+    }),
+    hidden: {
+      filter: "blur(10px)",
+      y: -20,
+      opacity: 0,
     },
-    {
-      icon: <Cpu />,
-      name: 'Enterprise Growth',
-      description: 'Uncapped scaling with dedicated architecture and AI integrations.',
-      price: '$4k',
-      period: '/month',
-      variant: 'outline',
-      features: [
-        'Everything in Pixeltech System',
-        'Dedicated Technical Account Manager',
-        'Custom Data Dashboards & Analytics',
-        'Proprietary AI Automations',
-        'Enterprise Security & Compliance',
-        'Priority 24/7 SLA Support'
-      ],
-    },
+  };
+
+  const toggleLandingPage = (value) =>
+    setHasLandingPage(parseInt(value) === 1);
+
+  const currentPrice = hasLandingPage ? 2500 : 1500;
+  const originalPrice = hasLandingPage ? 3800 : 2500;
+
+  const features = [
+    "Custom Full-Stack Web Architecture",
+    "Booked Solid Follow-up Automation",
+    "Self-Booking Calendar Infrastructure",
+    "Missed-Call Text-Back System",
+    "Lead Reactivation Workflows",
+    hasLandingPage ? "High-Converting Landing Page" : "Core System Integration",
+    hasLandingPage ? "Premium Web Hosting & SSL" : "Standard Cloud Setup",
+    "24/7 Technical Support",
   ];
 
   return (
-    <section id="pricing" className="py-[86px] border-b border-line bg-bg2 relative overflow-hidden">
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-accent/5 blur-[150px] rounded-full pointer-events-none" />
+    <div className="w-full min-h-screen relative border-b border-line bg-bg overflow-hidden" ref={pricingRef}>
+      <div className="pt-24 pb-16 px-4 relative">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-accent/5 blur-[150px] rounded-full pointer-events-none" />
+        
+        <div className="max-w-4xl mx-auto text-center relative z-10">
+          <TimelineContent
+            as="div"
+            animationNum={0}
+            timelineRef={pricingRef}
+            customVariants={revealVariants}
+            className="flex items-center justify-center mb-6"
+          >
+            <Zap className="h-5 w-5 text-accent fill-accent mr-2" />
+            <span className="text-accent font-bold tracking-[0.15em] uppercase">The Solution</span>
+          </TimelineContent>
 
-      <div className="max-w-[780px] mx-auto px-[22px] text-center relative z-10">
-        <div className="w-full text-left">
-          <span className="text-accent text-sm font-bold tracking-[0.15em] uppercase border-l-2 border-accent pl-4 inline-block mb-6">
-            The Solution
-          </span>
-        </div>
-        <h2 className="mb-3.5 text-3xl md:text-4xl font-extrabold tracking-tight">
-          Enterprise engineering. <span className="text-gradient">Accessible.</span>
-        </h2>
-        <p className="text-mut text-[1.05rem]">
-          Stop piecing together disparate tools. Get a unified, scalable system.
-        </p>
-      </div>
-      
-      <div className="max-w-[1280px] mx-auto px-[22px] relative z-10 mt-[54px]">
-        <div className="grid gap-6 md:grid-cols-3">
-          {plans.map((plan, idx) => (
-            <motion.div
-               key={plan.name}
-               initial={{ opacity: 0, y: 40 }}
-               whileInView={{ opacity: 1, y: 0 }}
-               viewport={{ once: true, margin: "-50px" }}
-               transition={{ delay: idx * 0.1, type: 'spring', stiffness: 80, damping: 20 }}
+          <h1 className="md:text-5xl sm:text-4xl text-3xl font-extrabold text-ink mb-6 leading-[1.2] tracking-tight">
+            <VerticalCutReveal
+              splitBy="words"
+              staggerDuration={0.15}
+              staggerFrom="first"
+              reverse={true}
+              containerClassName="justify-center"
+              transition={{
+                type: "spring",
+                stiffness: 250,
+                damping: 40,
+                delay: 0.4,
+              }}
             >
-              <PricingCard.Card className="h-full">
-                <PricingCard.Header>
-                  <PricingCard.Plan>
-                    <PricingCard.PlanName>
-                      {plan.icon}
-                      <span>{plan.name}</span>
-                    </PricingCard.PlanName>
-                    {plan.badge && (
-                      <PricingCard.Badge>{plan.badge}</PricingCard.Badge>
-                    )}
-                  </PricingCard.Plan>
-                  
-                  <PricingCard.Price>
-                    <PricingCard.MainPrice>{plan.price}</PricingCard.MainPrice>
-                    <PricingCard.Period>{plan.period}</PricingCard.Period>
-                  </PricingCard.Price>
-                  
-                  <Link to="/booking" className="block mt-4">
-                    <Button
-                      variant={plan.variant}
-                      className="w-full font-bold tracking-wider uppercase text-[0.8rem]"
-                    >
-                      Book a Technical Audit
-                    </Button>
-                  </Link>
-                </PricingCard.Header>
+              Enterprise engineering. Accessible.
+            </VerticalCutReveal>
+          </h1>
 
-                <PricingCard.Body>
-                  <PricingCard.Description>
-                    {plan.description}
-                  </PricingCard.Description>
-                  
-                  <PricingCard.Separator />
-                  
-                  <PricingCard.List>
-                    {plan.features.map((item) => (
-                      <PricingCard.ListItem key={item}>
-                        <CheckCircle2
-                          className="text-accent h-4 w-4 shrink-0 mt-0.5"
-                          aria-hidden="true"
-                        />
-                        <span>{item}</span>
-                      </PricingCard.ListItem>
-                    ))}
-                  </PricingCard.List>
-                </PricingCard.Body>
-              </PricingCard.Card>
-            </motion.div>
-          ))}
+          <TimelineContent
+            as="p"
+            animationNum={1}
+            timelineRef={pricingRef}
+            customVariants={revealVariants}
+            className="text-lg md:text-xl text-mut max-w-2xl mx-auto"
+          >
+            Stop piecing together disparate tools. Get a unified, scalable system that converts traffic into booked appointments.
+          </TimelineContent>
         </div>
       </div>
-    </section>
+
+      {/* Product Features */}
+      <div className="px-4 pb-24 relative z-10">
+        <div className="max-w-5xl mx-auto bg-bg2 border border-line rounded-[2rem] p-8 md:p-12 shadow-2xl">
+          <div className="grid md:grid-cols-2 md:gap-16 gap-10 items-start">
+            <div>
+              <TimelineContent
+                as="h3"
+                animationNum={2}
+                timelineRef={pricingRef}
+                customVariants={revealVariants}
+                className="text-3xl font-extrabold text-ink mb-8"
+              >
+                What's included
+              </TimelineContent>
+
+              <div className="space-y-5">
+                {features.map((feature, index) => (
+                  <TimelineContent
+                    key={index}
+                    as="div"
+                    animationNum={3 + index}
+                    timelineRef={pricingRef}
+                    customVariants={timelineVaraints}
+                    className="flex items-center"
+                  >
+                    <div className="w-6 h-6 bg-accent/20 rounded-full flex items-center justify-center mr-4 shrink-0">
+                      <CheckCheck className="h-3.5 w-3.5 text-accent" />
+                    </div>
+                    <span className="text-mut font-medium">{feature}</span>
+                  </TimelineContent>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-10 lg:pl-8 lg:border-l border-line">
+              <TimelineContent
+                as="div"
+                animationNum={3}
+                timelineRef={pricingRef}
+                customVariants={revealVariants}
+              >
+                <h4 className="font-bold text-ink mb-2 text-lg">
+                  Optional Add-on
+                </h4>
+                <p className="text-sm text-mut mb-4">
+                  Need a website? We'll build a high-converting landing page optimized for lead capture.
+                </p>
+                <PricingSwitch
+                  button1="Core System"
+                  button2="+ Landing Page"
+                  onSwitch={toggleLandingPage}
+                  className="grid grid-cols-2 w-full"
+                />
+              </TimelineContent>
+
+              <TimelineContent
+                as="div"
+                animationNum={5}
+                timelineRef={pricingRef}
+                customVariants={revealVariants}
+                className="pt-6 border-t border-line"
+              >
+                <div className="flex flex-col mb-8">
+                  <div className="flex items-baseline gap-3 mb-2">
+                    <span className="text-5xl font-extrabold text-ink tracking-tight flex items-center">
+                      $
+                      <NumberFlow
+                        value={currentPrice}
+                        className="text-5xl font-extrabold"
+                      />
+                    </span>
+                    <span className="text-xl text-mut font-medium line-through">
+                      $
+                      <NumberFlow
+                        value={originalPrice}
+                      />
+                    </span>
+                  </div>
+                  <span className="text-sm text-mut font-medium uppercase tracking-wider">One-time flat fee</span>
+                </div>
+                
+                <Link to="/booking" className="block w-full">
+                  <TimelineContent
+                    as="button"
+                    animationNum={6}
+                    timelineRef={pricingRef}
+                    customVariants={revealVariants}
+                    className="btn-primary w-full h-14 rounded-xl font-bold tracking-wider uppercase text-sm"
+                  >
+                    Book a Technical Audit
+                  </TimelineContent>
+                </Link>
+                <p className="text-center text-xs text-mut mt-4">No hidden fees. Full ownership.</p>
+              </TimelineContent>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
