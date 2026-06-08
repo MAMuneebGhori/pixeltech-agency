@@ -19,17 +19,17 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-8">
           
           {/* Brand */}
-          <div className="flex flex-col items-center md:items-start gap-4">
+          <div className="flex flex-col items-start gap-4">
             <Link to="/" className="flex items-center gap-2 font-extrabold text-[1.05rem] text-ink hover:text-accent transition-colors">
               <img src="/Pixeltech.png" alt="PixelTech Logo" className="h-[34px] w-auto object-contain" />
               Pixeltech Agency
             </Link>
-            <p className="text-center md:text-left">Building Predictable Growth Systems.</p>
+            <p className="text-left text-mut">Building Predictable Growth Systems.</p>
             <p>© {new Date().getFullYear()} Pixeltech Agency.</p>
           </div>
 
           {/* Quick Links */}
-          <div className="flex flex-col items-center md:items-start gap-3">
+          <div className="flex flex-col items-start gap-3">
             <h4 className="text-ink font-bold text-sm uppercase tracking-wider mb-1">Quick Links</h4>
             {quickLinks.map((link) => (
               <Link
@@ -43,7 +43,7 @@ export default function Footer() {
           </div>
 
           {/* Contact & Social */}
-          <div className="flex flex-col items-center md:items-start gap-4">
+          <div className="flex flex-col items-start gap-4">
             <h4 className="text-ink font-bold text-sm uppercase tracking-wider mb-1">Get In Touch</h4>
             
             <a href="mailto:info@pixeltech.agency" className="hover:text-accent transition-colors font-medium">
@@ -92,7 +92,7 @@ export default function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="mt-12 pt-6 border-t border-line/50 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-[#4a4a5a]">
+        <div className="mt-12 pt-6 border-t border-line/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-xs text-mut">
           <p>Engineered with precision by Pixeltech Agency</p>
           <div className="flex gap-6">
             <Link to="/booking" className="hover:text-accent transition-colors">Book a Call</Link>
