@@ -5,12 +5,12 @@ export default function Footer() {
   const [isWhatsAppOpen, setIsWhatsAppOpen] = useState(false);
   
   const quickLinks = [
-    { path: '/services', label: 'Services' },
+    { path: '/', label: 'Home' },
     { path: '/how-it-works', label: 'How It Works' },
     { path: '/pricing', label: 'Pricing' },
-    { path: '/testimonials', label: 'Testimonials' },
+    { path: '/proof', label: 'Testimonials' },
     { path: '/about', label: 'About Us' },
-    { path: '/help', label: 'More Info' },
+    { path: '/booking', label: 'Book a Call' },
   ];
 
   return (
@@ -95,7 +95,6 @@ export default function Footer() {
         <div className="mt-12 pt-6 border-t border-line/50 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-[#4a4a5a]">
           <p>Engineered with precision by Pixeltech Agency</p>
           <div className="flex gap-6">
-            <Link to="/help" className="hover:text-accent transition-colors">More Info</Link>
             <Link to="/booking" className="hover:text-accent transition-colors">Book a Call</Link>
           </div>
         </div>
