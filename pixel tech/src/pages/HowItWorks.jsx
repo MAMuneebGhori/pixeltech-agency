@@ -4,37 +4,64 @@ import { Link } from 'react-router-dom';
 import { Clock, Calendar, CheckCircle2, Bot, PhoneCall, ArrowRight } from 'lucide-react';
 import SEO from '../components/SEO';
 
+import RadialOrbitalTimeline from '../components/ui/radial-orbital-timeline';
+
 export default function HowItWorks() {
-  const steps = [
+  const timelineData = [
     {
-      icon: <Clock className="w-6 h-6 text-[#05050A]" />,
+      id: 1,
       title: "Under 60-Second Response",
-      description: "When a new lead fills out a form on your website or Facebook ad, our system detects it instantly. Within 60 seconds, it sends a personalized, conversational SMS and Email to the lead.",
-      delay: 0.1
+      date: "Step 1",
+      content: "When a new lead fills out a form on your website or Facebook ad, our system detects it instantly. Within 60 seconds, it sends a personalized, conversational SMS and Email to the lead.",
+      category: "Speed",
+      icon: Clock,
+      relatedIds: [2],
+      status: "completed",
+      energy: 100,
     },
     {
-      icon: <Bot className="w-6 h-6 text-[#05050A]" />,
+      id: 2,
       title: "AI Qualification",
-      description: "The system engages the lead in a natural conversation to answer basic questions, pre-qualify their needs, and guide them towards booking a consultation.",
-      delay: 0.2
+      date: "Step 2",
+      content: "The system engages the lead in a natural conversation to answer basic questions, pre-qualify their needs, and guide them towards booking a consultation.",
+      category: "Automation",
+      icon: Bot,
+      relatedIds: [1, 3],
+      status: "completed",
+      energy: 90,
     },
     {
-      icon: <Calendar className="w-6 h-6 text-[#05050A]" />,
+      id: 3,
       title: "Automated Booking",
-      description: "Leads are provided a direct link to your calendar. They pick a time that works for them without you or your front desk having to play phone tag.",
-      delay: 0.3
+      date: "Step 3",
+      content: "Leads are provided a direct link to your calendar. They pick a time that works for them without you or your front desk having to play phone tag.",
+      category: "Conversion",
+      icon: Calendar,
+      relatedIds: [2, 4],
+      status: "in-progress",
+      energy: 70,
     },
     {
-      icon: <PhoneCall className="w-6 h-6 text-[#05050A]" />,
+      id: 4,
       title: "Missed Call Text-Back",
-      description: "If your clinic misses a call during a busy rush or after hours, the system immediately texts the caller: 'Hi, we just missed your call! How can we help you today?'",
-      delay: 0.4
+      date: "Step 4",
+      content: "If your clinic misses a call during a busy rush or after hours, the system immediately texts the caller: 'Hi, we just missed your call! How can we help you today?'",
+      category: "Retention",
+      icon: PhoneCall,
+      relatedIds: [3, 5],
+      status: "pending",
+      energy: 50,
     },
     {
-      icon: <CheckCircle2 className="w-6 h-6 text-[#05050A]" />,
+      id: 5,
       title: "No-Show Prevention",
-      description: "Automated email and SMS reminders are sent 24 hours and 1 hour before the appointment, drastically reducing your no-show rate.",
-      delay: 0.5
+      date: "Step 5",
+      content: "Automated email and SMS reminders are sent 24 hours and 1 hour before the appointment, drastically reducing your no-show rate.",
+      category: "Reliability",
+      icon: CheckCircle2,
+      relatedIds: [4],
+      status: "pending",
+      energy: 30,
     }
   ];
 
@@ -52,37 +79,9 @@ export default function HowItWorks() {
           </p>
         </div>
 
-        {/* Vertical Timeline */}
-        <div className="relative">
-          {/* Central Line */}
-          <div className="absolute left-6 md:left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-accent/50 via-line to-transparent md:-translate-x-1/2" />
-
-          {steps.map((step, index) => {
-            const isEven = index % 2 === 0;
-            return (
-              <motion.div 
-                key={index}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-100px" }}
-                transition={{ delay: step.delay, type: 'spring', stiffness: 100, damping: 20 }}
-                className={`relative flex items-center mb-12 md:mb-20 ${isEven ? 'md:flex-row' : 'md:flex-row-reverse'}`}
-              >
-                {/* Timeline Node */}
-                <div className="absolute left-6 md:left-1/2 w-12 h-12 rounded-full bg-gradient-brand shadow-[0_0_20px_rgba(0,242,254,0.4)] flex items-center justify-center z-10 -translate-x-1/2">
-                  {step.icon}
-                </div>
-
-                {/* Content Card */}
-                <div className={`w-full pl-16 md:pl-0 md:w-1/2 ${isEven ? 'md:pr-12 text-left md:text-right' : 'md:pl-12 text-left'}`}>
-                  <div className="bg-card border border-line p-6 rounded-2xl shadow-lg hover:border-accent/40 transition-colors">
-                    <h3 className="text-xl font-bold mb-3 text-ink">{step.title}</h3>
-                    <p className="text-mut leading-relaxed text-[0.95rem]">{step.description}</p>
-                  </div>
-                </div>
-              </motion.div>
-            );
-          })}
+        {/* Radial Orbital Timeline */}
+        <div className="mt-12 -mx-6 md:mx-0">
+          <RadialOrbitalTimeline timelineData={timelineData} />
         </div>
         
         <div className="mt-16 text-center">
