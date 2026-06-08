@@ -145,46 +145,28 @@ export default function Booking() {
                 </div>
 
               {/* Services Selection */}
-              <div className="grid gap-3.5 my-2">
+              <div className="grid gap-3 mb-2">
                 <label className="text-[0.7rem] font-semibold text-mut uppercase tracking-[0.08em]">Select Options <span className="text-red-500">*</span></label>
                 
                 {/* Booked Solid System (Required) */}
-                <div className="relative group cursor-not-allowed">
-                  <div className="absolute -inset-[1px] rounded-2xl bg-gradient-to-r from-accent/40 to-accent2/40 opacity-100 blur-[2px]" />
-                  <div className="relative flex items-center gap-4 p-4 md:p-5 rounded-2xl bg-[#05050A] border border-accent/30">
-                    <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center shrink-0 border border-accent/20">
-                      <svg className="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                    </div>
-                    <div className="flex-1">
-                      <div className="font-bold text-ink text-[0.95rem] flex items-center gap-2 flex-wrap">The Booked Solid System <span className="text-[0.55rem] uppercase tracking-widest text-[#05050A] font-bold bg-accent px-2 py-0.5 rounded-full shadow-[0_0_8px_rgba(0,242,254,0.4)]">Core</span></div>
-                      <div className="text-mut text-xs mt-1 leading-relaxed">Automated 60-second follow-up & self-booking infrastructure.</div>
-                    </div>
-                    <div className="shrink-0">
-                      <div className="w-6 h-6 rounded-full bg-accent flex items-center justify-center shadow-[0_0_10px_rgba(0,242,254,0.5)]">
-                        <svg className="w-4 h-4 text-[#05050A]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>
-                      </div>
-                    </div>
+                <label className="flex items-start gap-3 p-4 rounded-xl border border-accent/30 bg-accent/5 cursor-not-allowed">
+                  <div className="mt-0.5 flex-shrink-0">
+                    <input type="checkbox" checked readOnly className="w-4 h-4 accent-accent" />
                   </div>
-                </div>
+                  <div>
+                    <div className="font-bold text-ink text-sm">The Booked Solid System <span className="ml-2 text-[0.6rem] uppercase tracking-wider text-accent border border-accent/30 px-2 py-0.5 rounded-full">Core</span></div>
+                    <div className="text-mut text-xs mt-1 leading-relaxed">Automated 60-second follow-up & self-booking infrastructure.</div>
+                  </div>
+                </label>
 
                 {/* Landing Page Add-on (Optional) */}
-                <label className="relative group cursor-pointer block">
-                  <div className={`absolute -inset-[1px] rounded-2xl transition-all duration-300 ${formData.wantsLandingPage ? 'bg-gradient-to-r from-accent/40 to-accent2/40 opacity-100 blur-[2px]' : 'bg-line opacity-50 group-hover:opacity-100'}`} />
-                  <div className={`relative flex items-center gap-4 p-4 md:p-5 rounded-2xl transition-all duration-300 ${formData.wantsLandingPage ? 'bg-[#05050A] border border-accent/30' : 'bg-[#0B1120] border border-transparent'}`}>
-                    <input type="checkbox" name="wantsLandingPage" checked={formData.wantsLandingPage} onChange={(e) => setFormData({...formData, wantsLandingPage: e.target.checked})} className="sr-only" />
-                    
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 border transition-colors ${formData.wantsLandingPage ? 'bg-accent/10 border-accent/20' : 'bg-white/5 border-white/10'}`}>
-                      <svg className={`w-5 h-5 transition-colors ${formData.wantsLandingPage ? 'text-accent' : 'text-mut'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-                    </div>
-                    <div className="flex-1">
-                      <div className="font-bold text-ink text-[0.95rem] flex items-center gap-2 flex-wrap">Landing Page Add-on <span className={`text-[0.55rem] uppercase tracking-widest font-bold px-2 py-0.5 rounded-full border transition-colors ${formData.wantsLandingPage ? 'text-accent border-accent/30 bg-accent/10' : 'text-mut border-line bg-white/5'}`}>Optional</span></div>
-                      <div className="text-mut text-xs mt-1 leading-relaxed">We'll build, host, and secure a high-converting landing page.</div>
-                    </div>
-                    <div className="shrink-0">
-                      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${formData.wantsLandingPage ? 'bg-accent border-accent shadow-[0_0_10px_rgba(0,242,254,0.5)]' : 'border-mut/50 bg-transparent'}`}>
-                        <svg className={`w-4 h-4 text-[#05050A] transition-transform duration-300 ${formData.wantsLandingPage ? 'scale-100' : 'scale-0'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>
-                      </div>
-                    </div>
+                <label className={`flex items-start gap-3 p-4 rounded-xl border cursor-pointer transition-colors ${formData.wantsLandingPage ? 'border-accent/40 bg-accent/[0.03]' : 'border-white/10 bg-white/[0.02] hover:border-white/20'}`}>
+                  <div className="mt-0.5 flex-shrink-0">
+                    <input type="checkbox" name="wantsLandingPage" checked={formData.wantsLandingPage} onChange={(e) => setFormData({...formData, wantsLandingPage: e.target.checked})} className="w-4 h-4 accent-accent" />
+                  </div>
+                  <div>
+                    <div className="font-bold text-ink text-sm">Include High-Converting Landing Page <span className="ml-2 text-[0.6rem] uppercase tracking-wider text-mut border border-line px-2 py-0.5 rounded-full">Optional Add-on</span></div>
+                    <div className="text-mut text-xs mt-1 leading-relaxed">We'll build, host, and secure a new landing page for your clinic.</div>
                   </div>
                 </label>
               </div>
