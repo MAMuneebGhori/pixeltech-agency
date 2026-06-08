@@ -81,8 +81,8 @@ export default function HeroSection() {
             
             <motion.h1 variants={h1Variants} className="mb-6 text-[1.5rem] sm:text-2xl md:text-3xl lg:text-[2.2rem] xl:text-[2.8rem] font-extrabold leading-[1.3] tracking-tight">
               <span className="block mb-2">
-                Turn the leads your clinic already pays for into <br className="hidden md:block" />
-                <span className="text-gradient inline-flex items-center min-w-[300px]">
+                Turn the leads your clinic already pays for into{' '}
+                <span className="text-gradient inline-block min-w-max">
                   <AnimatePresence mode="wait">
                     <motion.span
                       key={currentTextIndex}
@@ -104,7 +104,7 @@ export default function HeroSection() {
             </motion.p>
             
             <motion.div variants={itemVariants}>
-              <Link to="/booking" className="btn-primary inline-block px-8 py-4 text-lg">
+              <Link to="/booking" className="btn-primary inline-flex items-center justify-center whitespace-nowrap px-6 py-3.5 sm:px-8 sm:py-4 text-[0.95rem] sm:text-lg w-full sm:w-auto">
                 Book My Free Lead-Leak Audit
               </Link>
               <span className="block text-[0.85rem] text-mut mt-3 font-medium">
