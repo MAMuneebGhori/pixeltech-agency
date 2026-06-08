@@ -13,7 +13,7 @@ export default function Chatbot() {
       }
     }
     return [
-      { role: 'assistant', content: 'Hi there! I am the Pixeltech AI Assistant. What kind of project are you looking to build?' }
+      { role: 'assistant', content: 'Hi there! I am the Pixeltech AI Assistant. Are you looking to stop lead leakage and get an automated booking system installed?' }
     ];
   });
   const [input, setInput] = useState('');

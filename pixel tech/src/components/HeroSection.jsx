@@ -4,20 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 
 export default function HeroSection() {
-  const [currentLine, setCurrentLine] = useState(0);
-  const catchphrases = [
-    "wins you customers.",
-    "scales your revenue.",
-    "automates your growth.",
-    "crushes your competition."
-  ];
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentLine((prev) => (prev + 1) % catchphrases.length);
-    }, 3000);
-    return () => clearInterval(interval);
-  }, []);
+  const catchphrases = [];
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -46,12 +33,12 @@ export default function HeroSection() {
   };
 
   const marqueeItems = [
-    "⚡ Lightning-fast React/Next.js",
-    "⚙️ Custom Full-Stack Apps",
-    "🤖 Integrated Automation",
-    "📈 Conversion-Optimized",
-    "💻 API & Webhooks",
-    "🔒 Secure Infrastructure"
+    "⚡ Reply in under 60 seconds",
+    "📅 Auto-booking calendar",
+    "🔔 No-show reminders",
+    "📞 Missed-call text-back",
+    "♻️ Lead reactivation",
+    "✅ Live in ~7 days"
   ];
   
   // Double the array to ensure seamless looping
@@ -78,41 +65,21 @@ export default function HeroSection() {
             {/* Badge removed as requested */}
             
             <motion.h1 variants={h1Variants} className="mb-6 text-[1.75rem] sm:text-3xl md:text-4xl lg:text-[2.5rem] xl:text-[3.2rem] font-extrabold leading-[1.3] tracking-tight">
-              <span className="block mb-2 whitespace-nowrap">A website that actually</span>
-              
-              {/* CSS Grid hack: The invisible element naturally stretches the container to the perfect height for the longest text, even when it wraps to two lines! */}
-              <div className="grid text-[1.4rem] sm:text-2xl md:text-3xl lg:text-[2rem] xl:text-[2.5rem] mt-2">
-                <div className="invisible col-start-1 row-start-1 pointer-events-none select-none break-words" aria-hidden="true">
-                  crushes your competition.
-                </div>
-                
-                <div className="col-start-1 row-start-1 flex flex-col justify-start">
-                  <AnimatePresence mode="wait">
-                    <motion.div
-                      key={currentLine}
-                      initial={{ opacity: 0, y: 15, filter: 'blur(5px)' }}
-                      animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                      exit={{ opacity: 0, y: -15, filter: 'blur(5px)' }}
-                      transition={{ duration: 0.5, ease: 'easeOut' }}
-                      className="text-gradient w-full"
-                    >
-                      {catchphrases[currentLine]}
-                    </motion.div>
-                  </AnimatePresence>
-                </div>
-              </div>
+              <span className="block mb-2">
+                Turn the leads your clinic already pays for into <span className="text-gradient">booked appointments.</span>
+              </span>
             </motion.h1>
             
             <motion.p variants={itemVariants} className="text-[0.95rem] md:text-[1.05rem] max-w-[580px] mt-6 mb-10 text-mut leading-relaxed text-justify">
-              Stop relying on beautiful templates that don't convert. Pixeltech Agency builds lightning-fast, custom full-stack web applications integrated with our proprietary <strong>Pixeltech AI Chatbot</strong> — engineered to capture leads and close them automatically.
+              PixelTech installs an automated system for Med Spas & Clinics that follows up with every lead in under 60 seconds and books them straight into your calendar. Stop losing leads to slow follow-up.
             </motion.p>
             
             <motion.div variants={itemVariants}>
               <Link to="/booking" className="btn-primary inline-block px-8 py-4 text-lg">
-                Book My Free Strategy Audit
+                Book My Free Lead-Leak Audit
               </Link>
               <span className="block text-[0.85rem] text-mut mt-3 font-medium">
-                See how we scale businesses in a 15-min consultation.
+                See exactly where you're losing leads — in a free 15-min call.
               </span>
             </motion.div>
           </motion.div>

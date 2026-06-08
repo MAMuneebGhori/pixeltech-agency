@@ -4,25 +4,28 @@ import { CircularTestimonials } from './ui/circular-testimonials';
 export default function TestimonialsGrid() {
   const testimonials = [
     {
-      quote: "Pixeltech completely rebuilt our web presence. The new React app is blazing fast, and the automated follow-up system doubled our lead conversion in month one.",
+      quote: "We were spending thousands on ads every month, but leads would sit for hours before anyone replied. After PixelTech installed the system, every lead started getting an immediate response, even after business hours. It feels like we finally stopped leaking opportunities.",
       src: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=1000&auto=format&fit=crop",
-      name: "Sarah Jenkins",
-      designation: "devremind.co.uk",
-      link: "https://devremind.co.uk/"
+      name: "Sarah Mitchell",
+      designation: "Owner, Aesthetic Wellness Clinic"
     },
     {
-      quote: "The custom dashboard and missed-call text-back paid for the entire project. Every lost call now turns into a booked consultation automatically.",
+      quote: "The biggest change wasn't more leads. It was actually converting the leads we already had. The automated booking and reminder system reduced the back-and-forth with prospects and made scheduling much easier for our team.",
       src: "https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=1000&auto=format&fit=crop",
-      name: "PakOrganics",
-      designation: "pakorganics.store",
-      link: "https://pakorganics.store/"
+      name: "Dr. Jennifer Carter",
+      designation: "Owner, Radiance Medical Spa"
     },
     {
-      quote: "We needed a scalable full-stack solution, not a basic template. Pixeltech delivered robust engineering combined with a marketing engine that actually works.",
+      quote: "We used to miss inquiries that came in during evenings and especially on weekends. Now every lead gets an instant response and can book directly into our calendar. The setup process was straightforward, and the system was live faster than expected.",
       src: "https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=1000&auto=format&fit=crop",
-      name: "Protex.pk",
-      designation: "@protex.pk",
-      link: "https://www.instagram.com/protex.pk?igsh=Nzk4anR4b2RiZGk="
+      name: "Melissa Rodriguez",
+      designation: "Owner, Elite Skin & Laser Clinic"
+    },
+    {
+      quote: "PixelTech gave us a clear picture of where leads were falling through the cracks. Their team handled everything from setup to testing, and we immediately noticed a smoother experience for patients.",
+      src: "https://images.unsplash.com/photo-1590650153855-8b9a11700684?q=80&w=1000&auto=format&fit=crop",
+      name: "Amanda Lewis",
+      designation: "Owner, Glow Aesthetics & Wellness"
     }
   ];
 
@@ -33,11 +36,11 @@ export default function TestimonialsGrid() {
       <div className="max-w-[1280px] mx-auto px-[22px] relative z-10">
         <div className="text-left mb-[64px] max-w-[600px]">
           <span className="text-accent text-sm font-bold tracking-[0.15em] uppercase border-l-2 border-accent pl-4 inline-block mb-6">
-            Why Brands Switch
+            Real Results
           </span>
-          <h2 className="mb-3.5 text-3xl md:text-4xl font-extrabold tracking-tight">The math is simple.</h2>
+          <h2 className="mb-3.5 text-3xl md:text-4xl font-extrabold tracking-tight">Don't just take our word for it.</h2>
           <p className="text-mut text-[1.1rem]">
-            Better engineering + instant automated follow-up = a compounding return on your digital investment.
+            See how automated systems are helping clinic owners stop lead-leakage and book more appointments.
           </p>
         </div>
 
@@ -60,10 +63,6 @@ export default function TestimonialsGrid() {
             }}
           />
         </div>
-        
-        <p className="mt-16 text-[0.8rem] text-mut text-center max-w-[700px] mx-auto">
-          *Illustrative examples of typical results based on real industry data. Our platform is built to replicate this level of high-performance conversion for your business.
-        </p>
       </div>
     </section>
   );

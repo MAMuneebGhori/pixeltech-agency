@@ -2,78 +2,46 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import HeroSection from '../components/HeroSection';
+import TestimonialsGrid from '../components/TestimonialsGrid';
 import FinalCtaSection from '../components/FinalCtaSection';
-import { Code2, Rocket, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { MessageCircle, CalendarDays, CheckCircle2 } from 'lucide-react';
 
 export default function Home() {
   return (
     <main>
       <HeroSection />
 
-      {/* Unique Quick Intro Section */}
+      {/* SECTION 2 — The Problem */}
       <section className="py-[100px] border-b border-line bg-bg2 relative overflow-hidden">
-        <div className="max-w-[1080px] mx-auto px-6 relative z-10 grid md:grid-cols-2 gap-12 items-center">
+        <div className="max-w-[800px] mx-auto px-6 relative z-10 text-center">
           <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <span className="text-accent text-sm font-bold tracking-wide uppercase">The Pixeltech Difference</span>
-            <h2 className="text-3xl md:text-4xl font-extrabold mt-4 mb-6">
-              We don't build websites.<br/>
-              <span className="text-gradient">We engineer businesses.</span>
+            <h2 className="text-3xl md:text-5xl font-extrabold mb-6">
+              Your clinic doesn't have a lead problem.<br/>
+              <span className="text-gradient">It has a follow-up problem.</span>
             </h2>
-            <p className="text-mut text-[1.05rem] leading-relaxed mb-8 max-w-[480px]">
-              Stop settling for slow templates that don't convert. We engineer custom full-stack web applications wired with automation that turns traffic into booked calls on autopilot.
+            <p className="text-mut text-[1.1rem] md:text-[1.2rem] leading-relaxed mb-8">
+              You spend real money getting leads & then end up losing them. Nobody replies for hours, leads go cold at 9 PM, no-shows eat your calendar. 
+              <br/><br/>
+              Studies show 78% of customers buy from whoever responds first. We make sure that's you.
             </p>
-            <div className="flex flex-wrap gap-4">
-              <Link to="/services" className="btn-primary inline-flex items-center gap-2">
-                Explore Services <ArrowRight className="w-4 h-4" />
-              </Link>
-              <Link to="/how-it-works" className="px-6 py-3 rounded-full border border-line text-ink hover:border-accent hover:text-accent transition-all font-bold">
-                How It Works
-              </Link>
-            </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            className="relative"
-          >
-            <div className="absolute inset-0 bg-accent/10 blur-[80px] rounded-full pointer-events-none" />
-            <div className="bg-card border border-line rounded-2xl p-8 relative z-10 shadow-2xl">
-              <h3 className="text-xl font-bold mb-6">Why top agencies choose us:</h3>
-              <ul className="space-y-4">
-                {[
-                  'React & Next.js custom frontends',
-                  'Sub-second blazing fast load times',
-                  'Integrated automated SMS/Email workflows',
-                  'Enterprise-grade security & scaling',
-                ].map((item, i) => (
-                  <li key={i} className="flex items-center gap-3">
-                    <CheckCircle2 className="w-5 h-5 text-accent shrink-0" />
-                    <span className="text-ink font-medium">{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <Link to="/booking" className="btn-primary inline-flex items-center gap-2 text-lg px-8 py-4">
+              Book a Free Audit
+            </Link>
           </motion.div>
         </div>
       </section>
 
-      {/* Unique Highlights Section */}
+      {/* SECTION 3 — What We Do */}
       <section className="py-[100px] border-b border-line bg-bg relative overflow-hidden">
          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-accent/5 blur-[120px] rounded-full pointer-events-none" />
          
          <div className="max-w-[1080px] mx-auto px-6 relative z-10">
-           <div className="text-center mb-16">
-             <h2 className="text-3xl md:text-4xl font-extrabold mb-4">Everything you need to <span className="text-gradient">scale</span></h2>
-             <p className="text-mut text-lg max-w-2xl mx-auto">We replace your scattered tools with one cohesive, custom-built system.</p>
-           </div>
-
            <div className="grid md:grid-cols-3 gap-6">
+              {/* Card 1 */}
               <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -81,15 +49,13 @@ export default function Home() {
                 className="bg-card border border-line p-8 rounded-2xl hover:border-accent/50 transition-all flex flex-col group"
               >
                  <div className="w-14 h-14 rounded-xl bg-accent/10 flex items-center justify-center text-accent mb-6 group-hover:scale-110 transition-transform">
-                   <Code2 className="w-7 h-7" />
+                   <MessageCircle className="w-7 h-7" />
                  </div>
-                 <h3 className="text-xl font-bold mb-3">Custom Architecture</h3>
-                 <p className="text-mut mb-8 flex-grow">Bespoke codebases that run perfectly and look beautiful, built from the ground up without restrictive templates.</p>
-                 <Link to="/services" className="text-accent hover:text-white flex items-center gap-2 font-bold text-sm mt-auto">
-                   View Services <ArrowRight className="w-4 h-4" />
-                 </Link>
+                 <h3 className="text-xl font-bold mb-3">Instant Follow-Up</h3>
+                 <p className="text-mut flex-grow">Every new lead gets a text + email in under 60 seconds. Day or night. No lead goes cold.</p>
               </motion.div>
 
+              {/* Card 2 */}
               <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -98,15 +64,13 @@ export default function Home() {
                 className="bg-card border border-line p-8 rounded-2xl hover:border-accent/50 transition-all flex flex-col group"
               >
                  <div className="w-14 h-14 rounded-xl bg-accent/10 flex items-center justify-center text-accent mb-6 group-hover:scale-110 transition-transform">
-                   <Rocket className="w-7 h-7" />
+                   <CalendarDays className="w-7 h-7" />
                  </div>
-                 <h3 className="text-xl font-bold mb-3">Automated Growth</h3>
-                 <p className="text-mut mb-8 flex-grow">Missed call text-backs, AI booking flows, and CRM integrations built right in to capture every lead.</p>
-                 <Link to="/how-it-works" className="text-accent hover:text-white flex items-center gap-2 font-bold text-sm mt-auto">
-                   See The Process <ArrowRight className="w-4 h-4" />
-                 </Link>
+                 <h3 className="text-xl font-bold mb-3">Automatic Booking</h3>
+                 <p className="text-mut flex-grow">Leads book themselves into your calendar. Reminders cut no-shows. Missed calls get a text back instantly.</p>
               </motion.div>
 
+              {/* Card 3 */}
               <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -115,17 +79,78 @@ export default function Home() {
                 className="bg-card border border-line p-8 rounded-2xl hover:border-accent/50 transition-all flex flex-col group"
               >
                  <div className="w-14 h-14 rounded-xl bg-accent/10 flex items-center justify-center text-accent mb-6 group-hover:scale-110 transition-transform">
-                   <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                   <CheckCircle2 className="w-7 h-7" />
                  </div>
-                 <h3 className="text-xl font-bold mb-3">Transparent Pricing</h3>
-                 <p className="text-mut mb-8 flex-grow">No hidden fees, no surprise retainers. Flat-rate custom engineering with crystal clear timelines and deliverables.</p>
-                 <Link to="/pricing" className="text-accent hover:text-white flex items-center gap-2 font-bold text-sm mt-auto">
-                   View Pricing <ArrowRight className="w-4 h-4" />
-                 </Link>
+                 <h3 className="text-xl font-bold mb-3">Done-For-You</h3>
+                 <p className="text-mut flex-grow">We build, test, and launch the whole system for your clinic in about 7 days. You just start seeing booked appointments.</p>
               </motion.div>
            </div>
          </div>
       </section>
+
+      {/* SECTION 4 — The Offer + Upsell */}
+      <section className="py-[100px] border-b border-line bg-bg2 relative overflow-hidden">
+        <div className="max-w-[800px] mx-auto px-6 relative z-10">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-extrabold mb-4">One system. <span className="text-gradient">One simple price.</span></h2>
+          </div>
+          
+          <div className="bg-card border border-accent/30 rounded-3xl p-8 md:p-12 shadow-[0_0_40px_rgba(0,242,254,0.1)] relative">
+            <div className="absolute top-0 right-8 -translate-y-1/2">
+              <span className="bg-gradient-brand text-[#05050A] text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider">
+                Core Offer
+              </span>
+            </div>
+            
+            <h3 className="text-2xl font-bold mb-2">The Booked Solid System</h3>
+            <p className="text-mut mb-6">Automated lead follow-up + booking, fully done-for-you.</p>
+            
+            <div className="flex items-end gap-2 mb-8">
+              <span className="text-4xl font-extrabold">$1,250</span>
+              <span className="text-mut font-medium mb-1">setup</span>
+              <span className="text-mut font-medium mb-1 mx-2">+</span>
+              <span className="text-2xl font-bold">$650</span>
+              <span className="text-mut font-medium mb-1">/mo to run & optimize</span>
+            </div>
+            
+            <ul className="space-y-4 mb-8">
+              <li className="flex items-start gap-3">
+                <CheckCircle2 className="w-6 h-6 text-accent shrink-0" />
+                <span className="text-ink">Under 60-second follow-up</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <CheckCircle2 className="w-6 h-6 text-accent shrink-0" />
+                <span className="text-ink">Automated booking & reminders</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <CheckCircle2 className="w-6 h-6 text-accent shrink-0" />
+                <span className="text-ink">Missed-call text-back</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <CheckCircle2 className="w-6 h-6 text-accent shrink-0" />
+                <span className="text-ink">Live in ~7 days</span>
+              </li>
+            </ul>
+            
+            <div className="p-6 bg-[#0a0a0f] border border-line rounded-2xl">
+              <h4 className="font-bold text-lg mb-2">Optional Add-on</h4>
+              <p className="text-mut text-sm">
+                <strong className="text-ink">High-Converting Landing Page.</strong> If your website isn't converting clicks into leads, we'll build one. +$500–$1,500 one-time. Only if you need it.
+                <br/><br/>
+                <span className="text-ink text-[0.8rem] font-bold uppercase tracking-wider">Free SSL & Premium Hosting Included:</span> We automatically provision secure SSL certificates and host your new landing page on blazing-fast infrastructure. You don't have to worry about security warnings or server costs.
+              </p>
+            </div>
+            
+            <div className="mt-8 text-center">
+              <Link to="/booking" className="btn-primary w-full md:w-auto inline-block text-lg py-4 px-12">
+                Book My Free Lead-Leak Audit
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <TestimonialsGrid />
 
       <FinalCtaSection />
     </main>

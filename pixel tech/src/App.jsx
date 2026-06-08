@@ -24,12 +24,6 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/booking" element={<Booking />} />
-          <Route path="/services" element={<Services />} />
-          <Route path="/how-it-works" element={<HowItWorks />} />
-          <Route path="/pricing" element={<Pricing />} />
-          <Route path="/testimonials" element={<Testimonials />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/help" element={<HelpCenter />} />
           <Route path="/admin" element={<Admin />} />
         </Routes>
         <Footer />
