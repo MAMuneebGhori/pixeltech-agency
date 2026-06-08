@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 
 // Services removed, form is hardcoded to the single offer
 
@@ -208,13 +209,17 @@ export default function Booking() {
                 </div>
                 <div className="grid gap-1.5">
                   <label className="text-[0.7rem] font-semibold text-mut uppercase tracking-[0.08em]">Estimated Budget <span className="text-white/20 lowercase normal-case tracking-normal ml-1">(Optional)</span></label>
-                  <select name="budget" value={formData.budget} onChange={handleInputChange} className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-accent/60 focus:bg-white/[0.06] transition-all duration-300 text-ink appearance-none">
-                    <option value="" disabled className="bg-bg text-mut">Select a range...</option>
-                    <option value="< $5k" className="bg-bg text-ink">&lt; $5,000</option>
-                    <option value="$5k - $10k" className="bg-bg text-ink">$5,000 - $10,000</option>
-                    <option value="$10k - $25k" className="bg-bg text-ink">$10,000 - $25,000</option>
-                    <option value="$25k+" className="bg-bg text-ink">$25,000+</option>
-                  </select>
+                  <Select value={formData.budget} onValueChange={(val) => setFormData({...formData, budget: val})}>
+                    <SelectTrigger className="w-full h-[42px] bg-white/[0.04] border-white/[0.08] rounded-lg px-3 py-2.5 text-sm focus-visible:border-accent/60 focus-visible:bg-white/[0.06] transition-all duration-300 text-ink">
+                      <SelectValue placeholder="Select a range..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="< $5k">&lt; $5,000</SelectItem>
+                      <SelectItem value="$5k - $10k">$5,000 - $10,000</SelectItem>
+                      <SelectItem value="$10k - $25k">$10,000 - $25,000</SelectItem>
+                      <SelectItem value="$25k+">$25,000+</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
