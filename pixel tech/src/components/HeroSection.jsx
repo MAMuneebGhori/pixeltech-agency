@@ -82,7 +82,7 @@ export default function HeroSection() {
             <motion.h1 variants={h1Variants} className="mb-6 text-[1.4rem] sm:text-2xl md:text-3xl lg:text-4xl font-extrabold leading-[1.3] tracking-tight">
               <span className="block mb-2">
                 Turn the leads your clinic already pays for into <br />
-                <span className="text-gradient inline-block min-h-[1.5em] mt-2">
+                <span className="inline-block min-h-[1.5em] mt-2">
                   <AnimatePresence mode="wait">
                     <motion.span
                       key={currentTextIndex}
@@ -90,7 +90,7 @@ export default function HeroSection() {
                       animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
                       exit={{ opacity: 0, y: -10, filter: 'blur(8px)' }}
                       transition={{ duration: 0.4, ease: "easeInOut" }}
-                      className="inline-block"
+                      className="inline-block text-gradient pb-2 pr-2"
                     >
                       {rotatingText[currentTextIndex]}
                     </motion.span>
