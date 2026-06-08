@@ -242,7 +242,10 @@ export default function PricingSection() {
                     <span className="text-5xl font-extrabold text-ink tracking-tight flex items-center">
                       $1,250
                     </span>
-                    <span className="text-xl text-mut font-medium">
+                    <span className="text-xl text-mut font-medium relative before:content-[''] before:absolute before:-left-1 before:-right-1 before:top-1/2 before:-translate-y-1/2 before:h-0.5 before:bg-mut before:z-10">
+                      $2,000
+                    </span>
+                    <span className="text-xl text-mut font-medium ml-1">
                       setup
                     </span>
                   </div>
