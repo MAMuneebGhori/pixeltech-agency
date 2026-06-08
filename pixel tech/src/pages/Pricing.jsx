@@ -89,7 +89,7 @@ export default function Pricing() {
               <span className="text-[0.65rem] bg-white/10 text-white/80 px-2 py-0.5 rounded-full uppercase tracking-wider">Only if you need it</span>
             </h4>
             <p className="text-mut text-sm">
-              <strong className="text-ink">High-Converting Landing Page.</strong> If your website isn't converting clicks into leads, we'll build one. +$500–$1,500 one-time.
+              <strong className="text-ink">High-Converting Landing Page.</strong> If your website isn't converting clicks into leads, we'll build one. +$1,000 one-time.
               <br/><br/>
               <span className="text-ink text-[0.8rem] font-bold uppercase tracking-wider">Free SSL & Premium Hosting Included:</span> We automatically provision secure SSL certificates and host your new landing page on blazing-fast infrastructure. You don't have to worry about security warnings or server costs.
             </p>
