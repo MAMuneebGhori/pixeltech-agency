@@ -18,7 +18,7 @@ export default function Booking() {
     budget: '',
     website: '',
     goal: '',
-    wantsLandingPage: false
+    selectedPackage: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -49,8 +49,12 @@ export default function Booking() {
       alert('Please fill out your name, email, and WhatsApp number.');
       return;
     }
-    if (formData.wantsLandingPage && !formData.website) {
+    if (formData.selectedPackage === 'core_and_landing_page' && !formData.website) {
       alert('Please enter your existing Website Domain so we know what needs replacing.');
+      return;
+    }
+    if (!formData.selectedPackage) {
+      alert('Please select a package.');
       return;
     }
 
@@ -73,7 +77,7 @@ export default function Booking() {
           company: formData.company,
           budget: formData.budget,
           website: formData.website,
-          service: formData.wantsLandingPage ? 'Booked Solid System + Landing Page' : 'Booked Solid System',
+          service: formData.selectedPackage === 'core_and_landing_page' ? 'Booked Solid System + Landing Page' : 'Booked Solid System',
           goal: formData.goal,
           source: 'Booking Form'
         })
@@ -145,30 +149,17 @@ export default function Booking() {
                 </div>
 
               {/* Services Selection */}
-              <div className="grid gap-3 mb-2">
+              <div className="grid gap-1.5">
                 <label className="text-[0.7rem] font-semibold text-mut uppercase tracking-[0.08em]">Select Options <span className="text-red-500">*</span></label>
-                
-                {/* Booked Solid System (Required) */}
-                <label className="flex items-start gap-3 p-4 rounded-xl border border-accent/30 bg-accent/5 cursor-not-allowed">
-                  <div className="mt-0.5 flex-shrink-0">
-                    <input type="checkbox" checked readOnly className="w-4 h-4 accent-accent" />
-                  </div>
-                  <div>
-                    <div className="font-bold text-ink text-sm">The Booked Solid System <span className="ml-2 text-[0.6rem] uppercase tracking-wider text-accent border border-accent/30 px-2 py-0.5 rounded-full">Core</span></div>
-                    <div className="text-mut text-xs mt-1 leading-relaxed">Automated 60-second follow-up & self-booking infrastructure.</div>
-                  </div>
-                </label>
-
-                {/* Landing Page Add-on (Optional) */}
-                <label className={`flex items-start gap-3 p-4 rounded-xl border cursor-pointer transition-colors ${formData.wantsLandingPage ? 'border-accent/40 bg-accent/[0.03]' : 'border-white/10 bg-white/[0.02] hover:border-white/20'}`}>
-                  <div className="mt-0.5 flex-shrink-0">
-                    <input type="checkbox" name="wantsLandingPage" checked={formData.wantsLandingPage} onChange={(e) => setFormData({...formData, wantsLandingPage: e.target.checked})} className="w-4 h-4 accent-accent" />
-                  </div>
-                  <div>
-                    <div className="font-bold text-ink text-sm">Include High-Converting Landing Page <span className="ml-2 text-[0.6rem] uppercase tracking-wider text-mut border border-line px-2 py-0.5 rounded-full">Optional Add-on</span></div>
-                    <div className="text-mut text-xs mt-1 leading-relaxed">We'll build, host, and secure a new landing page for your clinic.</div>
-                  </div>
-                </label>
+                <Select required value={formData.selectedPackage} onValueChange={(val) => setFormData({...formData, selectedPackage: val})}>
+                  <SelectTrigger className="w-full h-[42px] bg-white/[0.04] border-white/[0.08] rounded-lg px-3 py-2.5 text-sm focus-visible:border-accent/60 focus-visible:bg-white/[0.06] transition-all duration-300 text-ink">
+                    <SelectValue placeholder="Choose a package..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="core">The Booked Solid System (Core)</SelectItem>
+                    <SelectItem value="core_and_landing_page">Booked Solid System + Landing Page Add-on</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Email and Phone */}
@@ -208,14 +199,14 @@ export default function Booking() {
               {/* Website */}
               <div className="grid gap-1.5 transition-all duration-300">
                 <label className="text-[0.7rem] font-semibold text-mut uppercase tracking-[0.08em]">
-                  Website Domain {formData.wantsLandingPage && <span className="text-red-500">*</span>}
+                  Website Domain {formData.selectedPackage === 'core_and_landing_page' && <span className="text-red-500">*</span>}
                 </label>
                 <input
                   type="url"
                   name="website"
                   value={formData.website}
                   onChange={handleInputChange}
-                  required={formData.wantsLandingPage}
+                  required={formData.selectedPackage === 'core_and_landing_page'}
                   className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-accent/60 focus:bg-white/[0.06] transition-all duration-300 text-ink placeholder-white/20"
                   placeholder="https://yoursite.com"
                 />
