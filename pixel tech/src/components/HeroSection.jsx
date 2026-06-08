@@ -90,7 +90,7 @@ export default function HeroSection() {
                       animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
                       exit={{ opacity: 0, y: -10, filter: 'blur(8px)' }}
                       transition={{ duration: 0.4, ease: "easeInOut" }}
-                      className="inline-block text-gradient pb-2 pr-2 font-serif italic tracking-normal font-bold"
+                      className="inline-block text-gradient pb-2 pr-2 font-serif italic tracking-normal font-bold text-[0.85em]"
                     >
                       {rotatingText[currentTextIndex]}
                     </motion.span>
