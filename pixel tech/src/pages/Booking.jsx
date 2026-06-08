@@ -28,6 +28,12 @@ export default function Booking() {
   // Search params logic removed as it's a single service
 
   useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const service = searchParams.get('service');
+    if (service === 'core' || service === 'core_and_landing_page') {
+      setFormData(prev => ({ ...prev, selectedPackage: service }));
+    }
+
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setIsOpen(false);
@@ -36,7 +42,7 @@ export default function Booking() {
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  }, [location.search]);
 
 // Selection logic removed
 

@@ -262,9 +262,12 @@ export default function PricingSection() {
                     <motion.div 
                       initial={{ opacity: 0, height: 0, marginTop: 0 }}
                       animate={{ opacity: 1, height: 'auto', marginTop: 16 }}
-                      className="flex items-baseline gap-2 pt-4 border-t border-line/50"
+                      className="flex items-baseline pt-4 border-t border-line/50"
                     >
-                      <span className="text-2xl font-bold text-ink tracking-tight">
+                      <span className="text-lg text-mut font-medium relative before:content-[''] before:absolute before:-left-1 before:-right-1 before:top-1/2 before:-translate-y-1/2 before:h-0.5 before:bg-mut before:z-10 mr-2">
+                        $1,500
+                      </span>
+                      <span className="text-2xl font-bold text-ink tracking-tight mr-2">
                         +$1,000
                       </span>
                       <span className="text-sm text-mut font-medium uppercase tracking-wider">
@@ -274,7 +277,7 @@ export default function PricingSection() {
                   )}
                 </div>
                 
-                <Link to="/booking" className="block w-full">
+                <Link to={`/booking?service=${hasLandingPage ? 'core_and_landing_page' : 'core'}`} className="block w-full">
                   <TimelineContent
                     as="button"
                     animationNum={6}
