@@ -24,7 +24,7 @@ export default function Footer() {
               <img src="/Pixeltech.png" alt="PixelTech Logo" className="h-[34px] w-auto object-contain" />
               Pixeltech Agency
             </Link>
-            <p className="text-center md:text-left">Custom full-stack engineering & automated conversion systems.</p>
+            <p className="text-center md:text-left">Building Predictable Growth Systems.</p>
             <p>© {new Date().getFullYear()} Pixeltech Agency.</p>
           </div>
 
