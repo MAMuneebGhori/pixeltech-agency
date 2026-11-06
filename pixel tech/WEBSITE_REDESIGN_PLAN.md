@@ -17,7 +17,7 @@
 1. ~~Lint fails~~ **Fixed 2026-11-06.** `eslint src` is clean. Admin's 401 logout moved out of `authFetch` into the catch handlers.
 2. ~~Leftover budget field~~ **Fixed 2026-11-06.** `Lead.js` swaps `budget` for `callsPerWeek` and `bookingSoftware`, and the email, WhatsApp and admin badges use the new fields. The lead email now HTML-escapes every form field (it used to inject them raw).
 3. **Lighthouse (slice 6):** all four pages are under the 90 performance target, with blocking-time and LCP problems. The `/about` run failed when Chrome wouldn't launch (low free RAM). Re-run on a machine with free memory.
-4. **Manual checks before launch:** the Moneypenny 69% source; the Zenoti 2025 after-hours figure (would replace 67%); the `public/demo-call.mp3` recording.
+4. **Manual checks before launch:** ~~the Moneypenny 69% source~~ (confirmed 2026-11-06: UK report, 300-business survey plus call data from 10,000 businesses, about 2016; the card's unsourced "call the next clinic" line was removed); the Zenoti 2025 after-hours figure (would replace 67%); the `public/demo-call.mp3` recording.
 5. **Not committed:** 30 legacy files are staged for deletion, and there are unrelated changes outside `pixel tech/` (`backend/`, `.claude/`). Split these into separate commits.
 **Date:** 2026-11-06
 **Inputs:** `02_SRD_Booked_Solid_System.md` (SRD v1.0), `Booked Solid System — Website Redesign.md` (spec), the v1 plan (2026-11-05, slices 1–6 already built), the current `src/`, and the 5-point competitor brief (aireceptionistmedspa.com, usehailey.com, medreceptionist.com, medspai.com, serviceagent.ai).
