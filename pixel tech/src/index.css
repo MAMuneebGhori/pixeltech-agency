@@ -1,5 +1,25 @@
 @import "tailwindcss";
 
+/* Size-matched fallbacks so text keeps its footprint when Google Fonts swaps in (home CLS fix).
+   Values computed from each web font's hhea metrics and letter-frequency widths vs the local font.
+   Android has neither local font, so it falls through to the generic family as before. */
+@font-face {
+  font-family: "Inter Fallback";
+  src: local("Arial"), local("ArialMT");
+  size-adjust: 107.29%;
+  ascent-override: 90.29%;
+  descent-override: 22.48%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: "Instrument Serif Fallback";
+  src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Times");
+  size-adjust: 84.31%;
+  ascent-override: 117.43%;
+  descent-override: 36.77%;
+  line-gap-override: 0%;
+}
+
 @theme {
   /* Warm editorial palette (redesign spec). accent is the AA-safe text gold; gold is the spec champagne, decorative/large only (2.4:1 on bg). */
   --color-bg: #FAF8F5;
@@ -14,9 +34,9 @@
   --color-bad: #B3261E;
   --color-gold: #C59B6D;
 
-  --font-display: "Instrument Serif", Georgia, serif;
-  --font-body: "Inter", sans-serif;
-  --font-serif: "Instrument Serif", Georgia, serif;
+  --font-display: "Instrument Serif", "Instrument Serif Fallback", Georgia, serif;
+  --font-body: "Inter", "Inter Fallback", sans-serif;
+  --font-serif: "Instrument Serif", "Instrument Serif Fallback", Georgia, serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
 
   --animate-fade-up: fade-up 0.6s ease-out 0.2s both;
