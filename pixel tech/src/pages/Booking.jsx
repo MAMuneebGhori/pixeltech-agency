@@ -1,10 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import SEO from '../components/SEO';
-import { callsBucket, fromRoiParams, formatRoiEstimate, formatRoiRange } from '../lib/roi';
+import { CALL_VOLUMES, callsBucket, fromRoiParams, formatRoiEstimate, formatRoiRange } from '../lib/roi';
 import { track } from '../lib/track';
 
-const CALL_VOLUMES = ['Under 25', '25–50', '50–100', '100+', 'Not sure'];
 // Same list as the home page's stack section; "Other" covers everything else.
 const BOOKING_SOFTWARE = ['Calendly', 'Google Calendar', 'Square Appointments', 'Acuity', 'Vagaro', 'GlossGenius', 'Mindbody', 'Boulevard', 'Zenoti', 'Other', 'None yet'];
 
@@ -42,10 +41,12 @@ function Scheduler({ name, email }) {
         setState('failed');
       }
     };
+    const onError = () => setState('failed');
+    let script = null;
     if (window.Calendly) {
       init();
     } else {
-      let script = document.querySelector(`script[src="${CALENDLY_SCRIPT}"]`);
+      script = document.querySelector(`script[src="${CALENDLY_SCRIPT}"]`);
       if (!script) {
         script = document.createElement('script');
         script.src = CALENDLY_SCRIPT;
@@ -53,10 +54,12 @@ function Scheduler({ name, email }) {
         document.body.appendChild(script);
       }
       script.addEventListener('load', init);
-      script.addEventListener('error', () => setState('failed'));
+      script.addEventListener('error', onError);
     }
     return () => {
       window.removeEventListener('message', onMessage);
+      script?.removeEventListener('load', init);
+      script?.removeEventListener('error', onError);
       clearTimeout(timer);
     };
   }, [name, email]);

@@ -39,15 +39,18 @@ export function bookingsToBreakEven(avgTreatmentValue, price = MONTHLY_PRICE) {
   return v ? Math.ceil(price / v) : null;
 }
 
+// The booking form's calls/week options. callsBucket returns entries of this list, so the two can't drift.
+export const CALL_VOLUMES = ['Under 25', '25–50', '50–100', '100+', 'Not sure'];
+
 // Booking-form option for a calls/week number. '' (no prefill) for missing or invalid input, never a guess.
 export function callsBucket(calls) {
   if (calls === null || calls === undefined || calls === '') return '';
   const n = Number(calls);
   if (!Number.isFinite(n) || n < 0) return '';
-  if (n < 25) return 'Under 25';
-  if (n < 50) return '25–50';
-  if (n < 100) return '50–100';
-  return '100+';
+  if (n < 25) return CALL_VOLUMES[0];
+  if (n < 50) return CALL_VOLUMES[1];
+  if (n < 100) return CALL_VOLUMES[2];
+  return CALL_VOLUMES[3];
 }
 
 // Calculator inputs <-> /booking URL params (plan E5). Short keys keep the link readable.

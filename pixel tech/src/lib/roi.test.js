@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   estimateLeak, bookingsToBreakEven, DEFAULT_INPUTS,
-  callsBucket, toRoiParams, fromRoiParams, formatRoiEstimate,
+  callsBucket, CALL_VOLUMES, toRoiParams, fromRoiParams, formatRoiEstimate,
 } from './roi.js';
 
 test('estimateLeak with the default inputs', () => {
@@ -48,6 +48,8 @@ test('callsBucket maps calls/week to the booking form options at each boundary',
   assert.equal(callsBucket(99), '50–100');
   assert.equal(callsBucket(100), '100+');
   assert.equal(callsBucket('80'), '50–100');
+  // Every bucket must be a real <select> option on /booking, or the prefill renders empty.
+  for (const n of [0, 30, 60, 500]) assert.ok(CALL_VOLUMES.includes(callsBucket(n)), String(n));
 });
 
 test('callsBucket returns no prefill for missing or invalid input', () => {
