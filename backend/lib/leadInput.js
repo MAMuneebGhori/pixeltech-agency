@@ -31,4 +31,8 @@ function pickLeadFields(body) {
   return lead;
 }
 
-module.exports = { pickLeadFields, LIMITS, PUBLIC_SOURCE };
+// The booking form has a hidden "fax" input real visitors never see or fill; bots that fill every field do.
+const HONEYPOT_FIELD = 'fax';
+const isHoneypotHit = (body) => Boolean(body && typeof body === 'object' && String(body[HONEYPOT_FIELD] ?? '').trim());
+
+module.exports = { pickLeadFields, isHoneypotHit, HONEYPOT_FIELD, LIMITS, PUBLIC_SOURCE };
