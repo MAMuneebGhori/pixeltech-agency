@@ -36,6 +36,7 @@ OKLCH is canonical; hex is the sRGB conversion for tools that need it. Token nam
 | `ink2` *(new)* | `oklch(33% 0.010 70)` | `#393530` | Secondary heads, strong captions | 10.6:1 on `bg2` |
 | `mut` | `oklch(50% 0.018 70)` | `#6A6258` | Captions, helper text, placeholders | 5.6 on `bg`, 4.8 on `bg3` |
 | `accent` | `oklch(48.5% 0.080 62)` | `#7F542C` | Bronze signal: links, primary hover | 6.1:1 on `bg`; `bg` on it 6.1:1 |
+| `accent-ink` *(new)* | `oklch(97.8% 0.006 75)` | `#FAF7F3` | Text on an `accent` fill (the primary on hover) | 6.1:1 on `accent` |
 | `gold` (`accent2`) | `oklch(74% 0.085 75)` | `#CBA36D` | Champagne. Decorative only, or text on `ink` | 2.2 on `bg` (fails), 7.9 on `ink` |
 | `focus` *(new)* | `oklch(52% 0.150 60)` | `#A44D00` | Focus ring only | 5.4:1 on `bg` |
 | `good` | `oklch(48.7% 0.100 150)` | `#2F6F40` | Success text | 5.7:1 on `bg` |
@@ -44,7 +45,7 @@ OKLCH is canonical; hex is the sRGB conversion for tools that need it. Token nam
 - Contrast computed with WCAG 2.x from the hex values above. Body text needs 4.5:1; every text pairing listed passes.
 - Translucency is opacity on a token (`bg-ink/5`, `bg-ink/40` for a scrim), never `white/` or `black/`.
 - **Shadows:** `--shadow-card: none`; surfaces separate by paper tone and hairline. `--shadow-raised: 0 1px 2px oklch(20% 0.01 70 / 0.05), 0 12px 32px oklch(20% 0.01 70 / 0.06)` is for things that float over the page (dialog, consent bar, menu) and nothing else.
-- **Radii, one per nesting level:** page band 0; card or well `--radius-card` 20px; bubble, input and chip group `--radius-inner` 12px; button and pill `--radius-pill` 999px. Inner radius = outer minus padding where an inner surface sits at the outer's padding.
+- **Radii, one per nesting level:** page band 0; card `--radius-card` 20px and well `--radius-well` 20px (same size, named by role, so a fill-only bubble in a well never reads as a card in a card); bubble, input and chip group `--radius-inner` 12px; button and pill `--radius-pill` 999px. Inner radius = outer minus padding where an inner surface sits at the outer's padding.
 
 ## Typography
 
@@ -121,17 +122,41 @@ The cards that show the product working: call transcripts, the unified inbox, re
 - **Code:** `src/index.css` `@theme` (Tailwind v4). Names above map one to one: `--color-bg3`, `--color-ink2`, `--color-focus`, `--font-body: "Instrument Sans", "Instrument Sans Fallback", sans-serif`, plus the `--space-*`, `--text-*`, `--radius-*`, `--shadow-*` and easing tokens.
 - **Check:** `npm run check:mobile` for layout; Hallmark's `sloplint.mjs src index.html --genre editorial` for the bans above.
 
-## Migration: where the code still breaks this file (2026-11-06)
+## Migration status (2026-11-06)
 
-From `sloplint` (static pass over `src/` and `index.html`: 51 FAIL, 11 REFLEX, 21 WARN in 23 files; the rendered pass did not run because puppeteer isn't installed) and the design review:
+- **Before:** the sloplint static pass over `src/` and `index.html` found 51 FAIL, 11 REFLEX and 21 WARN in 23 files.
+- **After** the migration (branch `design-migration`): the public site is **0 FAIL, 0 REFLEX, 0 WARN**, with one NOTE. The NOTE is gate 19: the SRD F-10 deflection line is kept word for word, stamped `copy: verbatim`.
+- **Not run:** the rendered tier, because puppeteer isn't installed.
 
-1. **Labels and eyebrows** (24 findings, gate 67): mono tracked-caps labels in `DemoCallCard`, `ProductCards`, `HomeSections` `Section` eyebrows, `HeroSection:18`, `CookieConsent`.
-2. **Italic word in a heading** (gate 38i): `HeroSection.jsx:20`, `FinalCtaSection.jsx:7`, `Booking.jsx:129`.
-3. **Middle-dot meta** (gate 63): `HeroSection.jsx:18` and the simulation headers.
-4. **Nested cards** (gate 4): How It Works step card → mock panel → bordered bubbles (`HomeSections.jsx:101`, `ProductCards.jsx`); `DemoCallCard.jsx:49`.
-5. **Motion** (11 findings, gate 10a): `transition-all` and size animation in `TopNavBar` and elsewhere.
-6. **Literal colours past tokens** (gate 48): `DemoCallCard.jsx:28`, the rgba shadow at `HomeSections.jsx:219`, `index.css:186`; the consent scrim `bg-black/60` (`CookieConsent.jsx:90`).
-7. **Surfaces:** pure white `card` (`index.css:27`, gate 7b) becomes `#FEFDFA`; card shadows go to none; legacy `src/App.css` (gate 20/41) is removed if unused.
-8. **Type:** body moves from Inter to Instrument Sans (new fallback metrics); the ROI break-even line sets only the numeral in mono.
-9. **Container:** code uses 1180px (`HomeSections.jsx:6`) and 1280px (`HeroSection.jsx:15`); both move to `--container`.
-10. **Palette values:** the token names stay, the values shift slightly (warmer ink, a little more chroma in `accent`, tinted `card`); `bg3`, `ink2` and `focus` are new. Every shifted pair still passes the contrast column above.
+Done:
+1. **Labels and eyebrows:** no tracked caps or mono labels; `Section` no longer takes an eyebrow.
+2. **Italic headings:** italic words removed from every heading (hero, final CTA, booking, About, revenue leak).
+3. **Middle dots:** middle-dot meta strings replaced in the hero, simulations, digest and pricing.
+4. **Nested cards:**
+   - How It Works steps sit on the page.
+   - Each simulation is one well (`--radius-well`).
+   - Stats, principles and the runbook use hairlines.
+   - The comparison table has no outer card.
+5. **Motion:**
+   - No `transition-all`.
+   - The mobile menu fades in, with no height animation.
+   - Unused accordion keyframes removed.
+   - A reduced-motion fallback covers everything.
+6. **Literal colours:**
+   - OKLCH tokens throughout.
+   - `bg-black/60` and blur scrims replaced with `bg-ink/40`.
+   - The rgba scrollbar colours use `color-mix`.
+7. **Surfaces:**
+   - Tinted `card`, with no card shadows.
+   - `shadow-raised` only on floating surfaces.
+   - The unused `App.css` deleted.
+8. **Type:** Instrument Sans body (fallback metrics recomputed), mono for figures only, and the ROI break-even numeral alone in mono.
+9. **Container:** one `.container-page` (1440px, gutters 16 to 64px) for the nav, sections, hero and footer.
+10. **Controls:**
+    - One filled primary per screen; the pricing and nav buttons are secondary.
+    - Every target is 44px or larger, focus is visible everywhere, and no button label wraps.
+11. **Layout check:** `check:mobile` now catches overflow that `overflow-x: clip` hides from `scrollWidth`. It fails on any element past the screen edge, and it was verified by reintroducing the old How It Works bug.
+
+Still open:
+- `src/pages/Admin.jsx` (internal, not a marketing page): 16 FAIL and 5 WARN remain, and it still imports `framer-motion`.
+- The rendered sloplint tier and a real-device pass (iPhone) have not run.
