@@ -12,36 +12,35 @@ export default function HeroSection() {
 
   return (
     <section className="pt-10 lg:pt-16 pb-16 lg:pb-24 border-b border-line">
-      <div className="max-w-[1280px] mx-auto px-4 sm:px-6 md:px-12 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+      <div className="container-page grid grid-cols-1 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] gap-12 items-center">
         {/* No entrance animation: the headline is the LCP element, and a fade-in delays it. */}
-        <div>
-          <p className="font-mono text-[0.72rem] uppercase tracking-wider text-mut mb-5">Voice · SMS · Instagram & Facebook DM</p>
-
-          <h1 className="text-[2.4rem] sm:text-5xl lg:text-[4rem] leading-[1.05] mb-6">
-            Stop losing Botox & filler consults <em className="text-accent">to voicemail.</em>
+        <div className="min-w-0">
+          {/* DESIGN.md hero budget: the headline, one sentence of twelve words or fewer, the actions. */}
+          <h1 className="text-display max-w-[20ch] mb-6 [overflow-wrap:break-word]">
+            Stop losing Botox & filler consults to voicemail.
           </h1>
 
-          <p className="text-[1rem] md:text-[1.1rem] max-w-[560px] mb-10 text-mut leading-relaxed">
-            An AI receptionist and lead-reactivation system built for med spas. It answers your calls, replies to texts and DMs, and books patients straight into your calendar. Missed calls and DMs get a text back within 60 seconds.
+          <p className="text-lead max-w-[36ch] mb-10 text-mut">
+            Every call, text and DM answered and booked into your calendar.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3">
             {DEMO_PHONE ? (
               <button type="button" onClick={() => dialogRef.current?.showModal()} className="btn-primary text-base">
-                Call the Glow Med Spa demo line
+                Call the demo line
               </button>
             ) : (
               <Link to="/booking" data-cta="hero" className="btn-primary text-base">Book a 15-min ROI audit</Link>
             )}
             {DEMO_PHONE && (
-              <Link to="/booking" data-cta="hero" className="inline-flex items-center justify-center rounded-full border border-ink px-8 py-4 font-semibold text-ink hover:bg-ink hover:text-bg transition-colors">
+              <Link to="/booking" data-cta="hero" className="btn-secondary">
                 Book a 15-min ROI audit
               </Link>
             )}
           </div>
           {/* No live-demo claim until the Phase 0 battery passes (plan 8.13 R2); the walkthrough uses the recorded call. */}
           {!DEMO_PHONE && (
-            <p className="mt-3 text-[0.9rem] text-mut">Free, 15 minutes. We'll walk you through a real demo call.</p>
+            <p className="mt-3 text-sm text-mut">Free, 15 minutes. We’ll walk you through a real demo call.</p>
           )}
         </div>
 
@@ -54,11 +53,11 @@ export default function HeroSection() {
         <dialog
           ref={dialogRef}
           aria-labelledby="demo-dialog-title"
-          className="m-auto w-[min(92vw,440px)] rounded-[18px] border border-line bg-card p-6 text-ink backdrop:bg-ink/40"
+          className="m-auto w-[min(92vw,440px)] rounded-card bg-card shadow-raised p-6 text-ink backdrop:bg-ink/40"
           onClick={(e) => e.target === e.currentTarget && e.currentTarget.close()}
         >
           <h2 id="demo-dialog-title" className="text-3xl mb-2">Try the demo line</h2>
-          <p className="text-mut text-[0.95rem] mb-4">You'll reach Ava, the receptionist for our demo clinic, Glow Med Spa. Try one of these:</p>
+          <p className="text-mut text-[0.95rem] mb-4">You’ll reach Ava, the receptionist for our demo clinic, Glow Med Spa. Try one of these:</p>
           <ol className="list-decimal pl-5 space-y-1.5 mb-6 text-[0.95rem]">
             {TEST_PROMPTS.map((p) => <li key={p}>{p}</li>)}
           </ol>

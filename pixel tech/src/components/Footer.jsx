@@ -14,12 +14,12 @@ export default function Footer() {
 
   return (
     <footer className="bg-bg2 w-full py-[60px] border-t border-line text-mut text-[0.85rem]">
-      <div className="max-w-[1080px] mx-auto px-[22px]">
+      <div className="container-page">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-8">
           
           {/* Brand */}
           <div className="flex flex-col items-start gap-4">
-            <Link to="/" className="flex items-center gap-2 font-extrabold text-[1.05rem] text-ink hover:text-accent transition-colors">
+            <Link to="/" className="flex items-center gap-2 font-semibold text-[1.05rem] text-ink hover:text-accent transition-colors">
               <img src="/logo-128.png" alt="PixelTech Logo" width="34" height="34" className="h-[34px] w-[34px] object-contain" />
               Pixeltech Agency
             </Link>
@@ -29,12 +29,12 @@ export default function Footer() {
 
           {/* Quick Links */}
           <div className="flex flex-col items-start gap-3">
-            <h2 className="text-ink font-bold text-sm uppercase tracking-wider mb-1">Quick Links</h2>
+            <h2 className="text-ink font-semibold text-sm mb-1">Quick links</h2>
             {quickLinks.map((link) => (
               <Link
                 key={link.path}
                 to={link.path}
-                className="hover:text-accent transition-colors font-medium"
+                className="hover:text-accent transition-colors duration-[220ms] ease-out"
               >
                 {link.label}
               </Link>
@@ -43,43 +43,43 @@ export default function Footer() {
 
           {/* Contact & Social */}
           <div className="flex flex-col items-start gap-4">
-            <h2 className="text-ink font-bold text-sm uppercase tracking-wider mb-1">Get In Touch</h2>
+            <h2 className="text-ink font-semibold text-sm mb-1">Get in touch</h2>
             
-            <a href="mailto:info@pixeltech.agency" className="hover:text-accent transition-colors font-medium">
+            <a href="mailto:info@pixeltech.agency" className="hover:text-accent transition-colors duration-[220ms] ease-out">
               info@pixeltech.agency
             </a>
 
-            <h2 className="text-ink font-bold text-sm uppercase tracking-wider mb-1 mt-4">Socials</h2>
+            <h2 className="text-ink font-semibold text-sm mb-1 mt-4">Socials</h2>
             <div className="flex flex-col gap-2">
-              <a href="https://www.instagram.com/pixeltech.agencyy" target="_blank" rel="noreferrer" className="hover:text-accent transition-colors font-medium">
+              <a href="https://www.instagram.com/pixeltech.agencyy" target="_blank" rel="noreferrer" className="hover:text-accent transition-colors duration-[220ms] ease-out">
                 Instagram
               </a>
-              <a href="https://x.com/pixeltechglobal" target="_blank" rel="noreferrer" className="hover:text-accent transition-colors font-medium">
+              <a href="https://x.com/pixeltechglobal" target="_blank" rel="noreferrer" className="hover:text-accent transition-colors duration-[220ms] ease-out">
                 X (Twitter)
               </a>
-              <a href="https://www.facebook.com/officialpixeltech" target="_blank" rel="noreferrer" className="hover:text-accent transition-colors font-medium">
+              <a href="https://www.facebook.com/officialpixeltech" target="_blank" rel="noreferrer" className="hover:text-accent transition-colors duration-[220ms] ease-out">
                 Facebook
               </a>
-              <a href="https://www.linkedin.com/in/umerbinaaziz/" target="_blank" rel="noreferrer" className="hover:text-accent transition-colors font-medium">
+              <a href="https://www.linkedin.com/in/umerbinaaziz/" target="_blank" rel="noreferrer" className="hover:text-accent transition-colors duration-[220ms] ease-out">
                 LinkedIn
               </a>
 
               <div className="relative">
                 <button 
                   onClick={() => setIsWhatsAppOpen(!isWhatsAppOpen)}
-                  className="hover:text-accent transition-colors font-medium cursor-pointer flex items-center justify-between w-max gap-2 outline-none"
+                  className="hover:text-accent transition-colors cursor-pointer flex items-center justify-between w-max gap-2"
                 >
                   WhatsApp
                 </button>
                 
                 {isWhatsAppOpen && (
-                  <div className="absolute bottom-full mb-2 left-0 md:left-auto w-max bg-card border border-line rounded-lg p-2 shadow-2xl flex flex-col gap-1 z-50 animate-in fade-in slide-in-from-bottom-2 duration-200">
-                    <a href="https://wa.me/923336424891" target="_blank" rel="noopener noreferrer" className="text-xs font-medium hover:text-accent px-4 py-2 rounded-md hover:bg-bg2 transition-colors text-left flex flex-col gap-1">
+                  <div className="absolute bottom-full mb-2 left-0 md:left-auto w-max bg-card rounded-inner p-2 shadow-raised flex flex-col gap-1 z-50 animate-fade-in">
+                    <a href="https://wa.me/923336424891" target="_blank" rel="noopener noreferrer" className="text-xs hover:text-accent px-4 py-2 rounded-md hover:bg-bg2 transition-colors text-left flex flex-col gap-1">
                       <span className="text-ink">Chat with Umer</span>
                       <span className="text-mut font-normal">+92 333 6424891</span>
                     </a>
                     <div className="h-px w-full bg-line/50 my-1"></div>
-                    <a href="https://wa.me/923118527408" target="_blank" rel="noopener noreferrer" className="text-xs font-medium hover:text-accent px-4 py-2 rounded-md hover:bg-bg2 transition-colors text-left flex flex-col gap-1">
+                    <a href="https://wa.me/923118527408" target="_blank" rel="noopener noreferrer" className="text-xs hover:text-accent px-4 py-2 rounded-md hover:bg-bg2 transition-colors text-left flex flex-col gap-1">
                       <span className="text-ink">Chat with Muneeb</span>
                       <span className="text-mut font-normal">+92 311 8527408</span>
                     </a>

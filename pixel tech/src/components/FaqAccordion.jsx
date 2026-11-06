@@ -5,12 +5,12 @@ const FAQS = [
   {
     // SRD F-10
     q: 'Will the AI give medical advice?',
-    a: "No. It never diagnoses or gives treatment-safety opinions. Medical questions get a scripted reply (\"That's best answered by our clinician — I'll book you a consultation and flag your question\"), and your staff are alerted. Emergencies are told to call 911.",
+    a: "No. It never diagnoses or gives treatment-safety opinions. Medical questions get a scripted reply (“That’s best answered by our clinician — I’ll book you a consultation and flag your question”), and your staff are alerted. Emergencies are told to call 911.",
   },
   {
     // SRD §4 Data, §7 HIPAA BAA risk
     q: 'Is it HIPAA compliant?',
-    a: "We don't sign a Business Associate Agreement (BAA) yet. To stay out of scope, the system only handles scheduling information: name, phone number, service of interest and appointment time. No clinical notes or medical history. If you need a BAA, ask on the audit call and we'll walk you through our timeline.",
+    a: "We don’t sign a Business Associate Agreement (BAA) yet. To stay out of scope, the system only handles scheduling information: name, phone number, service of interest and appointment time. No clinical notes or medical history. If you need a BAA, ask on the audit call and we’ll walk you through our timeline.",
   },
   {
     // SRD §4 Data, F-27
@@ -36,15 +36,16 @@ const FAQS = [
 
 export default function FaqAccordion() {
   return (
-    <Section id="faq" eyebrow="FAQ" title="Questions clinics ask us.">
-      <div className="grid gap-3 max-w-[820px]">
+    <Section id="faq" title="Questions clinics ask us.">
+      {/* A hairline list, not a stack of cards. */}
+      <div className="max-w-[820px] border-b border-line">
         {FAQS.map((faq) => (
-          <details key={faq.q} className="group bg-card border border-line rounded-[14px] [&_summary::-webkit-details-marker]:hidden">
-            <summary className="flex items-center justify-between gap-4 p-5 font-semibold text-[1.02rem] cursor-pointer hover:text-accent transition-colors">
+          <details key={faq.q} className="group border-t border-line [&_summary::-webkit-details-marker]:hidden">
+            <summary className="flex items-center justify-between gap-4 py-5 font-semibold cursor-pointer hover:text-accent transition-colors duration-[220ms] ease-out">
               {faq.q}
-              <span aria-hidden="true" className="text-[1.4rem] font-light text-mut transition-transform duration-300 group-open:rotate-45">+</span>
+              <span aria-hidden="true" className="text-[1.4rem] leading-none text-mut transition-transform duration-[220ms] ease-out group-open:rotate-45">+</span>
             </summary>
-            <p className="px-5 pb-5 text-mut leading-relaxed">{faq.a}</p>
+            <p className="pb-6 pr-8 text-mut leading-relaxed max-w-[65ch]">{faq.a}</p>
           </details>
         ))}
       </div>

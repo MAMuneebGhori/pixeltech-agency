@@ -51,16 +51,17 @@ function RoiCalculator({ headingAs: Heading }) {
   const { missedLeads, lostBookings, lostRevenue, lostRevenueLow } = estimateLeak(form);
   const breakEven = bookingsToBreakEven(form.treatmentValue);
 
-  const field = 'mt-1.5 w-full rounded-xl border border-line bg-card px-4 py-3 font-mono text-ink focus:outline-2 focus:outline-accent';
+  // DESIGN.md inputs: bg2 fill, a constant 1px line border, 48px, 16px text; focus comes from the global ring.
+  const field = 'mt-1.5 w-full min-h-12 rounded-inner border border-line bg-bg2 px-4 font-mono text-base text-ink tabular-nums';
 
   return (
-    <div className="bg-card border border-line rounded-[18px] p-6 md:p-8">
-      <Heading className="text-[1.8rem] mb-1">What missed leads cost you</Heading>
-      <p className="text-mut text-[0.9rem] mb-6">Put in your own numbers. The defaults are a starting point.</p>
+    <div className="bg-card border border-line rounded-card p-6 md:p-10">
+      <Heading className="text-title mb-1">What missed leads cost you</Heading>
+      <p className="text-mut text-sm mb-6">Put in your own numbers. The defaults are a starting point.</p>
 
       <div className="grid gap-4 sm:grid-cols-2 mb-6">
         {ROI_FIELDS.map(({ key, label, max, hint }) => (
-          <label key={key} className="text-[0.9rem] font-medium text-ink">
+          <label key={key} className="text-sm font-semibold text-ink">
             {label}
             <input
               type="number" inputMode="numeric" min="0" max={max}
@@ -71,33 +72,37 @@ function RoiCalculator({ headingAs: Heading }) {
               }}
               className={field}
             />
-            {hint && <span className="block mt-1 text-[0.78rem] font-normal text-mut">{hint}</span>}
+            {hint && <span className="block mt-1 text-sm font-normal text-mut">{hint}</span>}
           </label>
         ))}
       </div>
 
-      {/* Break-even leads (plan 8.13 S2): it rests on one number the owner knows. The range is context underneath. */}
-      <div className="rounded-xl bg-bg2 border border-line p-5">
+      {/* Break-even leads (plan 8.13 S2): it rests on one number the owner knows. The range is context underneath.
+          DESIGN.md: only the numeral is mono; the words are sans, so the line never wraps mid-figure. */}
+      <div className="rounded-inner bg-bg2 p-5">
         {/* Only the two headline numbers are announced on each edit; the explanation below stays quiet. */}
         <div aria-live="polite" aria-atomic="true">
           {breakEven ? (
             <>
-              <p className="text-[0.85rem] text-mut">At {usd(MONTHLY_PRICE)}/mo, the plan pays for itself at</p>
-              <p className="font-mono text-[2.4rem] leading-tight text-ink">{breakEven} booking{breakEven > 1 ? 's' : ''} a month</p>
+              <p className="text-sm text-mut">At {usd(MONTHLY_PRICE)}/mo, the plan pays for itself at</p>
+              <p className="text-title text-ink">
+                <span className="font-mono text-[3.5rem] leading-none align-[-0.08em] tabular-nums">{breakEven}</span>{' '}
+                booking{breakEven > 1 ? 's' : ''} a month
+              </p>
             </>
           ) : (
-            <p className="text-[0.92rem] text-ink">Enter a treatment value to compare it with the {usd(MONTHLY_PRICE)}/mo plan.</p>
+            <p className="text-ink">Enter a treatment value to compare it with the {usd(MONTHLY_PRICE)}/mo plan.</p>
           )}
-          <p className="mt-4 text-[0.85rem] text-mut">Estimated revenue lost to missed leads now</p>
-          <p className="font-mono text-[1.4rem] text-ink">
-            <span className="whitespace-nowrap">{usd(lostRevenueLow)}</span> – <span className="whitespace-nowrap">{usd(lostRevenue)}</span> <span className="text-[0.9rem] text-mut">/ month</span>
+          <p className="mt-5 text-sm text-mut">Estimated revenue lost to missed leads, per month</p>
+          <p className="font-mono text-[1.4rem] text-ink tabular-nums">
+            <span className="whitespace-nowrap">{usd(lostRevenueLow)}</span> to <span className="whitespace-nowrap">{usd(lostRevenue)}</span>
           </p>
         </div>
-        <p className="mt-1 text-[0.85rem] text-mut">
+        <p className="mt-1 text-sm text-mut">
           About {missedLeads} missed leads a month, {lostBookings} of whom would have booked. The low end assumes half of missed leads are existing patients getting back in touch.
         </p>
-        <p className="mt-3 text-[0.75rem] text-mut">
-          How it's worked out: (calls × unanswered % + late texts & DMs) × 4.3 weeks × booking % × treatment value.
+        <p className="mt-3 text-sm text-mut">
+          How it’s worked out: (calls × unanswered % + late texts & DMs) × 4.3 weeks × booking % × treatment value.
         </p>
       </div>
       <Link
@@ -117,53 +122,53 @@ export default function PricingSection({ titleAs = 'h2' }) {
   return (
     <Section
       id="pricing"
-      eyebrow="Pricing"
       titleAs={titleAs}
       title="One plan. No lock-in."
       intro="Everything below, for one flat monthly price. Cancel any month."
     >
-      <div className="grid gap-5 lg:grid-cols-2 items-start">
-        <div className="bg-card border border-line rounded-[18px] p-6 md:p-8">
-          <p className="font-mono text-[0.72rem] uppercase tracking-wide text-accent mb-3">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 items-start">
+        <div className="bg-card border border-line rounded-card p-6 md:p-10">
+          <p className="text-sm font-semibold text-accent mb-3">
             {FOUNDING_SEATS_LEFT < FOUNDING_SEATS
-              ? `Founding Partner pricing · ${FOUNDING_SEATS_LEFT} of ${FOUNDING_SEATS} left`
-              : `Founding Partner pricing · first ${FOUNDING_SEATS} clinics`}
+              ? `Founding partner pricing, ${FOUNDING_SEATS_LEFT} of ${FOUNDING_SEATS} seats left`
+              : `Founding partner pricing for the first ${FOUNDING_SEATS} clinics`}
           </p>
           <div className="flex items-baseline gap-2 flex-wrap">
-            <span className="font-mono text-[3rem] leading-none text-ink">{usd(MONTHLY_PRICE)}</span>
+            <span className="font-mono text-[3rem] leading-none text-ink tabular-nums">{usd(MONTHLY_PRICE)}</span>
             <span className="text-mut">/mo after {TRIAL_DAYS} days free, starting the day you go live</span>
           </div>
-          <p className="mt-2 text-[0.95rem]">
+          <p className="mt-2">
             <s className="text-mut">$497 setup</s> <span className="text-accent font-semibold">waived for our first 3 clinics</span>
           </p>
 
-          <SubHeading className="mt-6 mb-3 font-body font-semibold text-[1rem]">Included</SubHeading>
+          <SubHeading className="mt-8 mb-3 font-body font-semibold text-base">Included</SubHeading>
           <ul className="space-y-3">
             {FEATURES.map((f) => (
-              <li key={f} className="flex gap-3 text-ink text-[0.95rem]">
+              <li key={f} className="flex gap-3 text-ink">
                 <Check className="h-5 w-5 text-good shrink-0" aria-hidden="true" />
                 {f}
               </li>
             ))}
           </ul>
 
-          <SubHeading className="mt-6 mb-3 font-body font-semibold text-[1rem]">Not included</SubHeading>
+          <SubHeading className="mt-8 mb-3 font-body font-semibold text-base">Not included</SubHeading>
           <ul className="space-y-3">
             {NOT_INCLUDED.map((f) => (
-              <li key={f} className="flex gap-3 text-mut text-[0.95rem]">
+              <li key={f} className="flex gap-3 text-mut">
                 <X className="h-5 w-5 text-mut shrink-0" aria-hidden="true" />
                 {f}
               </li>
             ))}
           </ul>
 
-          {/* D7: soft fair-use line; no minutes cap published. */}
-          <p className="mt-6 mb-8 rounded-xl bg-bg2 border border-line p-3.5 text-[0.88rem] text-ink">
-            Covers a typical single-location spa. If your volume ever goes over, we'll tell you first. We never surprise-bill.
+          {/* D7: soft fair-use line; no minutes cap published. A well, not a bordered box inside the card. */}
+          <p className="mt-8 mb-8 rounded-inner bg-bg2 p-4 text-sm text-ink">
+            Covers a typical single-location spa. If your volume ever goes over, we’ll tell you first. We never surprise-bill.
           </p>
 
-          <Link to="/booking" data-cta="pricing" className="btn-primary w-full text-base">Book a 15-min ROI audit</Link>
-          <p className="text-center text-[0.8rem] text-mut mt-3">No lock-in. Cancel any month.</p>
+          {/* Secondary: the calculator’s button (which carries the owner’s numbers) is the one filled primary here. */}
+          <Link to="/booking" data-cta="pricing" className="btn-secondary w-full">Book a 15-min ROI audit</Link>
+          <p className="text-center text-sm text-mut mt-3">No lock-in. Cancel any month.</p>
         </div>
 
         <RoiCalculator headingAs={SubHeading} />

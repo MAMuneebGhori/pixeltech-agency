@@ -13,8 +13,9 @@ const CALENDLY_SCRIPT = 'https://assets.calendly.com/assets/external/widget.js';
 const CALENDLY_ORIGIN = /^https:\/\/([a-z0-9-]+\.)?calendly\.com$/;
 const CALENDLY_TIMEOUT_MS = 10000;
 
-const label = 'text-[0.7rem] font-semibold text-mut uppercase tracking-[0.08em]';
-const input = 'w-full bg-bg2 border border-line rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-accent transition-colors text-ink placeholder-mut';
+const label = 'text-sm font-semibold text-ink';
+// DESIGN.md inputs: constant 1px border, 48px, 16px text (no iOS zoom); focus is the global outline ring.
+const input = 'w-full min-h-12 bg-bg2 border border-line rounded-inner px-3 py-2.5 text-base text-ink placeholder-mut';
 const Req = () => <span className="text-bad" aria-hidden="true">*</span>;
 
 const EMPTY = { firstName: '', lastName: '', email: '', phone: '', company: '', website: '', callsPerWeek: '', bookingSoftware: '', goal: '', fax: '' };
@@ -67,12 +68,12 @@ function Scheduler({ name, email }) {
   return (
     <div>
       <h2 className="text-3xl mb-2 text-center">Pick a time for your audit</h2>
-      <p className="text-mut text-center mb-4">Your details are saved. Choose a slot and you're booked.</p>
+      <p className="text-mut text-center mb-4">Your details are saved. Choose a slot and you’re booked.</p>
       {state === 'failed' ? (
         <p className="text-center text-mut leading-relaxed py-6" role="status">
-          The scheduler didn't load.{' '}
+          The scheduler didn’t load.{' '}
           <a href={CALENDLY_URL} target="_blank" rel="noopener noreferrer" className="text-accent underline">Pick a time on Calendly</a>
-          , or we'll email you to set a time.
+          , or we’ll email you to set a time.
         </p>
       ) : (
         <>
@@ -121,16 +122,13 @@ export default function Booking() {
 
   return (
     <main className="pt-[100px] lg:pt-[120px] pb-[80px] bg-bg">
-      <SEO title="Book a 15-min ROI audit" description="Book a free 15-minute call. We'll show you where your med spa is losing leads and what fixing it is worth." url="/booking" />
+      <SEO title="Book a 15-min ROI audit" description="Book a free 15-minute call. We’ll show you where your med spa is losing leads and what fixing it is worth." url="/booking" />
 
       <div className="max-w-[560px] w-full mx-auto px-5">
         <div className="text-center mb-8">
-          <p className="font-mono text-[0.72rem] uppercase tracking-wider text-mut mb-3">Free · 15 minutes</p>
-          <h1 className="text-4xl md:text-5xl leading-[1.08] mb-3">
-            Book your <em className="text-accent">ROI audit.</em>
-          </h1>
+          <h1 className="text-display-s mb-3">Book your free 15-minute ROI audit.</h1>
           <p className="text-mut max-w-[420px] mx-auto">
-            We'll look at where your calls and DMs go unanswered, and what fixing it is worth to your clinic. We'll also walk you through a real demo call.
+            We’ll look at where your calls and DMs go unanswered, and what fixing it is worth to your clinic. We’ll also walk you through a real demo call.
           </p>
         </div>
 
@@ -141,14 +139,14 @@ export default function Booking() {
             ) : (
               <div className="text-center py-10" role="status">
                 <h2 className="text-3xl mb-3">Request received</h2>
-                <p className="text-mut leading-relaxed">We'll email you to set a time for your audit.</p>
+                <p className="text-mut leading-relaxed">We’ll email you to set a time for your audit.</p>
               </div>
             )
           ) : (
             <form className="grid gap-4" onSubmit={handleSubmit}>
               {roiInputs && (
                 <p className="rounded-lg border border-line bg-bg2 p-3 text-[0.85rem] text-mut">
-                  We'll bring your calculator numbers to the call: {formatRoiRange(roiInputs)} in missed revenue.
+                  We’ll bring your calculator numbers to the call: {formatRoiRange(roiInputs)} in missed revenue.
                 </p>
               )}
               {/* Honeypot: off-screen and skipped by keyboard and screen readers; the backend drops any lead that fills it. */}
@@ -215,7 +213,7 @@ export default function Booking() {
 
               {status === 'error' && (
                 <p role="alert" className="rounded-lg border border-bad/40 bg-bad/5 p-3 text-sm text-ink">
-                  We couldn't send your request. Please try again, or email us at{' '}
+                  We couldn’t send your request. Please try again, or email us at{' '}
                   <a href="mailto:info@pixeltech.agency" className="text-accent underline">info@pixeltech.agency</a>.
                 </p>
               )}

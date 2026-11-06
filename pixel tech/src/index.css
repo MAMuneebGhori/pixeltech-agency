@@ -1,3 +1,5 @@
+/* Hallmark v2.0.0 · genre: editorial · system: DESIGN.md (locked) · posture: restrained · migration of the existing site, content and routes kept · copy: verbatim (SRD F-10 clinical deflection line) */
+/* Hallmark · pre-emit critique: P4 H4 E4 S4 R4 V3 · weakest: V, the home page keeps its approved section order (a migration, not a redesign) */
 @import "tailwindcss";
 
 /* Size-matched fallbacks so text keeps its footprint when Google Fonts swaps in (home CLS fix).
@@ -34,6 +36,7 @@
   --color-accent2: oklch(74% 0.085 75);
   --color-gold: oklch(74% 0.085 75);
   --color-focus: oklch(52% 0.150 60);
+  --color-accent-ink: oklch(97.8% 0.006 75);
   --color-good: oklch(48.7% 0.100 150);
   --color-bad: oklch(50.1% 0.178 29);
 
@@ -55,6 +58,7 @@
   --text-lead--line-height: 1.45;
 
   --radius-card: 20px;
+  --radius-well: 20px; /* same size as a card, named by role: a well is a tinted fill with no border */
   --radius-inner: 12px;
   --shadow-card: none;
   --shadow-raised: 0 1px 2px oklch(20% 0.01 70 / 0.05), 0 12px 32px oklch(20% 0.01 70 / 0.06);
@@ -66,16 +70,15 @@
   --dur-short: 220ms;
   --dur-long: 420ms;
 
-  --animate-fade-up: fade-up 0.6s ease-out 0.2s both;
-  --animate-accordion-down: accordion-down 0.2s ease-out;
+  /* DESIGN.md: the page's one reveal, the hero simulation settling 8px up. */
+  --animate-fade-up: fade-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
 
   @keyframes fade-up {
     from {
       opacity: 0;
-      transform: translateY(24px);
+      transform: translateY(8px);
     }
   }
-  --animate-accordion-up: accordion-up 0.2s ease-out;
   /* Cookie banner + preferences modal (CSS instead of framer-motion, keeps it off public pages). */
   --animate-slide-in-up: slide-in-up 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
   --animate-fade-in: fade-in 0.2s ease-out both;
@@ -89,25 +92,6 @@
   }
   @keyframes pop-in {
     from { opacity: 0; transform: scale(0.95); }
-  }
-
-  @keyframes accordion-down {
-    from {
-      height: 0;
-    }
-
-    to {
-      height: var(--radix-accordion-content-height);
-    }
-  }
-
-  @keyframes accordion-up {
-    from {
-      height: var(--radix-accordion-content-height);
-    }
-    to {
-      height: 0;
-    }
   }
 }
 
@@ -194,6 +178,7 @@
   .btn-primary {
     position: relative;
     display: inline-flex;
+    white-space: nowrap;
     justify-content: center;
     align-items: center;
     background-color: var(--color-ink);
@@ -211,6 +196,7 @@
 
   .btn-primary:hover {
     background-color: var(--color-accent);
+    color: var(--color-accent-ink);
   }
 
   .btn-primary:active {
@@ -225,6 +211,7 @@
   /* Secondary: same shape as the primary, outlined, never louder. */
   .btn-secondary {
     display: inline-flex;
+    white-space: nowrap;
     justify-content: center;
     align-items: center;
     min-height: 52px;
@@ -243,7 +230,7 @@
   }
 
   @media (max-width: 639px) {
-    .btn-primary, .btn-secondary { min-height: 48px; }
+    .btn-primary, .btn-secondary { min-height: 48px; padding-inline: 1.5rem; }
   }
 
   /* The page container (DESIGN.md: 1440px, gutters 16 to 64px). */

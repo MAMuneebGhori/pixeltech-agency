@@ -1,15 +1,13 @@
 import { CallCard, InboxCard, ReminderCard, RecallCard } from './ProductCards';
 
-export function Section({ id, eyebrow, title, intro, alt, titleAs: Title = 'h2', children }) {
+// DESIGN.md: no eyebrow; the heading announces the section. 96px between sections on phones, 144px from md.
+export function Section({ id, title, intro, alt, titleAs: Title = 'h2', children }) {
   return (
-    <section id={id} className={`py-20 md:py-28 border-b border-line scroll-mt-20 ${alt ? 'bg-bg2' : ''}`}>
-      <div className="max-w-[1180px] mx-auto px-4 sm:px-6 md:px-12"
-      >
-        <p className="font-mono text-[0.72rem] uppercase tracking-wider text-mut mb-3">{eyebrow}</p>
-        <Title className="text-[2.2rem] md:text-5xl leading-[1.08] mb-4 max-w-[760px]">{title}</Title>
-        {intro && <p className="text-mut text-[1.05rem] leading-relaxed max-w-[640px] mb-12">{intro}</p>}
-        {!intro && <div className="mb-12" />}
-        {children}
+    <section id={id} className={`py-12 md:py-[72px] scroll-mt-20 ${alt ? 'bg-bg2' : ''}`}>
+      <div className="container-page">
+        <Title className="text-section max-w-[30ch] mb-5">{title}</Title>
+        {intro && <p className="text-lead text-mut max-w-[60ch]">{intro}</p>}
+        <div className="mt-12 md:mt-16">{children}</div>
       </div>
     </section>
   );
@@ -43,16 +41,16 @@ export function RevenueLeakSection() {
     <Section
       id="leak"
       alt
-      eyebrow="The revenue leak"
-      title={<>Your clinic doesn't have a lead problem. <em className="text-accent">It has a follow-up problem.</em></>}
+      title={<>Your clinic doesn’t have a lead problem.<br />It has a follow-up problem.</>}
       intro="You pay to make the phone ring. Then the call lands while your team is with a patient, the DM sits until morning, and the lead books somewhere else."
     >
-      <div className="grid gap-5 md:grid-cols-3">
+      {/* Sibling stats part with a top hairline, not cards on the tinted band. */}
+      <div className="grid gap-10 md:gap-8 md:grid-cols-3">
         {LEAK_STATS.map((s) => (
-          <div key={s.figure} className="bg-card border border-line rounded-[18px] p-6 flex flex-col">
-            <span className="font-mono text-[2.6rem] leading-none text-ink mb-4">{s.figure}</span>
-            <p className="text-ink text-[0.98rem] leading-relaxed mb-6">{s.text}</p>
-            <a href={s.href} target="_blank" rel="noopener noreferrer" className="mt-auto text-[0.78rem] text-accent underline underline-offset-2">
+          <div key={s.figure} className="border-t border-line pt-6 flex flex-col">
+            <span className="font-mono text-[2.6rem] leading-none text-ink mb-4 tabular-nums">{s.figure}</span>
+            <p className="text-ink leading-relaxed mb-6">{s.text}</p>
+            <a href={s.href} target="_blank" rel="noopener noreferrer" className="mt-auto text-sm text-accent underline underline-offset-[0.18em] visited:text-ink2">
               Source: {s.source}
             </a>
           </div>
@@ -64,25 +62,21 @@ export function RevenueLeakSection() {
 
 const STEPS = [
   {
-    n: '01',
     Card: CallCard,
     title: 'Voice receptionist',
     text: 'Answers pricing, hours, parking and service questions (Botox, fillers, laser, facials and more), offers two real calendar slots, and texts a confirmation when the call ends.',
   },
   {
-    n: '02',
     Card: InboxCard,
     title: 'Missed-call text-back & DMs',
     text: 'If a call goes unanswered, or a message arrives on Instagram or Facebook, the system replies by text with the same service menu and booking logic.',
   },
   {
-    n: '03',
     Card: ReminderCard,
     title: 'No-show reminders',
     text: 'Texts patients 24 hours and 2 hours before their visit with quick replies to confirm, reschedule or cancel, and flags anyone who goes quiet.',
   },
   {
-    n: '04',
     Card: RecallCard,
     title: 'Old-lead reactivation',
     text: 'Upload your past client list. Opt-out-compliant SMS and email sequences reach back out, and every re-booked consult is logged.',
@@ -91,21 +85,18 @@ const STEPS = [
 
 export function HowItWorksSection() {
   return (
-    <Section
-      id="how-it-works"
-      eyebrow="How it works"
-      title="One system, from the first ring to the follow-up."
-    >
-      <div className="grid gap-5 md:grid-cols-2">
+    <Section id="how-it-works" title="One system, from the first ring to the follow-up.">
+      {/* Each step sits on the page; its simulation is the only surface (no card around it). */}
+      <ol className="grid gap-x-8 gap-y-16 md:grid-cols-2">
         {STEPS.map((s) => (
-          <div key={s.n} className="min-w-0 bg-card border border-line rounded-[18px] p-6">
-            <span className="font-mono text-[0.8rem] text-accent">{s.n}</span>
-            <h3 className="text-[1.8rem] mt-1 mb-3">{s.title}</h3>
-            <p className="text-mut leading-relaxed mb-5">{s.text}</p>
+          <li key={s.title} className="min-w-0 flex flex-col">
+            <h3 className="text-title mb-3">{s.title}</h3>
+            <p className="text-mut leading-relaxed mb-6 max-w-[60ch]">{s.text}</p>
             <s.Card />
-          </div>
+          </li>
         ))}
-      </div>
+      </ol>
+      <p className="mt-10 text-sm text-mut">Examples use Glow Med Spa, a fictional clinic.</p>
     </Section>
   );
 }
@@ -124,40 +115,39 @@ const COMPARE_ROWS = [
 
 export function ComparisonSection() {
   return (
-    <Section id="compare" alt eyebrow="Why practices switch to us" title="What changes at your front desk.">
-      {/* Table from md up; stacked cards on mobile. */}
-      <div className="hidden md:block overflow-hidden rounded-[18px] border border-line bg-card">
-        <table className="w-full text-left text-[0.92rem]">
-          <thead>
-            <tr className="border-b border-line">
-              <th scope="col" className="p-4 font-semibold text-mut w-[22%]">Front-desk need</th>
-              {COMPARE_COLS.map((c, i) => (
-                <th key={c} scope="col" className={`p-4 font-semibold ${i === 2 ? 'text-ink bg-bg2' : 'text-mut'}`}>{c}</th>
+    <Section id="compare" alt title="What changes at your front desk.">
+      {/* Full-width table, horizontal rules only; our column sits on the deeper well. */}
+      <table className="hidden md:table w-full text-left">
+        <thead>
+          <tr className="border-b border-ink/20">
+            <th scope="col" className="py-4 pr-4 text-sm font-semibold text-mut w-[22%]">Front-desk need</th>
+            {COMPARE_COLS.map((c, i) => (
+              <th key={c} scope="col" className={`py-4 px-4 text-sm font-semibold ${i === 2 ? 'text-ink bg-bg3 rounded-t-inner' : 'text-mut'}`}>{c}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {COMPARE_ROWS.map(([need, ...cells]) => (
+            <tr key={need} className="border-b border-line last:border-0 align-top">
+              <th scope="row" className="py-4 pr-4 font-semibold text-ink">{need}</th>
+              {cells.map((c, i) => (
+                <td key={i} className={`py-4 px-4 leading-relaxed ${i === 2 ? 'text-ink bg-bg3' : 'text-mut'}`}>{c}</td>
               ))}
             </tr>
-          </thead>
-          <tbody>
-            {COMPARE_ROWS.map(([need, ...cells]) => (
-              <tr key={need} className="border-b border-line last:border-0 align-top">
-                <th scope="row" className="p-4 font-semibold text-ink">{need}</th>
-                {cells.map((c, i) => (
-                  <td key={i} className={`p-4 leading-relaxed ${i === 2 ? 'text-ink bg-bg2 font-medium' : 'text-mut'}`}>{c}</td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+          ))}
+        </tbody>
+      </table>
 
-      <div className="md:hidden space-y-4">
+      {/* Phones: each row restacks as a labelled block, parted by hairlines. */}
+      <div className="md:hidden">
         {COMPARE_ROWS.map(([need, ...cells]) => (
-          <div key={need} className="bg-card border border-line rounded-[18px] p-5">
-            <h3 className="font-body font-semibold text-[1rem] mb-3">{need}</h3>
-            <dl className="space-y-3 text-[0.9rem]">
+          <div key={need} className="border-t border-line py-6">
+            <h3 className="font-body font-semibold text-base mb-4">{need}</h3>
+            <dl className="space-y-3">
               {cells.map((c, i) => (
-                <div key={i} className={i === 2 ? 'rounded-xl bg-bg2 p-3' : ''}>
-                  <dt className="font-mono text-[0.68rem] uppercase tracking-wide text-mut">{COMPARE_COLS[i]}</dt>
-                  <dd className={i === 2 ? 'text-ink font-medium' : 'text-mut'}>{c}</dd>
+                <div key={i} className={i === 2 ? 'rounded-inner bg-bg3 p-3' : ''}>
+                  <dt className="text-sm font-semibold text-mut">{COMPARE_COLS[i]}</dt>
+                  <dd className={i === 2 ? 'text-ink' : 'text-mut'}>{c}</dd>
                 </div>
               ))}
             </dl>
@@ -176,23 +166,23 @@ export function StackSection() {
   return (
     <Section
       id="integrations"
-      eyebrow="Works with your stack"
       title="Keep the booking software you already use."
       intro="We connect to your calendar so the receptionist only offers times you actually have open."
     >
+      {/* Wells, not cards: nothing here is clickable. */}
       <div className="grid gap-5 md:grid-cols-2">
-        <div className="bg-card border border-line rounded-[18px] p-6">
-          <h3 className="font-body font-semibold text-[1rem] mb-1">Working today</h3>
-          <p className="text-mut text-[0.9rem] mb-4">Direct integrations.</p>
+        <div className="bg-bg2 rounded-well p-6 md:p-10">
+          <h3 className="font-body font-semibold text-base mb-1">Working today</h3>
+          <p className="text-mut text-sm mb-4">Direct integrations.</p>
           <ul className="flex flex-wrap gap-2">
-            {VERIFIED.map((v) => <li key={v} className="rounded-full border border-good/40 bg-good/5 px-3.5 py-1.5 text-[0.9rem] text-ink">{v}</li>)}
+            {VERIFIED.map((v) => <li key={v} className="rounded-full bg-card px-3.5 py-1.5 text-sm text-ink">{v}</li>)}
           </ul>
         </div>
-        <div className="bg-card border border-line rounded-[18px] p-6">
-          <h3 className="font-body font-semibold text-[1rem] mb-1">Compatible via direct API or monitored sync</h3>
-          <p className="text-mut text-[0.9rem] mb-4">We confirm the setup for your system on the audit call.</p>
+        <div className="bg-bg2 rounded-well p-6 md:p-10">
+          <h3 className="font-body font-semibold text-base mb-1">Compatible via direct API or monitored sync</h3>
+          <p className="text-mut text-sm mb-4">We confirm the setup for your system on the audit call.</p>
           <ul className="flex flex-wrap gap-2">
-            {COMPATIBLE.map((v) => <li key={v} className="rounded-full border border-line px-3.5 py-1.5 text-[0.9rem] text-mut">{v}</li>)}
+            {COMPATIBLE.map((v) => <li key={v} className="rounded-full bg-bg3 px-3.5 py-1.5 text-sm text-mut">{v}</li>)}
           </ul>
         </div>
       </div>
@@ -212,31 +202,29 @@ export function DigestSection() {
   return (
     <Section
       id="digest"
-      eyebrow="Your 9 AM digest"
       title="See every lead, every morning."
-      intro="Each morning you get one email: yesterday's leads, what got booked, and anything that needs a person. Full transcripts are searchable in your dashboard."
+      intro="Each morning you get one email: yesterday’s leads, what got booked, and anything that needs a person. Full transcripts are searchable in your dashboard."
     >
-      <div className="max-w-[560px] bg-card border border-line rounded-[18px] p-6 shadow-[0_30px_80px_rgba(20,20,19,0.06)]">
-        <div className="flex items-center justify-between border-b border-line pb-4 mb-4">
-          <div>
-            <p className="font-semibold text-ink text-[0.95rem]">Glow Med Spa · Daily digest</p>
-            <p className="text-mut text-[0.8rem]">Example email</p>
-          </div>
-          <span className="font-mono text-[0.72rem] text-mut">9:00 AM</span>
+      {/* A simulation well (DESIGN.md): one surface, hairline rows, no stat tiles. */}
+      <figure className="max-w-[560px] bg-bg2 rounded-well p-4 sm:p-6">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 mb-4">
+          <p className="text-sm font-semibold text-ink">Daily digest from Glow Med Spa</p>
+          <time className="font-mono text-[13px] text-mut">9:00 AM</time>
         </div>
-        <dl className="grid grid-cols-2 gap-3 mb-4">
+        <dl className="mb-4">
           {DIGEST.map(([label, n]) => (
-            <div key={label} className="flex flex-col-reverse rounded-xl bg-bg2 border border-line p-3.5">
-              <dt className="text-[0.8rem] text-mut mt-1.5">{label}</dt>
-              <dd className="font-mono text-[1.6rem] leading-none text-ink">{n}</dd>
+            <div key={label} className="flex items-baseline justify-between gap-4 border-t border-line py-3">
+              <dt className="text-ink">{label}</dt>
+              <dd className="font-mono text-lg text-ink tabular-nums">{n}</dd>
             </div>
           ))}
         </dl>
-        <div className="rounded-xl border border-accent/40 p-3.5 text-[0.9rem]">
-          <p className="font-mono text-[0.68rem] uppercase tracking-wide text-accent mb-1">Needs a person</p>
+        <div className="rounded-inner bg-card px-3.5 py-3">
+          <p className="text-[13px] font-semibold text-ink2 mb-1">Needs a person</p>
           <p className="text-ink">Jessica M. asked whether she can get filler while breastfeeding. Flagged for your clinician, with a consult booked for Thursday.</p>
         </div>
-      </div>
+        <figcaption className="mt-4 text-sm text-mut">An example email for Glow Med Spa, a fictional clinic.</figcaption>
+      </figure>
     </Section>
   );
 }
@@ -257,15 +245,15 @@ export function GoLiveSection() {
     <Section
       id="go-live"
       alt
-      eyebrow="Target: live in 7 days"
       title="How we plan to get you live in a week."
       intro="This is our target runbook. Your timeline depends on your calendar system and how quickly we get your menu and policies."
     >
-      <ol className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      {/* One column of seven rows, so no row is ever left orphaned. */}
+      <ol className="max-w-[820px]">
         {RUNBOOK.map((text, i) => (
-          <li key={i} className="relative bg-card border border-line rounded-[18px] p-6">
-            <span className="font-mono text-[0.72rem] uppercase tracking-wide text-accent">Day {i + 1}</span>
-            <p className="mt-3 text-ink leading-relaxed text-[0.95rem]">{text}</p>
+          <li key={i} className="grid grid-cols-[5rem_minmax(0,1fr)] gap-4 border-t border-line py-5 last:border-b">
+            <span className="text-sm font-semibold text-ink2 pt-0.5">Day <span className="font-mono tabular-nums">{i + 1}</span></span>
+            <p className="text-ink leading-relaxed">{text}</p>
           </li>
         ))}
       </ol>
