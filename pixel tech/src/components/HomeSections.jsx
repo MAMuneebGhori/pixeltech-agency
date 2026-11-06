@@ -24,10 +24,10 @@ const LEAK_STATS = [
     href: 'https://www.zenoti.com/thecheckin/how-track-salon-call-conversion-rate',
   },
   {
-    // Moneypenny blocks automated access: confirm this figure by hand before launch (plan D4).
+    // Checked 2026-11-06 via press coverage (the Moneypenny page itself returns 403 to automated fetches).
     figure: '69%',
-    text: 'of callers who reach voicemail hang up without leaving a message. They call the next clinic instead.',
-    source: 'Moneypenny Small Business Call Report',
+    text: 'of callers who reach voicemail hang up without leaving a message.',
+    source: 'Moneypenny Small Business Call Report (UK, 10,000 businesses)',
     href: 'https://moneypenny.com/us/resources/news/small-business-call-report/',
   },
   {
