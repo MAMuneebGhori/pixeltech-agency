@@ -235,7 +235,7 @@ Approval readiness: PASS. Checked R1 (Q2, Q10), R2 (Q9), R3–R5 (Q2), S1–S3 (
 **R5 Dead param.** The pricing CTA links to plain `/booking`. Only the calculator CTA (E5) carries params.
 
 **E1 Analytics.**
-- **Setup:** add `@vercel/analytics` and render `<Analytics />` from `@vercel/analytics/react` in `App.jsx`. It's cookieless, so the cookie banner copy stays true.
+- **Setup (as built, corrected in §9):** `main.jsx` injects `/_vercel/insights/script.js` in production builds; `@vercel/analytics` was not added because its React peer range conflicts with `@remix-run/react`. Web Analytics must be enabled on the Vercel project or the script 404s. It's cookieless, so the cookie banner copy stays true.
 - **Events, using `track()`:** `cta_click` {location: hero|nav|pricing|final|roi}, `roi_edit` (first edit per visit only), `booking_submit`, `booking_error` {status}, `demo_tel_tap`.
 - **Plan check:** custom events need a paid Vercel plan, and page views work on every plan. Check the plan before relying on the events. If the plan is Hobby, ship the page views and leave `track()` calls as harmless no-ops.
 
@@ -248,7 +248,7 @@ Approval readiness: PASS. Checked R1 (Q2, Q10), R2 (Q9), R3–R5 (Q2), S1–S3 (
 
 **E4 Demo-line leads (gated: ships with `VITE_DEMO_PHONE`).**
 - **Lead POST:** the n8n workflow that writes the F-05 lead record also POSTs `{firstName, lastName, phone, service: 'Demo line', source: 'Demo line', goal: <call summary>}` to `/api/leads`, with the header `X-Lead-Secret: $LEAD_INGEST_SECRET`.
-- **Backend validation:** `server.js` accepts `source: 'Demo line'` only with a matching secret. Without it, the backend forces `source = 'Booking Form'`.
+- **Backend validation:** `server.js` accepts `source: 'Demo line'` only with a matching secret, compared with the existing `safeEqual` (`server.js:38`), never `===`. Without it, the backend forces `source = 'Booking Form'`.
 - **Required fields:** `Lead.js` requires `email` and `lastName`, which phone callers may not give. Make both conditionally required (not required when `source === 'Demo line'`).
 - **Duplicates:** n8n dedupes by call ID before posting.
 - **Daily test call:** a scheduled n8n job places one test call (Twilio) to the demo line each morning. If it's not answered with the greeting within 3 rings, it alerts the team WhatsApp. This is SRD F-12 plus §4 Observability.
@@ -372,13 +372,13 @@ Booking states (E2):
 7. **Verify:** lint, tests, build, a 375px check, the Calendly fallback check, then `/design-review`.
 
 ### 8.11 Reality rows
-- REALITY: premise-table pass. All 10 findings have file:line or command receipts; F10 is marked estimated (unverified=1). Receipt: WEBSITE_REDESIGN_PLAN.md §8.1
+- REALITY: premise-table pass. All 10 findings have file:line or command receipts; F10 is marked estimated (unverified=1). Receipt: WEBSITE_REDESIGN_PLAN.md:186
 - REALITY: already-done pass. Nothing in R1–R5 or E1–E5 exists on `origin/main` at 2ed1044 (grep for analytics, `useSearchParams` and Calendly = 0 hits). Receipt: src/pages/Booking.jsx:58
 - REALITY: surface-check pass. Routes `/api/leads` (`server.js:84`) and `/booking` (`App.jsx`) exist. The `@vercel/analytics` and Calendly embed APIs are third-party, to be verified at build time. Receipt: backend/server.js:84
-- REALITY: binding-decisions pass. `gstack-decision-search` returned none. Plan §7 D1–D8 still hold; R1 amends §7 D2's trial start, answered in Q2. Receipt: WEBSITE_REDESIGN_PLAN.md §7
+- REALITY: binding-decisions pass. `gstack-decision-search` returned none. Plan §7 D1–D8 still hold; R1 amends §7 D2's trial start, answered in Q2. Receipt: WEBSITE_REDESIGN_PLAN.md:165
 - REALITY: numbers pass. $21,285 and $10,643 are re-derived from `roi.js`; vendor prices are tagged estimated. Receipt: src/lib/roi.js:18
-- REALITY: deferred-asks pass. There's no linked issue; E3 is deferred with its reason. Receipt: WEBSITE_REDESIGN_PLAN.md §8.8
-- REALITY: pr-count pass. There's no `.gstack/ship-policy.json`, so the default is one PR per wave: wave 1 = tasks 1–5 and 7; wave 2 = task 6, with the demo line. Receipt: WEBSITE_REDESIGN_PLAN.md §8.10
+- REALITY: deferred-asks pass. There's no linked issue; E3 is deferred with its reason. Receipt: WEBSITE_REDESIGN_PLAN.md:352
+- REALITY: pr-count pass. There's no `.gstack/ship-policy.json`, so the default is one PR per wave: wave 1 = tasks 1–5 and 7; wave 2 = task 6, with the demo line. Receipt: WEBSITE_REDESIGN_PLAN.md:365
 
 ### 8.12 Completion summary
 ```
@@ -461,17 +461,286 @@ Matches: R1, R3, R4, R5, S1, S2, E1, E5; the backend sets `source` itself and ca
 
 Launch config, not decisions: set `VITE_CALENDLY_URL` (E2 is inert without it), enable Vercel Web Analytics (E1), and set `VITE_DEMO_PHONE` only after Phase 0 passes.
 
+## 9. Eng review (2026-11-06)
+
+**Target:** `pixel tech/WEBSITE_REDESIGN_PLAN.md` as merged to main (`666b398`, PR #8), checked against the wave-1 code on `conversion-wave-1` (PR #9, `0c9d177`) and `backend/` on main.
+
+## Decision ledger
+
+### X1: committed live secrets in `backend/.env`
+Finding: 1, CRITICAL, confidence 10/10, `backend/.env` (tracked on `origin/main`, blob `ec1339b`; first tracked in `0817ff1`, last changed `ee9b1ce` 2026-06-09); reviewer: eng review (Claude). Repo `MAMuneebGhori/pixeltech-agency` visibility = PUBLIC (`gh repo view`). Keys present: `GEMINI_API_KEY`, `MONGODB_URI`, `RESEND_API_KEY`, `GREEN_API_INSTANCE`, `GREEN_API_TOKEN`, `DEEPSEEK_API_KEY` (values not reproduced). `backend/.gitignore` lists `.env`, which does not untrack a committed file.
+Plan baseline: not in the plan; §8.5 item 3 covers `/api/leads` only.
+Runtime evidence: `git ls-tree origin/main backend/.env` lists the file; masked `git show` confirms non-empty values for every key above. Whether Render reads env vars from its dashboard or depends on this file: unknown.
+Comparison grid:
+| Choice | Current | A | B |
+|---|---|---|---|
+| X1 key rotation (owner: you) | not done | rotate all 6 now | rotate all 6 now |
+| X1 untrack `.env` | tracked, public | `git rm --cached backend/.env` in its own PR; `.env.template` stays | same as A |
+| X1 history rewrite | none | none (keys rotated, so old values are dead) | `git filter-repo` + force-push main (destructive, rewrites every SHA) |
+Question D1:
+D1 — Committed live secrets in a public repo
+Project/branch/task: PixelTech eng review of WEBSITE_REDESIGN_PLAN.md; found on main while reading backend/.
+ELI10: backend/.env holds your database password and API keys, and it's in a public GitHub repo. Anyone can copy them; bots scan GitHub for exactly this. Hiding the file now doesn't help, because the old copies stay readable. Only new keys fix it.
+Stakes if we pick wrong: someone reads or wipes every lead in MongoDB, sends email as you via Resend, or spams from your WhatsApp number.
+Recommendation: A because rotating the keys makes the leaked values useless; a history rewrite adds force-push risk and protects nothing once rotated.
+Completeness: A=10/10, B=10/10
+Header: Leaked keys
+Options:
+A) Rotate + untrack (recommended)
+You rotate all 6 keys today (MongoDB user password, Resend, Green API, Gemini, DeepSeek) and put the new values in Render's env settings. I open a small PR that runs `git rm --cached backend/.env`. History is untouched. Check Render's env vars are set before merging, or the deployed backend loses its config. (human: ~30 min / CC: ~2 min)
+B) Rotate + rewrite history
+Same rotation and untrack, plus `git filter-repo` to delete the file from every commit and a force-push of main. Rewrites every commit SHA, breaks open PRs (#9) and other clones, and GitHub caches and forks still keep the old blob. (human: ~1h / CC: ~10 min)
+
+State: approved
+Actual answer: A) Rotate + untrack. D1 answer "chose that is better", which delegates to the recommendation (A).
+Accepted scope: owner rotates all 6 keys and sets the new values in Render; Claude opens a PR running `git rm --cached backend/.env` (no history rewrite), merged only after Render's env vars are confirmed set.
+History: none
+
+### X2: rate limit on `POST /api/leads` (TODOS.md item, plan §8.5 item 3)
+Finding: 2, INFORMATIONAL, confidence 8/10, `backend/server.js:17-18` (`app.use(cors()); app.use(express.json());`, no `trust proxy`, no limiter) and `TODOS.md:20` ("a per-IP rate limit on `POST /api/leads` (e.g. 5 per 10 minutes)"); reviewer: eng review (Claude). The backend runs behind Render's proxy (plan §8.5 item 1). Without `app.set('trust proxy', 1)`, `req.ip` is the proxy's address, so a per-IP limit becomes one shared bucket: 5 real prospects in 10 minutes lock out everyone. E4 (wave 2) also routes every demo-line lead from n8n's single IP through this route.
+Plan baseline: Q8 deferred rate limiting to TODOS.md, P2 ("Add to TODOS.md (recommended)").
+Runtime evidence: `grep "trust proxy\|rate" backend/server.js` = 0 hits. `express-rate-limit` is not in `backend/package.json`.
+Comparison grid:
+| Choice | Current | A | B |
+|---|---|---|---|
+| X2 when | deferred (Q8), TODOS.md P2 | build now, own PR | stays deferred |
+| X2 spec | per-IP 5/10 min + honeypot | `trust proxy` 1, per-IP 5/10 min, honeypot field, skip limiter when a valid `X-Lead-Secret` arrives (E4) | TODOS.md item amended with the same three requirements |
+| X2 tests | none | backend `node --test`: 6th POST in window gets 429; filled honeypot is dropped without saving | none until built |
+Question D2:
+D2 — Rate limit on the public lead form: build now or keep deferred?
+Project/branch/task: PixelTech eng review; backend/server.js POST /api/leads, TODOS.md item from CEO Q8.
+ELI10: Anyone can hit the lead form's API as fast as they like, and each hit sends you an email and a WhatsApp alert. The TODO plans a limit of 5 per visitor per 10 minutes, but as written it would see every visitor as the same one (they all arrive through Render's proxy), so 5 real prospects would block everyone else.
+Stakes if we pick wrong: a bot floods your alerts, or a naive limit silently turns real prospects away with an error.
+Recommendation: A because the fix is about 25 lines plus 2 tests, and spam on the only lead path is the plan's one existing critical gap (§8.6).
+Completeness: A=10/10, B=7/10
+Header: Rate limit
+Options:
+A) Build now (recommended)
+Separate small backend PR: `app.set('trust proxy', 1)`, a 5-per-10-minute per-IP limit on POST /api/leads (in-memory, ~20 lines, no new dependency), a hidden honeypot field on the booking form, and an exemption for requests with a valid demo-line secret once E4 ships. Two backend tests. Closes the §8.6 critical gap. (human: ~2h / CC: ~15 min)
+B) Keep deferred, fix the TODO
+No code now. Amend the TODOS.md item with the trust-proxy and n8n-exemption requirements so whoever builds it doesn't ship the shared-bucket bug. The spam gap stays open. (human: ~5 min / CC: ~1 min)
+
+State: approved
+Actual answer: A) Build now. D2 answer "A) Build now (recommended)".
+Accepted scope: own backend PR: `trust proxy` 1, in-memory per-IP limit of 5 per 10 minutes on POST /api/leads (no new dependency), honeypot field on the booking form, limiter skipped for a valid `X-Lead-Secret` once E4 ships, and two backend tests (429 on the 6th POST; filled honeypot not saved). Supersedes the Q8 deferral; the TODOS.md item is removed when this merges.
+History: Q8 deferred this to TODOS.md (CEO review).
+
+### X3: call-volume labels kept in two places
+Finding: 3, INFORMATIONAL, confidence 8/10, `src/pages/Booking.jsx:7` (`const CALL_VOLUMES = ['Under 25', '25–50', '50–100', '100+', 'Not sure'];`) and `src/lib/roi.js:47-50` (`return 'Under 25'` … `return '100+'`); reviewer: eng review (Claude), red flag 8 (hand-synced list). `roi.test.js:43-50` asserts the literal strings, not membership in the form's list. Renaming a label on one side makes E5 prefill pick a value the `<select>` doesn't have, so the field renders empty, with every test green.
+Plan baseline: §8.3 E5 "maps `calls` to the select bucket via a new `callsBucket()` in `roi.js`" (approved, Q7). Shape of the label list: unspecified.
+Runtime evidence: both lists match today (static read, PR #9 `0c9d177`).
+Comparison grid:
+| Choice | Current | A | B |
+|---|---|---|---|
+| X3 label source | two hand-synced lists | `CALL_VOLUMES` exported from `roi.js`; `Booking.jsx` imports it; `callsBucket` returns entries of it | unchanged |
+| X3 test | literals only | add one assertion: every non-empty `callsBucket` result is in `CALL_VOLUMES` | unchanged |
+| E5 behavior | approved (Q7) | unchanged | unchanged |
+Question D3:
+D3 — Keep the booking form's call-volume labels in one place?
+Project/branch/task: PixelTech eng review; PR #9 (conversion-wave-1), Booking.jsx and roi.js.
+ELI10: When someone comes from the ROI calculator, the booking form pre-picks their calls-per-week option. The option names live in Booking.jsx, and roi.js has its own copy of the same names. Change one copy and the pre-pick quietly stops working, and no test notices.
+Stakes if we pick wrong: calculator visitors land on a form with the calls field blank, and nobody finds out.
+Recommendation: A because it's a 4-line move plus one assertion, and it removes the silent failure for good.
+Completeness: A=10/10, B=7/10
+Header: Label list
+Options:
+A) One list in roi.js (recommended)
+Move `CALL_VOLUMES` into roi.js and export it; Booking.jsx imports it; callsBucket returns its entries. Add one test assertion that every bucket is a real form option. Lands on PR #9. (human: ~15 min / CC: ~3 min)
+B) Leave as is
+Both lists match today. Anyone editing the labels has to remember the other file. (human: 0 / CC: 0)
+
+State: approved
+Actual answer: A) One list in roi.js. D3 answer "A) One list in roi.js (recommended)".
+Accepted scope: export `CALL_VOLUMES` from `roi.js`, import it in `Booking.jsx`, have `callsBucket` return its entries, and add one assertion in `roi.test.js` that every non-empty bucket is in `CALL_VOLUMES`. Lands on PR #9; E5 behavior unchanged.
+History: none
+
+### X4: Calendly script listeners outlive the scheduler
+Finding: 4, INFORMATIONAL, confidence 6/10 (medium confidence, verify this is actually an issue), `src/pages/Booking.jsx:55-56` (`script.addEventListener('load', init); script.addEventListener('error', () => setState('failed'));`) with cleanup at `:58-61` removing only the `message` listener and the timer; reviewer: eng review (Claude). Under `<StrictMode>` (`src/main.jsx:18`) React mounts effects twice in dev, so `init` is queued twice and `Calendly.initInlineWidget` may run twice into one parent. Production mounts once, so the user-facing effect there is unverified and likely nil.
+Plan baseline: §8.3 E2 states and the §8.13 item 6 "loaded" rule (approved, Q4). Listener lifetime: unspecified.
+Runtime evidence: not run in a browser; whether a second `initInlineWidget` call renders a second iframe is unknown.
+Comparison grid:
+| Choice | Current | A | B |
+|---|---|---|---|
+| X4 listener cleanup | `load`/`error` never removed | both removed in the effect cleanup (named handlers) | unchanged |
+| E2 states and timeout | approved (Q4) | unchanged | unchanged |
+Question D4:
+D4 — Clean up the Calendly script listeners?
+Project/branch/task: PixelTech eng review; PR #9 (conversion-wave-1), Booking.jsx Scheduler.
+ELI10: After a booking is saved, the page loads Calendly's script and waits for it. The code attaches "script loaded" handlers but never removes them, so in development mode (which mounts things twice on purpose) the scheduler may start twice. Real visitors probably never see it, but it's two lines to make it correct.
+Stakes if we pick wrong: at worst a doubled scheduler during local testing that sends someone chasing a fake bug; production impact unverified.
+Recommendation: A because it's two lines that make the component correct under React's own rules.
+Completeness: A=10/10, B=8/10
+Header: Listeners
+Options:
+A) Remove on cleanup (recommended)
+Name the load and error handlers and remove both in the effect cleanup, next to the existing message-listener removal. Lands on PR #9. No change to the E2 states or the 10-second fallback. (human: ~10 min / CC: ~2 min)
+B) Leave as is
+Production mounts once, so visitors are very likely unaffected. Local dev may show a doubled widget. (human: 0 / CC: 0)
+
+State: approved
+Actual answer: A) Remove on cleanup. D4 answer "A) Remove on cleanup (recommended)".
+Accepted scope: name the script `load` and `error` handlers in `Booking.jsx` Scheduler and remove both in the effect cleanup. Lands on PR #9; E2 states and the 10-second fallback unchanged.
+History: none
+
+Approval readiness: PASS. Checked X1 (D1 "chose that is better" → A), X2 (D2 "A) Build now (recommended)"), X3 (D3 "A) One list in roi.js (recommended)"), X4 (D4 "A) Remove on cleanup (recommended)"). No pending rows.
+
+### 9.1 Scope Challenge
+- **Result:** scope accepted as-is. What's left of the plan is wave 2 (E4) plus the TODOs: under 8 files, no new classes or services, so the complexity gate didn't trip.
+- **Findings:**
+  - `[CRITICAL] (confidence: 10/10) backend/.env` — live keys committed to a public repo. X1, approved (D1).
+  - `[INFORMATIONAL] (confidence: 8/10) backend/server.js:17` — the planned per-IP limit would key on Render's proxy IP. X2, approved: build now (D2).
+- **Reality rows:**
+REALITY: premise-table pass. 11 claims checked against code: E1 setup claim FALSE (corrected in §8.3); others hold. unverified=2 (Render env-var source, Calendly double-init). Receipt: 0c9d177 (PR #9; src/main.jsx line 11 there)
+REALITY: already-done pass. Wave 1 is built on PR #9 (`0c9d177`); E4 and the rate limit are absent on main (`grep "trust proxy\|rate" backend/server.js` = 0). Receipt: backend/server.js:85
+REALITY: surface-check pass. `/api/leads` (`server.js:85`), `/booking`, `/_vercel/insights/script.js` (`main.jsx:11`) and the backend `npm test` script (`backend/package.json` `node --test "lib/*.test.js"`, 6/6 pass) exist. Receipt: backend/package.json:8
+REALITY: binding-decisions pass. D1–D8, Q1–Q10 and §8.14 D2/D3 kept. X2 supersedes the Q8 deferral by explicit answer (D2). Receipt: WEBSITE_REDESIGN_PLAN.md:201
+REALITY: numbers pass. 5 per 10 minutes and the 10s Calendly timeout are taken from TODOS.md:20 and Booking.jsx:15; no new benchmarks. Receipt: src/pages/Booking.jsx:15
+REALITY: deferred-asks pass. No linked issue; E3 and the deposit stay deferred in TODOS.md. Receipt: TODOS.md:3
+REALITY: pr-count pass. Default one PR per wave. This review adds PR #10 (secrets) and one backend PR (X2) on top of PR #9; X3/X4 land on PR #9. Each extra PR is one more review and merge. Receipt: WEBSITE_REDESIGN_PLAN.md:374
+
+### 9.2 Architecture
+- **Design-twice:** no new module, service or public boundary. E4 adds a secret check inside an existing route, so there's no second shape to compare.
+- **Findings:**
+  - `[INFORMATIONAL] (confidence: 8/10) src/pages/Booking.jsx:7` + `src/lib/roi.js:47` — hand-synced label list (red flag 8). X3, approved (D3).
+  - `[INFORMATIONAL] (confidence: 8/10) src/main.jsx:11` — §8.3 E1 described `@vercel/analytics`; the build injects the insights script. Factual correction, applied in §8.3; no behavior change.
+  - `[INFORMATIONAL] (confidence: 7/10) WEBSITE_REDESIGN_PLAN.md §8.3 E4` — "matching secret" didn't name a comparison. The existing `safeEqual` (`server.js:38`) is now specified. Reuses an existing helper for approved behavior (Q6); no new choice.
+- **Dispositions:** X3 accepted (D3); E1 drift corrected; E4 compare corrected.
+
+### 9.3 Code quality
+- **Findings:**
+  - `[INFORMATIONAL] (confidence: 6/10) src/pages/Booking.jsx:55` — Calendly script listeners never removed. Medium confidence, verify this is actually an issue. X4, approved (D4).
+  - `[INFORMATIONAL] (confidence: 5/10) src/pages/Booking.jsx:99` — `VITE_API_URL || 'http://localhost:3001'`. If the Vercel env var is missing, every production submit fails with the error state. Medium confidence, verify this is actually an issue. Added to the launch config list below; no code change.
+  - `[INFORMATIONAL] (confidence: 7/10) backend/server.js:120-124` — admin `PATCH /status` passes `req.body.status` to `findByIdAndUpdate` without `runValidators`, so the `['new','contacted']` enum isn't enforced. Admin-only, existing, outside the plan. Noted; no task.
+- **Dispositions:** X4 accepted (D4); `VITE_API_URL` → launch config; admin PATCH noted only.
+
+### 9.4 Tests
+Framework: `node --test` (frontend `src/lib/*.test.js`, backend `lib/*.test.js`). No CLAUDE.md testing section.
+
+```
+CODE PATHS                                         USER FLOWS
+[+] src/lib/roi.js                                 [+] Calculator → booking
+  ├── estimateLeak / break-even [★★★ roi.test]       ├── [★★ TESTED] params round-trip — roi.test fromRoiParams
+  ├── callsBucket boundaries     [★★★ roi.test]       ├── [GAP] bucket ∈ form options (X3)
+  └── to/fromRoiParams hostile   [★★★ roi.test]       └── [GAP] [→E2E] calc → submit → alert → Calendly (manual)
+[+] backend/lib/leadInput.js                       [+] Lead form abuse
+  └── whitelist/caps/source      [★★★ 6 tests]        ├── [GAP] 6th POST in 10 min → 429 (X2)
+[+] backend/server.js POST /api/leads                 └── [GAP] honeypot filled → not saved (X2)
+  ├── 503 when DB down            [GAP] (existing, low value)
+  └── rate limit (X2, planned)    [GAP]            [+] Scheduler (Booking.jsx)
+[+] src/lib/track.js              never throws;       ├── loading → ready → widget   [manual, plan §8.5 item 6]
+                                  no test (trivial)   └── 10s / script error → link  [manual]
+COVERAGE: 5/11 paths tested | GAPS: 4 (1 E2E-manual) | QUALITY: ★★★:4 ★★:1
+```
+
+- **Proposed tests:**
+  - `roi.test.js`, one assertion: every non-empty `callsBucket` result is in `CALL_VOLUMES` (X3). Value: protects=prefill hits a real option; fails_when=a label changes on one side; why_new=literals only today; seam=none; no_claim=select rendering.
+  - Backend `lib/*.test.js`: the 6th POST in the window returns 429, and a filled honeypot isn't saved (X2). Value cards are in the Test Plan artifact.
+  - The end-to-end path stays manual on the Vercel preview (plan §8.5 item 6).
+- **Tests made obsolete:** none.
+- **Test plan artifact:** `~/.gstack/projects/MAMuneebGhori-pixeltech-agency/mamun-docs-eng-review-eng-review-test-plan-20261106-174432.md`.
+
+### 9.5 Performance
+No issues found. `GET /api/leads` loads every lead unpaginated (`server.js:72`); the scale is tens of leads before client #1, so it's fine until the hundreds. Calendly loads only after submit.
+
+### 9.6 Outside voice
+Unavailable. Codex isn't installed, and the native Plan subagent didn't return a complete report within five minutes, so it was stopped. No outside coverage.
+
+### 9.7 What already exists
+- `safeEqual` (`server.js:38`): reused for E4.
+- `pickLeadFields` (`backend/lib/leadInput.js`): the honeypot check goes next to it.
+- `clean` / `callsBucket` / `fromRoiParams` (`roi.js`): X3 builds on them.
+- `track()` (`track.js`).
+- The Calendly `Scheduler` (`Booking.jsx:25`).
+
+### 9.8 NOT in scope
+- **Git history rewrite for `.env`:** rejected in D1. Rotation makes the leaked values dead.
+- **Admin PATCH enum validation:** admin-only, existing, low impact.
+- **Pagination of `GET /api/leads`:** not needed at the current scale.
+- **E4 build:** still wave 2, with the demo line.
+
+### 9.9 Failure modes
+| Path | Failure | Covered by | User sees |
+|---|---|---|---|
+| Rate limit (X2) | Keyed on the proxy IP, so real prospects get blocked | `trust proxy` + 429 test | "We couldn't send your request" (existing error state) |
+| Honeypot (X2) | Autofill fills the hidden field | `autocomplete="off"`, `tabindex=-1`, `aria-hidden` | A real user is silently dropped (watch the lead count after deploy) |
+| `.env` untrack (PR #10) | Render has no env vars set | Merge gate in the PR checklist | Backend 503s on every lead |
+| E5 prefill (X3) | Label drift | X3 assertion | Blank select |
+
+Critical gaps: 0. The earlier spam gap (§8.6) closes when X2 ships.
+
+### 9.10 Launch config additions
+- Confirm `VITE_API_URL` is set on Vercel production.
+- Enable Web Analytics on the Vercel project.
+- Rotate the six leaked keys and set them in Render before PR #10 merges.
+
+## Implementation Tasks
+Synthesized from this review's findings. Each task derives from a specific finding above.
+
+- [ ] **T0 (P1, human: ~30 min / CC: n/a)** — secrets — Rotate all six leaked keys and set them in Render (owner)
+  - Surfaced by: Scope Challenge — X1 `backend/.env`
+  - Files: none (Render dashboard; MongoDB Atlas, Resend, Green API, Google AI Studio, DeepSeek consoles)
+  - Verify: the old MongoDB password fails to connect, and a test lead on the deployed backend still alerts
+- [ ] **T1 (P1, human: ~5 min / CC: ~1 min)** — repo — Merge PR #10 after T0
+  - Surfaced by: X1
+  - Files: `backend/.env` (untracked)
+  - Verify: `git ls-files backend/.env` is empty on main; the Render deploy is healthy
+- [ ] **T2 (P2, human: ~2h / CC: ~15 min)** — backend — Rate limit + honeypot on POST /api/leads
+  - Surfaced by: Scope Challenge — X2 `server.js:17`
+  - Files: `backend/server.js`, `backend/lib/leadInput.js`, `backend/lib/*.test.js`, `pixel tech/src/pages/Booking.jsx` (hidden field), `pixel tech/TODOS.md` (remove the item)
+  - Verify: `cd backend && npm test`; on deploy, one real submit succeeds and the 6th rapid one gets 429
+- [ ] **T3 (P2, human: ~15 min / CC: ~3 min)** — frontend — One `CALL_VOLUMES` list in roi.js
+  - Surfaced by: Architecture — X3 `Booking.jsx:7`
+  - Files: `src/lib/roi.js`, `src/lib/roi.test.js`, `src/pages/Booking.jsx`
+  - Verify: `node --test src/lib/roi.test.js`, `npm run lint`
+- [ ] **T4 (P2, human: ~10 min / CC: ~2 min)** — frontend — Remove Calendly script listeners on cleanup
+  - Surfaced by: Code quality — X4 `Booking.jsx:55`
+  - Files: `src/pages/Booking.jsx`
+  - Verify: `npm run lint`, `npm run build`; one scheduler renders in `npm run dev`
+
+_No new tasks from Performance._
+
+### Parallelization
+| Step | Modules touched | Depends on |
+|------|----------------|------------|
+| T1 | repo config | T0 |
+| T2 | backend/, pixel tech/src/pages | — |
+| T3 + T4 | pixel tech/src/lib, pixel tech/src/pages | — |
+
+- **Lane A:** T3 → T4 (PR #9).
+- **Lane B:** T2 backend part (its own PR).
+- **Conflict:** T2's honeypot input touches `Booking.jsx`, which PR #9 also changes. Land PR #9 first, then add the honeypot field.
+- **Owner lane:** T0 → T1.
+
+### Unresolved decisions
+None.
+
+### Completion summary
+- Step 0: Scope Challenge — scope accepted as-is
+- Reality rows: 7/7 applicable rows emitted (PLAN_REALITY below), 2 unverified premises
+- Architecture Review: 3 issues found
+- Code Quality Review: 3 issues found
+- Test Review: diagram produced, 3 gaps identified
+- Performance Review: 0 issues found
+- NOT in scope: written
+- What already exists: written
+- TODOS.md updates: 0 items proposed to user (the rate-limit item is superseded by X2 and removed when T2 merges)
+- Failure modes: 0 critical gaps flagged
+- Unresolved decisions: 0 in this review
+- Outside voice: codex unavailable (not installed); native fallback gave no complete report in five minutes
+- Parallelization: 2 lanes, 2 parallel / 1 sequential (owner)
+- Lake Score: 4/4
+
 ## GSTACK REVIEW REPORT
 
 | Review | Trigger | Why | Runs | Status | Findings |
 |--------|---------|-----|------|--------|----------|
 | CEO Review | `/plan-ceo-review` | Scope & strategy | 2 | ISSUES OPEN | 8 proposals, 7 accepted, 1 deferred; build check: 2 findings, both resolved (§8.14) |
-| Outside Review | native Claude subagent (user-requested) | Independent 2nd opinion | 1 | completed | 23 findings; 23 resolved (4 by user decision Q9, 1 by Q10, 18 as mechanical fixes in §8.13); 0 unresolved |
-| Eng Review | `/plan-eng-review` | Architecture & tests (required) | 0 | — | — |
+| Outside Review | codex (eng phase), native fallback | Independent 2nd opinion | 2 | unavailable (eng); completed (CEO, native subagent) | eng: no coverage; CEO: 23 findings, 23 resolved |
+| Eng Review | `/plan-eng-review` | Architecture & tests (required) | 1 | ISSUES OPEN | 9 issues, 0 critical gaps; plus 2 Scope Challenge findings (1 CRITICAL: leaked secrets) |
 | Design Review | `/plan-design-review` | UI/UX gaps | 0 | — | — |
 | DX Review | `/plan-devex-review` | Developer experience gaps | 0 | — | — |
 
-- **OUTSIDE COVERAGE:** native Claude subagent, spec review/outside voice, completed (score 6/10). Backend files were unreadable to it, and I verified those claims directly. No completed external (non-Claude) review.
-- **VERDICT:** CEO review complete, with 1 existing critical gap (spam and mass assignment on the public lead endpoint, partly addressed by task 1's field whitelist). Eng review required.
+- **OUTSIDE COVERAGE:** eng phase: codex not installed, and the native Plan subagent was stopped at the five-minute limit without a complete report, so the eng phase has no outside coverage. CEO phase: native Claude subagent completed (6/10). No completed external (non-Claude) review.
+- **VERDICT:** No review is CLEAR. Eng review ran with ISSUES OPEN; every finding is mapped to an approved task (T0–T4). Ready to implement once T0 (key rotation) is underway.
 
 NO UNRESOLVED DECISIONS
