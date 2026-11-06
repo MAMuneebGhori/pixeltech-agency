@@ -36,7 +36,7 @@ const ROI_FIELDS = [
   { key: 'callsPerWeek', label: 'Inbound calls per week' },
   {
     key: 'missedPct', label: 'Calls that go unanswered (%)', max: 100,
-    hint: <>Default is the salon & spa average, <a href="https://www.zenoti.com/thecheckin/how-track-salon-call-conversion-rate" target="_blank" rel="noopener noreferrer" className="text-accent underline underline-offset-2">Zenoti, 2026</a>.</>,
+    hint: <>Default is the salon & spa average, <a href="https://www.zenoti.com/thecheckin/how-track-salon-call-conversion-rate" target="_blank" rel="noopener noreferrer" className="text-accent underline underline-offset-2 whitespace-nowrap">Zenoti, 2026</a>.</>,
   },
   { key: 'missedMessagesPerWeek', label: 'Texts & DMs answered over an hour late, per week' },
   { key: 'bookPct', label: 'Missed leads who would have booked (%)', max: 100, hint: 'Our conservative assumption. Use your own close rate if you know it.' },
@@ -52,16 +52,21 @@ function RoiCalculator({ headingAs: Heading }) {
   const breakEven = bookingsToBreakEven(form.treatmentValue);
 
   // DESIGN.md inputs: bg2 fill, a constant 1px line border, 48px, 16px text; focus comes from the global ring.
-  const field = 'mt-1.5 w-full min-h-12 rounded-inner border border-line bg-bg2 px-4 font-mono text-base text-ink tabular-nums';
+  const field = 'mt-1.5 w-full min-h-12 rounded-inner border border-field bg-bg2 px-4 font-mono text-base text-ink tabular-nums';
 
   return (
     <div className="bg-card border border-line rounded-card p-6 md:p-10">
-      <Heading className="text-title mb-1">What missed leads cost you</Heading>
-      <p className="text-mut text-sm mb-6">Put in your own numbers. The defaults are a starting point.</p>
+      {/* No heading prop: the surrounding Section already carries the head and intro (/pricing). */}
+      {Heading && (
+        <>
+          <Heading className="text-title mb-1">What missed leads cost you</Heading>
+          <p className="text-mut text-sm mb-6">Put in your own numbers. The defaults are a starting point.</p>
+        </>
+      )}
 
       <div className="grid gap-4 sm:grid-cols-2 mb-6">
         {ROI_FIELDS.map(({ key, label, max, hint }) => (
-          <label key={key} className="text-sm font-semibold text-ink">
+          <label key={key} className={`text-sm font-semibold text-ink ${key === 'treatmentValue' ? 'sm:col-span-2' : ''}`}>
             {label}
             <input
               type="number" inputMode="numeric" min="0" max={max}
@@ -116,17 +121,51 @@ function RoiCalculator({ headingAs: Heading }) {
   );
 }
 
+const TITLE = 'One plan. No lock-in.';
+const INTRO = 'Everything below, for one flat monthly price. Cancel any month.';
+
 export default function PricingSection({ titleAs = 'h2' }) {
   // One level below the section title, so /pricing (h1) doesn't skip to h3.
-  const SubHeading = titleAs === 'h1' ? 'h2' : 'h3';
+  // On /pricing: a short page head with the action, the price card, then the calculator as its own
+  // section with a real section head (h2 at --text-section), so the heading ladder reads h1 > h2.
+  if (titleAs === 'h1') {
+    return (
+      <>
+        <section className="pt-12 md:pt-16 pb-14 md:pb-20">
+          <div className="container-page">
+            <h1 className="text-display-s max-w-[20ch] mb-5">{TITLE}</h1>
+            <p className="text-lead text-mut max-w-[60ch] mb-8">{INTRO}</p>
+            <Link to="/booking" data-cta="pricing" className="btn-primary">Book a 15-min ROI audit</Link>
+          </div>
+        </section>
+        <section id="pricing" className="pb-12 md:pb-[72px] scroll-mt-20">
+          <div className="container-page"><div className="max-w-[720px]"><PriceCard /></div></div>
+        </section>
+        <Section id="calculator" alt title="What missed leads cost you" intro="Put in your own numbers. The defaults are a starting point.">
+          <div className="max-w-[720px]"><RoiCalculator /></div>
+        </Section>
+      </>
+    );
+  }
   return (
-    <Section
-      id="pricing"
-      titleAs={titleAs}
-      title="One plan. No lock-in."
-      intro="Everything below, for one flat monthly price. Cancel any month."
-    >
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 items-start">
+    <Section id="pricing" titleAs={titleAs} title={TITLE} intro={INTRO}>
+      <PricingGrid SubHeading="h3" />
+    </Section>
+  );
+}
+
+// Home: the price card and the calculator side by side under one section head.
+function PricingGrid({ SubHeading }) {
+  return (
+    <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 items-start">
+      <PriceCard />
+      <RoiCalculator headingAs={SubHeading} />
+    </div>
+  );
+}
+
+function PriceCard() {
+  return (
         <div className="bg-card border border-line rounded-card p-6 md:p-10">
           <p className="text-sm font-semibold text-accent mb-3">
             {FOUNDING_SEATS_LEFT < FOUNDING_SEATS
@@ -141,7 +180,7 @@ export default function PricingSection({ titleAs = 'h2' }) {
             <s className="text-mut">$497 setup</s> <span className="text-accent font-semibold">waived for our first 3 clinics</span>
           </p>
 
-          <SubHeading className="mt-8 mb-3 font-body font-semibold text-base">Included</SubHeading>
+          <p className="mt-8 mb-3 font-semibold">Included</p>
           <ul className="space-y-3">
             {FEATURES.map((f) => (
               <li key={f} className="flex gap-3 text-ink">
@@ -151,7 +190,7 @@ export default function PricingSection({ titleAs = 'h2' }) {
             ))}
           </ul>
 
-          <SubHeading className="mt-8 mb-3 font-body font-semibold text-base">Not included</SubHeading>
+          <p className="mt-8 mb-3 font-semibold">Not included</p>
           <ul className="space-y-3">
             {NOT_INCLUDED.map((f) => (
               <li key={f} className="flex gap-3 text-mut">
@@ -170,9 +209,5 @@ export default function PricingSection({ titleAs = 'h2' }) {
           <Link to="/booking" data-cta="pricing" className="btn-secondary w-full">Book a 15-min ROI audit</Link>
           <p className="text-center text-sm text-mut mt-3">No lock-in. Cancel any month.</p>
         </div>
-
-        <RoiCalculator headingAs={SubHeading} />
-      </div>
-    </Section>
   );
 }

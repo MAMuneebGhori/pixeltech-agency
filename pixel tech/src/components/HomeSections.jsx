@@ -45,7 +45,7 @@ export function RevenueLeakSection() {
       intro="You pay to make the phone ring. Then the call lands while your team is with a patient, the DM sits until morning, and the lead books somewhere else."
     >
       {/* Sibling stats part with a top hairline, not cards on the tinted band. */}
-      <div className="grid gap-10 md:gap-8 md:grid-cols-3">
+      <div className="grid gap-10 lg:gap-8 lg:grid-cols-3">
         {LEAK_STATS.map((s) => (
           <div key={s.figure} className="border-t border-line pt-6 flex flex-col">
             <span className="font-mono text-[2.6rem] leading-none text-ink mb-4 tabular-nums">{s.figure}</span>

@@ -118,7 +118,7 @@ export default function Admin() {
                 type="text" 
                 value={username} 
                 onChange={e => setUsername(e.target.value)}
-                className="w-full bg-ink/[0.04] border border-ink/[0.08] rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors text-ink"
+                className="w-full bg-bg2 border border-field rounded-inner min-h-12 px-4 py-2.5 text-sm transition-colors text-ink"
                 required
               />
             </div>
@@ -129,7 +129,7 @@ export default function Admin() {
                   type={showPassword ? "text" : "password"} 
                   value={password} 
                   onChange={e => setPassword(e.target.value)}
-                  className="w-full bg-ink/[0.04] border border-ink/[0.08] rounded-lg pl-4 pr-10 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors text-ink"
+                  className="w-full bg-bg2 border border-field rounded-inner min-h-12 pl-4 pr-10 py-2.5 text-sm transition-colors text-ink"
                   required
                 />
                 <button

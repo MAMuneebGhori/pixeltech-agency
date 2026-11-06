@@ -11,7 +11,7 @@ export default function HeroSection() {
   const dialogRef = useRef(null);
 
   return (
-    <section className="pt-10 lg:pt-16 pb-16 lg:pb-24 border-b border-line">
+    <section className="pt-10 lg:pt-10 pb-16 lg:pb-12 border-b border-line">
       <div className="container-page grid grid-cols-1 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] gap-12 items-center">
         {/* No entrance animation: the headline is the LCP element, and a fade-in delays it. */}
         <div className="min-w-0">

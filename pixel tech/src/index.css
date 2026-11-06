@@ -1,5 +1,9 @@
 /* Hallmark v2.0.0 · genre: editorial · system: DESIGN.md (locked) · posture: restrained · migration of the existing site, content and routes kept · copy: verbatim (SRD F-10 clinical deflection line) */
 /* Hallmark · pre-emit critique: P4 H4 E4 S4 R4 V3 · weakest: V, the home page keeps its approved section order (a migration, not a redesign) */
+/* Hallmark · waive 49b · two lines at most at 320px, each a real citation (Moneypenny, Harvard Business Review) · the leak stats cite their full source so an owner can check each number before the ROI audit */
+/* Hallmark · waive 77 · the runbook, the digest email and the FAQ hold a 65ch to 820px measure · these read as lists, so the narrow measure is the point, not a thin section */
+/* Hallmark · waive 59 · pricing page: 80px between the page head and the price card that it names · the head and the price card are one reading unit on the pricing page */
+/* Hallmark · dismissed 59 · the home page keeps the eleven sections approved in WEBSITE_REDESIGN_PLAN.md section 4; merging them is a content decision for the design review */
 @import "tailwindcss";
 
 /* Size-matched fallbacks so text keeps its footprint when Google Fonts swaps in (home CLS fix).
@@ -29,6 +33,7 @@
   --color-bg3: oklch(92.4% 0.014 72);
   --color-card: oklch(99.3% 0.003 80);
   --color-line: oklch(90.5% 0.012 76);
+  --color-field: oklch(62% 0.016 70); /* input edges: 3:1 or better on card, bg and bg2 (WCAG 1.4.11) */
   --color-ink: oklch(19.5% 0.006 70);
   --color-ink2: oklch(33% 0.010 70);
   --color-mut: oklch(50% 0.018 70);

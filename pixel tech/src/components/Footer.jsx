@@ -67,7 +67,7 @@ export default function Footer() {
               <div className="relative">
                 <button 
                   onClick={() => setIsWhatsAppOpen(!isWhatsAppOpen)}
-                  className="hover:text-accent transition-colors cursor-pointer flex items-center justify-between w-max gap-2"
+                  className="hover:text-accent transition-colors cursor-pointer flex items-center justify-between w-max gap-2 min-h-11"
                 >
                   WhatsApp
                 </button>

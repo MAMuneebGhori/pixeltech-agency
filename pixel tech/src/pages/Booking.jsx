@@ -15,7 +15,7 @@ const CALENDLY_TIMEOUT_MS = 10000;
 
 const label = 'text-sm font-semibold text-ink';
 // DESIGN.md inputs: constant 1px border, 48px, 16px text (no iOS zoom); focus is the global outline ring.
-const input = 'w-full min-h-12 bg-bg2 border border-line rounded-inner px-3 py-2.5 text-base text-ink placeholder-mut';
+const input = 'w-full min-h-12 bg-bg2 border border-field rounded-inner px-3 py-2.5 text-base text-ink placeholder-mut';
 const Req = () => <span className="text-bad" aria-hidden="true">*</span>;
 
 const EMPTY = { firstName: '', lastName: '', email: '', phone: '', company: '', website: '', callsPerWeek: '', bookingSoftware: '', goal: '', fax: '' };
@@ -192,14 +192,14 @@ export default function Booking() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                 <div className="grid gap-1.5">
                   <label htmlFor="callsPerWeek" className={label}>Calls per week</label>
-                  <select id="callsPerWeek" name="callsPerWeek" value={form.callsPerWeek} onChange={onInput} className={`${input} h-[42px]`}>
+                  <select id="callsPerWeek" name="callsPerWeek" value={form.callsPerWeek} onChange={onInput} className={input}>
                     <option value="">Choose…</option>
                     {CALL_VOLUMES.map((v) => <option key={v} value={v}>{v}</option>)}
                   </select>
                 </div>
                 <div className="grid gap-1.5">
                   <label htmlFor="bookingSoftware" className={label}>Booking software</label>
-                  <select id="bookingSoftware" name="bookingSoftware" value={form.bookingSoftware} onChange={onInput} className={`${input} h-[42px]`}>
+                  <select id="bookingSoftware" name="bookingSoftware" value={form.bookingSoftware} onChange={onInput} className={input}>
                     <option value="">Choose…</option>
                     {BOOKING_SOFTWARE.map((v) => <option key={v} value={v}>{v}</option>)}
                   </select>
