@@ -31,14 +31,18 @@ export default function HeroSection() {
                 Call the Glow Med Spa demo line
               </button>
             ) : (
-              <Link to="/booking" className="btn-primary text-base">Book a live demo</Link>
+              <Link to="/booking" data-cta="hero" className="btn-primary text-base">Book a 15-min ROI audit</Link>
             )}
             {DEMO_PHONE && (
-              <Link to="/booking" className="inline-flex items-center justify-center rounded-full border border-ink px-8 py-4 font-semibold text-ink hover:bg-ink hover:text-bg transition-colors">
+              <Link to="/booking" data-cta="hero" className="inline-flex items-center justify-center rounded-full border border-ink px-8 py-4 font-semibold text-ink hover:bg-ink hover:text-bg transition-colors">
                 Book a 15-min ROI audit
               </Link>
             )}
           </div>
+          {/* No live-demo claim until the Phase 0 battery passes (plan 8.13 R2); the walkthrough uses the recorded call. */}
+          {!DEMO_PHONE && (
+            <p className="mt-3 text-[0.9rem] text-mut">Free, 15 minutes. We'll walk you through a real demo call.</p>
+          )}
         </div>
 
         <div className="motion-safe:animate-fade-up w-full max-w-[460px] mx-auto lg:mr-0">
@@ -58,7 +62,7 @@ export default function HeroSection() {
           <ol className="list-decimal pl-5 space-y-1.5 mb-6 text-[0.95rem]">
             {TEST_PROMPTS.map((p) => <li key={p}>{p}</li>)}
           </ol>
-          <a href={`tel:${DEMO_PHONE}`} className="btn-primary w-full text-base">Call {DEMO_PHONE}</a>
+          <a href={`tel:${DEMO_PHONE}`} data-event="demo_tel_tap" className="btn-primary w-full text-base">Call {DEMO_PHONE}</a>
           <button type="button" onClick={() => dialogRef.current?.close()} className="mt-3 w-full text-[0.9rem] text-mut hover:text-ink">
             Close
           </button>
