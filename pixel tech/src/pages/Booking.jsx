@@ -17,7 +17,7 @@ const label = 'text-[0.7rem] font-semibold text-mut uppercase tracking-[0.08em]'
 const input = 'w-full bg-bg2 border border-line rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-accent transition-colors text-ink placeholder-mut';
 const Req = () => <span className="text-bad" aria-hidden="true">*</span>;
 
-const EMPTY = { firstName: '', lastName: '', email: '', phone: '', company: '', website: '', callsPerWeek: '', bookingSoftware: '', goal: '' };
+const EMPTY = { firstName: '', lastName: '', email: '', phone: '', company: '', website: '', callsPerWeek: '', bookingSoftware: '', goal: '', fax: '' };
 
 // Calendly inline scheduler. 'ready' needs Calendly's own postMessage, not just script onload, because the
 // iframe can still fail after the script loads. Anything else after 10s falls back to a plain link.
@@ -151,6 +151,11 @@ export default function Booking() {
                   We'll bring your calculator numbers to the call: {formatRoiRange(roiInputs)} in missed revenue.
                 </p>
               )}
+              {/* Honeypot: off-screen and skipped by keyboard and screen readers; the backend drops any lead that fills it. */}
+              <div aria-hidden="true" className="absolute -left-[9999px] w-px h-px overflow-hidden">
+                <label htmlFor="fax">Fax</label>
+                <input id="fax" name="fax" value={form.fax} onChange={onInput} tabIndex={-1} autoComplete="off" />
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                 <div className="grid gap-1.5">
                   <label htmlFor="firstName" className={label}>First name <Req /></label>
