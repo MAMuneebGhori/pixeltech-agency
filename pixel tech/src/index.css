@@ -4,11 +4,11 @@
    Values computed from each web font's hhea metrics and letter-frequency widths vs the local font.
    Android has neither local font, so it falls through to the generic family as before. */
 @font-face {
-  font-family: "Inter Fallback";
+  font-family: "Instrument Sans Fallback";
   src: local("Arial"), local("ArialMT");
-  size-adjust: 107.29%;
-  ascent-override: 90.29%;
-  descent-override: 22.48%;
+  size-adjust: 103.25%;
+  ascent-override: 93.95%;
+  descent-override: 24.21%;
   line-gap-override: 0%;
 }
 @font-face {
@@ -21,23 +21,50 @@
 }
 
 @theme {
-  /* Warm editorial palette (redesign spec). accent is the AA-safe text gold; gold is the spec champagne, decorative/large only (2.4:1 on bg). */
-  --color-bg: #FAF8F5;
-  --color-bg2: #F3EFE9;
-  --color-card: #FFFFFF;
-  --color-line: #EAE6DF;
-  --color-ink: #141413;
-  --color-mut: #6B655C;
-  --color-accent: #7D5E3A;
-  --color-accent2: #C59B6D;
-  --color-good: #2E6F40;
-  --color-bad: #B3261E;
-  --color-gold: #C59B6D;
+  /* DESIGN.md v2 is the rule; values and contrast ratios are listed there. gold is decorative only (2.2:1 on bg). */
+  --color-bg: oklch(97.8% 0.006 75);
+  --color-bg2: oklch(95.2% 0.010 75);
+  --color-bg3: oklch(92.4% 0.014 72);
+  --color-card: oklch(99.3% 0.003 80);
+  --color-line: oklch(90.5% 0.012 76);
+  --color-ink: oklch(19.5% 0.006 70);
+  --color-ink2: oklch(33% 0.010 70);
+  --color-mut: oklch(50% 0.018 70);
+  --color-accent: oklch(48.5% 0.080 62);
+  --color-accent2: oklch(74% 0.085 75);
+  --color-gold: oklch(74% 0.085 75);
+  --color-focus: oklch(52% 0.150 60);
+  --color-good: oklch(48.7% 0.100 150);
+  --color-bad: oklch(50.1% 0.178 29);
 
   --font-display: "Instrument Serif", "Instrument Serif Fallback", Georgia, serif;
-  --font-body: "Inter", "Inter Fallback", sans-serif;
+  --font-body: "Instrument Sans", "Instrument Sans Fallback", sans-serif;
   --font-serif: "Instrument Serif", "Instrument Serif Fallback", Georgia, serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  /* Type roles (DESIGN.md table): fluid from 375 to 1440. */
+  --text-display: clamp(2.75rem, 1.78rem + 4.13vw, 5.25rem);
+  --text-display--line-height: 1.02;
+  --text-display-s: clamp(2.25rem, 1.67rem + 2.48vw, 3.75rem);
+  --text-display-s--line-height: 1.06;
+  --text-section: clamp(2.125rem, 1.69rem + 1.86vw, 3.25rem);
+  --text-section--line-height: 1.08;
+  --text-title: clamp(1.375rem, 1.31rem + 0.28vw, 1.5625rem);
+  --text-title--line-height: 1.15;
+  --text-lead: clamp(1.125rem, 1.06rem + 0.28vw, 1.3125rem);
+  --text-lead--line-height: 1.45;
+
+  --radius-card: 20px;
+  --radius-inner: 12px;
+  --shadow-card: none;
+  --shadow-raised: 0 1px 2px oklch(20% 0.01 70 / 0.05), 0 12px 32px oklch(20% 0.01 70 / 0.06);
+  --container-page: 90rem;
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in: cubic-bezier(0.55, 0, 1, 0.45);
+  --dur-micro: 120ms;
+  --dur-short: 220ms;
+  --dur-long: 420ms;
 
   --animate-fade-up: fade-up 0.6s ease-out 0.2s both;
   --animate-accordion-down: accordion-down 0.2s ease-out;
@@ -93,9 +120,11 @@
   
   html {
     scroll-behavior: smooth;
+    overflow-x: clip;
   }
-  
+
   body {
+    overflow-x: clip;
     background-color: var(--color-bg);
     color: var(--color-ink);
     font-family: var(--font-body);
@@ -123,6 +152,32 @@
   .font-serif {
     font-family: var(--font-serif);
   }
+
+  h1, h2, h3 { text-wrap: balance; }
+  p { text-wrap: pretty; }
+
+  /* One focus ring for every control, shown instantly (no transition on outline). */
+  :focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+  input:focus-visible, select:focus-visible, textarea:focus-visible {
+    outline-offset: -2px;
+  }
+
+  ::selection {
+    background-color: var(--color-bg3);
+    color: var(--color-ink);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
 }
 
 @layer utilities {
@@ -144,27 +199,59 @@
     background-color: var(--color-ink);
     color: var(--color-bg);
     font-weight: 600;
-    font-size: 1.1rem;
-    padding: 1rem 2.5rem;
+    font-size: 1rem;
+    min-height: 52px;
+    padding: 0 2.5rem;
     border-radius: 9999px;
     text-decoration: none;
     border: none;
     cursor: pointer;
-    transition: background-color 0.2s ease, transform 0.2s ease;
+    transition: background-color var(--dur-short) var(--ease-out), transform var(--dur-micro) var(--ease-out);
   }
 
   .btn-primary:hover {
     background-color: var(--color-accent);
-    transform: translateY(-1px);
   }
 
   .btn-primary:active {
     transform: translateY(1px);
   }
 
-  .btn-primary:focus-visible {
-    outline: 2px solid var(--color-accent);
-    outline-offset: 3px;
+  .btn-primary:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  /* Secondary: same shape as the primary, outlined, never louder. */
+  .btn-secondary {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 52px;
+    padding: 0 2.5rem;
+    border-radius: 9999px;
+    border: 1px solid var(--color-ink);
+    color: var(--color-ink);
+    font-weight: 600;
+    font-size: 1rem;
+    text-decoration: none;
+    transition: background-color var(--dur-short) var(--ease-out);
+  }
+
+  .btn-secondary:hover {
+    background-color: var(--color-bg2);
+  }
+
+  @media (max-width: 639px) {
+    .btn-primary, .btn-secondary { min-height: 48px; }
+  }
+
+  /* The page container (DESIGN.md: 1440px, gutters 16 to 64px). */
+  .container-page {
+    width: 100%;
+    max-width: var(--container-page);
+    margin-inline: auto;
+    padding-inline: clamp(16px, 4.4vw, 64px);
   }
 
   .scrollbar-hide {
@@ -183,10 +270,10 @@
     background: transparent;
   }
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(20, 20, 19, 0.12);
+    background: color-mix(in oklch, var(--color-ink) 12%, transparent);
     border-radius: 10px;
   }
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: rgba(20, 20, 19, 0.25);
+    background: color-mix(in oklch, var(--color-ink) 25%, transparent);
   }
 }
