@@ -1,0 +1,5 @@
+# Local agent/tooling state, not project code
+.agents/
+.claude/skills/
+.ua/
+skills-lock.json
