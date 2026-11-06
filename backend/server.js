@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
-const { OpenAI } = require('openai');
+const crypto = require('crypto');
 
 const Lead = require('./models/Lead');
 const { sendLeadNotifications } = require('./services/notifications');
@@ -25,150 +25,47 @@ if (process.env.MONGODB_URI) {
   console.log('⚠️ MONGODB_URI not found in .env. Please set it to connect to the database.');
 }
 
-// Initialize DeepSeek via OpenRouter
-const ai = new OpenAI({
-  baseURL: "https://openrouter.ai/api/v1",
-  apiKey: process.env.DEEPSEEK_API_KEY || 'fake-key'
-});
-
 // ==========================================
-// CHATBOT API
+// ADMIN AUTH
 // ==========================================
-app.post('/api/chat', async (req, res) => {
-  try {
-    const { message, history } = req.body;
-    
-    if (!process.env.DEEPSEEK_API_KEY) {
-      return res.status(500).json({ error: 'API_KEY_MISSING' });
-    }
+// shortcut: without ADMIN_SESSION_SECRET the secret is per-process, so a restart logs admins out; set it to persist sessions.
+const sessionSecret = process.env.ADMIN_SESSION_SECRET || crypto.randomBytes(32).toString('hex');
+const SESSION_MS = 8 * 60 * 60 * 1000;
 
-    const formattedHistory = history.map(msg => ({
-      role: msg.role === 'user' ? 'user' : 'assistant',
-      content: msg.content
-    }));
+const sign = (payload) => crypto.createHmac('sha256', sessionSecret).update(payload).digest('hex');
+// Hash both sides so timingSafeEqual gets equal-length buffers and leaks nothing about length.
+const safeEqual = (a, b) => crypto.timingSafeEqual(
+  crypto.createHash('sha256').update(String(a)).digest(),
+  crypto.createHash('sha256').update(String(b)).digest()
+);
 
-    // INTERCEPT: If the AI recently sent an offline fallback message, and user replied with contact info
-    const historyForCheck = [...formattedHistory].reverse();
-    const lastAssistantMsg = historyForCheck.find(m => m.role === 'assistant')?.content || '';
-    const isOfflineFallback = lastAssistantMsg.includes('human team') || lastAssistantMsg.includes('high traffic');
-    
-    if (isOfflineFallback && (message.includes('@') || /\d{7,}/.test(message))) {
-      // Save offline lead
-      if (mongoose.connection.readyState === 1) {
-        const newLead = new Lead({
-          firstName: 'Offline',
-          lastName: 'Lead',
-          email: message.includes('@') ? message : 'Provided Phone',
-          phone: /\d{7,}/.test(message) ? message : '-',
-          budget: 'N/A',
-          service: 'AI Chatbot Inquiry',
-          source: 'AI Chatbot',
-          goal: 'User provided details after AI went offline.',
-          chatHistory: history,
-          chatSummary: 'AI went offline. User provided contact details directly.'
-        });
-        const savedLead = await newLead.save();
-        sendLeadNotifications(savedLead).catch(console.error);
-      }
-      return res.json({ response: "Thank you! I've securely saved your details and sent them to our team. They will reach out to you shortly." });
-    }
-
-    try {
-      const systemInstruction = `You are an AI sales assistant for Pixeltech Agency. Your goal is to be helpful, professional, and ultimately collect the user's name, email, phone number, budget, and a brief description of their current lead follow-up process (their goal). Pixeltech installs an automated system for Med Spas and Clinics that follows up with every lead in under 60 seconds and books them straight into their calendar. Don't be too pushy, be conversational. Ask for these details naturally.
-
-CRITICAL INSTRUCTIONS:
-1. Pay close attention to numbers. A phone number will typically have 10+ digits or start with a +. An email will always have an @ symbol. Do NOT mix them up.
-2. Ask for their budget range and what their current lead follow-up challenges are.
-3. Once you have collected their name, email, phone number, budget, and project goal, thank them and let them know the team will be in touch shortly.
-4. EXTREMELY IMPORTANT: Do NOT, under ANY circumstances, output the JSON block until you have explicitly asked the user for and successfully received ALL FIVE of these details: Name, Email, Phone, Budget, and Project Goal.
-5. ONLY when you have all five details, you MUST append a JSON block at the very end of your final response in this exact format:
-\`\`\`json
-{"lead_captured": true, "firstName": "...", "lastName": "...", "email": "...", "phone": "...", "budget": "...", "goal": "..."}
-\`\`\`
-6. If the user mentions their current process, summarize it in the "goal" field.
-`;
-
-      const messages = [
-        { role: 'system', content: systemInstruction },
-        ...formattedHistory,
-        { role: 'user', content: message }
-      ];
-
-      const response = await ai.chat.completions.create({
-        model: 'deepseek/deepseek-chat',
-        messages: messages
-      });
-      
-      let responseText = response.choices[0].message.content;
-      
-      // Check if lead was captured
-      const jsonMatch = responseText.match(/```json\n([\s\S]*?)\n```/);
-      if (jsonMatch) {
-        try {
-          const leadData = JSON.parse(jsonMatch[1]);
-          if (leadData.lead_captured) {
-            
-            // Generate a quick summary of the conversation
-            let chatSummary = leadData.goal;
-            try {
-              const summaryResponse = await ai.chat.completions.create({
-                model: 'deepseek/deepseek-chat',
-                messages: [
-                  ...formattedHistory,
-                  { role: 'user', content: "Summarize this entire conversation and what the user wants to build in 2-3 short sentences for our sales team." }
-                ]
-              });
-              chatSummary = summaryResponse.choices[0].message.content;
-            } catch (sumErr) {
-              console.error("Failed to summarize chat", sumErr);
-            }
-
-            // Save to DB and trigger notifications
-            if (mongoose.connection.readyState === 1) {
-              const newLead = new Lead({
-                firstName: leadData.firstName,
-                lastName: leadData.lastName || '',
-                email: leadData.email,
-                phone: leadData.phone,
-                budget: leadData.budget || 'Not specified',
-                service: 'AI Chatbot Inquiry',
-                source: 'AI Chatbot',
-                goal: leadData.goal || 'Captured via chat.',
-                chatHistory: history,
-                chatSummary: chatSummary
-              });
-              const savedLead = await newLead.save();
-              sendLeadNotifications(savedLead).catch(console.error);
-            }
-            // Remove the JSON block from the user-facing response
-            responseText = responseText.replace(/```json\n[\s\S]*?\n```/, '').trim();
-          }
-        } catch (e) {
-          console.error("Failed to parse chatbot lead JSON:", e);
-        }
-      }
-
-      res.json({ response: responseText });
-      
-    } catch (aiError) {
-      console.error('Gemini API Error:', aiError.status, aiError.message);
-      // Fallback for 503 High Demand or other API errors
-      if (aiError.status === 503) {
-        return res.json({ response: "I'm currently experiencing high traffic! Our team is ready to help you though. Could you please provide your email address so we can reach out to you directly?" });
-      }
-      return res.json({ response: "Oops, my brain is having a slight hiccup connecting to the server. Could you please leave your email so our human team can contact you?" });
-    }
-
-  } catch (error) {
-    console.error('Chat error:', error);
-    res.status(500).json({ error: 'Failed to process chat message.' });
+app.post('/api/admin/login', (req, res) => {
+  const { ADMIN_USERNAME, ADMIN_PASSWORD } = process.env;
+  if (!ADMIN_USERNAME || !ADMIN_PASSWORD) {
+    return res.status(503).json({ error: 'Admin login is not configured' });
   }
+  const { username = '', password = '' } = req.body || {};
+  // Evaluate both comparisons so timing doesn't reveal which field was wrong.
+  const userOk = safeEqual(username, ADMIN_USERNAME);
+  const passOk = safeEqual(password, ADMIN_PASSWORD);
+  if (!(userOk && passOk)) return res.status(401).json({ error: 'Invalid credentials' });
+  const expires = String(Date.now() + SESSION_MS);
+  res.json({ token: `${expires}.${sign(expires)}` });
 });
+
+const requireAdmin = (req, res, next) => {
+  const token = (req.get('Authorization') || '').replace(/^Bearer /, '');
+  const [expires, sig] = token.split('.');
+  if (!expires || !sig || !safeEqual(sig, sign(expires)) || Number(expires) < Date.now()) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  next();
+};
 
 // ==========================================
 // LEADS API (MongoDB)
 // ==========================================
-app.get('/api/leads', async (req, res) => {
+app.get('/api/leads', requireAdmin, async (req, res) => {
   try {
     if (mongoose.connection.readyState !== 1) return res.json([]);
     const leads = await Lead.find().sort({ date: -1 });
@@ -205,7 +102,7 @@ app.post('/api/leads', async (req, res) => {
   }
 });
 
-app.delete('/api/leads/:id', async (req, res) => {
+app.delete('/api/leads/:id', requireAdmin, async (req, res) => {
   try {
     if (mongoose.connection.readyState !== 1) return res.json({ success: true });
     await Lead.findByIdAndDelete(req.params.id);
@@ -215,7 +112,7 @@ app.delete('/api/leads/:id', async (req, res) => {
   }
 });
 
-app.patch('/api/leads/:id/status', async (req, res) => {
+app.patch('/api/leads/:id/status', requireAdmin, async (req, res) => {
   try {
     if (mongoose.connection.readyState !== 1) return res.status(503).json({ error: 'DB down' });
     const { status } = req.body;
