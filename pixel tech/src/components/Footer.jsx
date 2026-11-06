@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 export default function Footer() {
@@ -6,22 +6,21 @@ export default function Footer() {
   
   const quickLinks = [
     { path: '/', label: 'Home' },
-    { path: '/how-it-works', label: 'How It Works' },
+    { path: '/#how-it-works', label: 'How It Works' },
     { path: '/pricing', label: 'Pricing' },
-    { path: '/proof', label: 'Testimonials' },
     { path: '/about', label: 'About Us' },
     { path: '/booking', label: 'Book a Call' },
   ];
 
   return (
-    <footer className="bg-bg2 w-full py-[60px] border-t border-line text-[#6f6f80] text-[0.85rem]">
+    <footer className="bg-bg2 w-full py-[60px] border-t border-line text-mut text-[0.85rem]">
       <div className="max-w-[1080px] mx-auto px-[22px]">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-8">
           
           {/* Brand */}
           <div className="flex flex-col items-start gap-4">
             <Link to="/" className="flex items-center gap-2 font-extrabold text-[1.05rem] text-ink hover:text-accent transition-colors">
-              <img src="/Pixeltech.png" alt="PixelTech Logo" className="h-[34px] w-auto object-contain" />
+              <img src="/logo-128.png" alt="PixelTech Logo" width="34" height="34" className="h-[34px] w-[34px] object-contain" />
               Pixeltech Agency
             </Link>
             <p className="text-left text-mut">Building Predictable Growth Systems.</p>
@@ -30,7 +29,7 @@ export default function Footer() {
 
           {/* Quick Links */}
           <div className="flex flex-col items-start gap-3">
-            <h4 className="text-ink font-bold text-sm uppercase tracking-wider mb-1">Quick Links</h4>
+            <h2 className="text-ink font-bold text-sm uppercase tracking-wider mb-1">Quick Links</h2>
             {quickLinks.map((link) => (
               <Link
                 key={link.path}
@@ -44,13 +43,13 @@ export default function Footer() {
 
           {/* Contact & Social */}
           <div className="flex flex-col items-start gap-4">
-            <h4 className="text-ink font-bold text-sm uppercase tracking-wider mb-1">Get In Touch</h4>
+            <h2 className="text-ink font-bold text-sm uppercase tracking-wider mb-1">Get In Touch</h2>
             
             <a href="mailto:info@pixeltech.agency" className="hover:text-accent transition-colors font-medium">
               info@pixeltech.agency
             </a>
 
-            <h4 className="text-ink font-bold text-sm uppercase tracking-wider mb-1 mt-4">Socials</h4>
+            <h2 className="text-ink font-bold text-sm uppercase tracking-wider mb-1 mt-4">Socials</h2>
             <div className="flex flex-col gap-2">
               <a href="https://www.instagram.com/pixeltech.agencyy" target="_blank" rel="noreferrer" className="hover:text-accent transition-colors font-medium">
                 Instagram

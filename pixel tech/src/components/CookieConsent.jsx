@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Cookie, X, Settings2, ShieldCheck, Check } from 'lucide-react';
+import { Cookie, X, Settings2, ShieldCheck } from 'lucide-react';
 
 export default function CookieConsent() {
   const [isVisible, setIsVisible] = useState(false);
@@ -57,7 +57,7 @@ export default function CookieConsent() {
               <div>
                 <h3 className="font-semibold text-ink text-sm mb-1">We value your privacy</h3>
                 <p className="text-xs text-mut leading-relaxed">
-                  We use cookies and local storage to enhance your browsing experience and seamlessly save your AI chat history.
+                  We use cookies and local storage to enhance your browsing experience and remember your preferences.
                 </p>
               </div>
             </div>
@@ -65,20 +65,20 @@ export default function CookieConsent() {
             <div className="flex flex-col gap-2 mt-1">
               <button
                 onClick={handleAcceptAll}
-                className="w-full bg-gradient-brand text-[#05050A] font-semibold text-sm py-2 rounded-xl hover:scale-[1.02] transition-transform"
+                className="w-full bg-gradient-brand text-bg font-semibold text-sm py-2 rounded-xl hover:scale-[1.02] transition-transform"
               >
                 Accept All
               </button>
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={handleRejectAll}
-                  className="w-full bg-bg border border-line text-mut font-medium text-xs py-2 rounded-xl hover:text-ink hover:bg-white/[0.02] transition-colors"
+                  className="w-full bg-bg border border-line text-mut font-medium text-xs py-2 rounded-xl hover:text-ink hover:bg-ink/[0.02] transition-colors"
                 >
                   Reject All
                 </button>
                 <button
                   onClick={() => setShowPreferences(true)}
-                  className="w-full bg-bg border border-line text-mut font-medium text-xs py-2 rounded-xl hover:text-ink hover:bg-white/[0.02] transition-colors flex items-center justify-center gap-1.5"
+                  className="w-full bg-bg border border-line text-mut font-medium text-xs py-2 rounded-xl hover:text-ink hover:bg-ink/[0.02] transition-colors flex items-center justify-center gap-1.5"
                 >
                   <Settings2 className="w-3.5 h-3.5" />
                   Manage
@@ -111,7 +111,7 @@ export default function CookieConsent() {
                 </h2>
                 <button 
                   onClick={() => setShowPreferences(false)}
-                  className="text-mut hover:text-ink p-1 rounded-md hover:bg-white/5 transition-colors"
+                  className="text-mut hover:text-ink p-1 rounded-md hover:bg-ink/5 transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -135,7 +135,7 @@ export default function CookieConsent() {
                 {/* Functional Cookies */}
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-semibold text-ink text-sm">Functional Cookies (Chat History)</h3>
+                    <h3 className="font-semibold text-ink text-sm">Functional Cookies</h3>
                     
                     {/* Custom Toggle Switch */}
                     <button 
@@ -147,7 +147,7 @@ export default function CookieConsent() {
 
                   </div>
                   <p className="text-xs text-mut leading-relaxed">
-                    These cookies allow the AI chatbot to remember your conversation across page reloads using your browser's local storage. If disabled, your chat will reset every time you refresh the page.
+                    These let the site remember choices you make, such as this cookie preference, using your browser's local storage.
                   </p>
                 </div>
                 
@@ -162,7 +162,7 @@ export default function CookieConsent() {
                 </button>
                 <button
                   onClick={handleSavePreferences}
-                  className="w-full bg-gradient-brand text-[#05050A] font-semibold text-sm py-2.5 rounded-xl hover:scale-[1.02] transition-transform"
+                  className="w-full bg-gradient-brand text-bg font-semibold text-sm py-2.5 rounded-xl hover:scale-[1.02] transition-transform"
                 >
                   Save My Choices
                 </button>

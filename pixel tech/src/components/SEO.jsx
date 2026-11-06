@@ -1,9 +1,8 @@
-import React from 'react';
 import { Helmet } from 'react-helmet';
 
 export default function SEO({ title, description, url }) {
-  const defaultTitle = "Pixeltech Agency | Predictable Growth Systems";
-  const defaultDescription = "Turn the leads your clinic already pays for into booked appointments with our automated follow-up infrastructure.";
+  const defaultTitle = "AI Receptionist for Med Spas | Pixeltech Agency";
+  const defaultDescription = "An AI receptionist and lead-reactivation system for med spas. Answers calls, replies to texts and DMs, and books patients into your calendar.";
   const siteUrl = "https://pixeltech.agency"; // Update with final domain
 
   return (

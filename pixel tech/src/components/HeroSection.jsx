@@ -1,156 +1,69 @@
-import React, { useState, useEffect } from 'react';
-import ChatMockup from './ChatMockup';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useRef } from 'react';
 import { Link } from 'react-router-dom';
+import DemoCallCard from './DemoCallCard';
+
+// Unset until the demo line exists; setting it switches the primary CTA to click-to-call with no code change.
+const DEMO_PHONE = import.meta.env.VITE_DEMO_PHONE;
+
+const TEST_PROMPTS = ['Ask how much Botox is', 'Ask for a Saturday slot', 'Hang up, then text after hours'];
 
 export default function HeroSection() {
-  const rotatingText = [
-    "booked appointments.",
-    "predictable growth.",
-    "loyal clients."
-  ];
-  const [currentTextIndex, setCurrentTextIndex] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTextIndex((prev) => (prev + 1) % rotatingText.length);
-    }, 3000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const catchphrases = [];
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: { 
-      opacity: 1, 
-      transition: { staggerChildren: 0.15, delayChildren: 0.1 } 
-    }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, x: -30 },
-    visible: { 
-      opacity: 1, 
-      x: 0, 
-      transition: { type: 'spring', stiffness: 100, damping: 20 } 
-    }
-  };
-
-  const h1Variants = {
-    hidden: { opacity: 0, filter: 'blur(12px)' },
-    visible: { 
-      opacity: 1, 
-      filter: 'blur(0px)',
-      transition: { duration: 1.2, ease: 'easeOut' } 
-    }
-  };
-
-  const marqueeItems = [
-    "⚡ Reply in under 60 seconds",
-    "📅 Auto-booking calendar",
-    "🔔 No-show reminders",
-    "📞 Missed-call text-back",
-    "♻️ Lead reactivation",
-    "✅ Live in ~7 days"
-  ];
-  
-  // Double the array to ensure seamless looping
-  const loopedItems = [...marqueeItems, ...marqueeItems, ...marqueeItems];
+  const dialogRef = useRef(null);
 
   return (
-    <section className="pt-[20px] lg:pt-[40px] pb-0 bg-[radial-gradient(900px_480px_at_0%_0%,rgba(0,242,254,0.15),transparent_70%)] border-b border-line relative overflow-hidden">
-      
-      {/* Background Abstract Image */}
-      <div className="absolute top-0 right-0 w-full max-w-[1000px] h-full opacity-20 pointer-events-none -z-10 mix-blend-screen translate-x-1/4">
-        <img src="/hero_abstract.png" alt="" className="w-full h-full object-cover object-top mask-image-gradient" style={{ WebkitMaskImage: 'linear-gradient(to left, black 20%, transparent 100%)' }} />
-      </div>
+    <section className="pt-10 lg:pt-16 pb-16 lg:pb-24 border-b border-line">
+      <div className="max-w-[1280px] mx-auto px-4 sm:px-6 md:px-12 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        {/* No entrance animation: the headline is the LCP element, and a fade-in delays it. */}
+        <div>
+          <p className="font-mono text-[0.72rem] uppercase tracking-wider text-mut mb-5">Voice · SMS · Instagram & Facebook DM</p>
 
-      <div className="max-w-[1280px] mx-auto px-6 md:px-12 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-8 items-start pb-[80px]">
-          
-          {/* Left Column: Text Content */}
-          <motion.div 
-            className="text-left"
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-          >
-            {/* Badge removed as requested */}
-            
-            <motion.h1 variants={h1Variants} className="mb-6 text-[2rem] sm:text-4xl md:text-5xl lg:text-[4rem] font-extrabold leading-[1.1] tracking-tight">
-              <span className="block mb-2">
-                Turn leads into{' '}
-                <span className="inline-block min-h-[1.5em] align-top">
-                  <AnimatePresence mode="wait">
-                    <motion.span
-                      key={currentTextIndex}
-                      initial={{ opacity: 0, y: 10, filter: 'blur(8px)' }}
-                      animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                      exit={{ opacity: 0, y: -10, filter: 'blur(8px)' }}
-                      transition={{ duration: 0.4, ease: "easeInOut" }}
-                      className="inline-block text-gradient pb-2 pr-2 font-serif italic tracking-normal font-bold text-[0.85em]"
-                    >
-                      {rotatingText[currentTextIndex]}
-                    </motion.span>
-                  </AnimatePresence>
-                </span>
-              </span>
-            </motion.h1>
-            
-            <motion.p variants={itemVariants} className="text-[0.95rem] md:text-[1.05rem] max-w-[580px] mt-6 mb-10 text-mut leading-relaxed text-justify">
-              PixelTech installs an automated system for Med Spas & Clinics that follows up with every lead in under 60 seconds and books them straight into your calendar. Stop losing leads to slow follow-up.
-            </motion.p>
-            
-            <motion.div variants={itemVariants}>
-              <Link to="/booking" className="btn-primary inline-flex items-center justify-center whitespace-nowrap px-6 py-3.5 sm:px-8 sm:py-4 text-[0.95rem] sm:text-lg w-full sm:w-auto">
-                Book My Free Lead-Leak Audit
+          <h1 className="text-[2.4rem] sm:text-5xl lg:text-[4rem] leading-[1.05] mb-6">
+            Stop losing Botox & filler consults <em className="text-accent">to voicemail.</em>
+          </h1>
+
+          <p className="text-[1rem] md:text-[1.1rem] max-w-[560px] mb-10 text-mut leading-relaxed">
+            An AI receptionist and lead-reactivation system built for med spas. It answers your calls, replies to texts and DMs, and books patients straight into your calendar. Missed calls and DMs get a text back within 60 seconds.
+          </p>
+
+          <div className="flex flex-col sm:flex-row gap-3">
+            {DEMO_PHONE ? (
+              <button type="button" onClick={() => dialogRef.current?.showModal()} className="btn-primary text-base">
+                Call the Glow Med Spa demo line
+              </button>
+            ) : (
+              <Link to="/booking" className="btn-primary text-base">Book a live demo</Link>
+            )}
+            {DEMO_PHONE && (
+              <Link to="/booking" className="inline-flex items-center justify-center rounded-full border border-ink px-8 py-4 font-semibold text-ink hover:bg-ink hover:text-bg transition-colors">
+                Book a 15-min ROI audit
               </Link>
-              <span className="block text-[0.85rem] text-mut mt-3 font-medium">
-                See exactly where you're losing leads — in a free 15-min call.
-              </span>
-            </motion.div>
-          </motion.div>
+            )}
+          </div>
+        </div>
 
-          {/* Right Column: Chat Mockup */}
-          <motion.div 
-            initial={{ opacity: 0, x: 40 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.4, type: 'spring', stiffness: 80, damping: 20 }}
-            className="relative w-full flex justify-center lg:justify-end lg:-mt-10 xl:-mt-16"
-          >
-            {/* Soft glow behind the mockup */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[80%] bg-[rgba(0,242,254,0.15)] blur-[100px] rounded-full pointer-events-none -z-10" />
-            
-            <div className="w-full max-w-[450px] lg:max-w-[420px] transform lg:scale-95 origin-center lg:origin-right">
-              <ChatMockup />
-            </div>
-          </motion.div>
+        <div className="motion-safe:animate-fade-up w-full max-w-[460px] mx-auto lg:mr-0">
+          <DemoCallCard />
         </div>
       </div>
 
-      {/* Full-width Infinite Marquee Line */}
-      <div className="w-full border-t border-line/50 bg-[#05050A]/80 backdrop-blur-md py-4 overflow-hidden relative">
-        {/* Gradients on edges to fade out marquee */}
-        <div className="absolute top-0 left-0 w-24 h-full bg-gradient-to-r from-[#05050A] to-transparent z-10 pointer-events-none" />
-        <div className="absolute top-0 right-0 w-24 h-full bg-gradient-to-l from-[#05050A] to-transparent z-10 pointer-events-none" />
-        
-        <motion.div 
-          className="flex whitespace-nowrap gap-6 w-max"
-          animate={{ x: ["0%", "-33.333333%"] }}
-          transition={{ repeat: Infinity, ease: "linear", duration: 30 }}
+      {DEMO_PHONE && (
+        <dialog
+          ref={dialogRef}
+          aria-labelledby="demo-dialog-title"
+          className="m-auto w-[min(92vw,440px)] rounded-[18px] border border-line bg-card p-6 text-ink backdrop:bg-ink/40"
+          onClick={(e) => e.target === e.currentTarget && e.currentTarget.close()}
         >
-          {loopedItems.map((text, i) => (
-            <div key={i} className="flex items-center gap-6">
-              <span className="text-[0.85rem] text-ink font-bold tracking-wide uppercase px-5 py-2 bg-card border border-line rounded-full shadow-[0_2px_10px_rgba(0,0,0,0.2)]">
-                {text}
-              </span>
-              <span className="text-accent/30 text-xl">•</span>
-            </div>
-          ))}
-        </motion.div>
-      </div>
-
+          <h2 id="demo-dialog-title" className="text-3xl mb-2">Try the demo line</h2>
+          <p className="text-mut text-[0.95rem] mb-4">You'll reach Ava, the receptionist for our demo clinic, Glow Med Spa. Try one of these:</p>
+          <ol className="list-decimal pl-5 space-y-1.5 mb-6 text-[0.95rem]">
+            {TEST_PROMPTS.map((p) => <li key={p}>{p}</li>)}
+          </ol>
+          <a href={`tel:${DEMO_PHONE}`} className="btn-primary w-full text-base">Call {DEMO_PHONE}</a>
+          <button type="button" onClick={() => dialogRef.current?.close()} className="mt-3 w-full text-[0.9rem] text-mut hover:text-ink">
+            Close
+          </button>
+        </dialog>
+      )}
     </section>
   );
 }
