@@ -448,11 +448,24 @@ Booking states (E2):
 - **Wave 2:** E4 (task 6, plus the moved backend parts), when the demo line ships.
 
 
+## 8.14 Build check, PR #9 against §8.3 (2026-11-06)
+
+Second `/plan-ceo-review` run, scoped by D1 ("Check built vs. plan") to compare the wave-1 code with the approved rows.
+
+Matches: R1, R3, R4, R5, S1, S2, E1, E5; the backend sets `source` itself and caps `roiEstimate` at 300 characters.
+
+| ID | Finding | Decision | Answer |
+|----|---------|----------|--------|
+| D2 | PR #9 ships R2's "real demo call" copy before the S3 recording exists | PR #9 held as draft until `public/demo-call.mp3` is recorded | "Hold merge until recorded (recommended)" |
+| D3 | The ROI calculator button read "Get this audit for your spa", breaking §4.1's one-label rule | Renamed to "Book a 15-min ROI audit" on `conversion-wave-1` | "Use the standard label (recommended)" |
+
+Launch config, not decisions: set `VITE_CALENDLY_URL` (E2 is inert without it), enable Vercel Web Analytics (E1), and set `VITE_DEMO_PHONE` only after Phase 0 passes.
+
 ## GSTACK REVIEW REPORT
 
 | Review | Trigger | Why | Runs | Status | Findings |
 |--------|---------|-----|------|--------|----------|
-| CEO Review | `/plan-ceo-review` | Scope & strategy | 1 | ISSUES OPEN | 8 proposals, 7 accepted, 1 deferred |
+| CEO Review | `/plan-ceo-review` | Scope & strategy | 2 | ISSUES OPEN | 8 proposals, 7 accepted, 1 deferred; build check: 2 findings, both resolved (§8.14) |
 | Outside Review | native Claude subagent (user-requested) | Independent 2nd opinion | 1 | completed | 23 findings; 23 resolved (4 by user decision Q9, 1 by Q10, 18 as mechanical fixes in §8.13); 0 unresolved |
 | Eng Review | `/plan-eng-review` | Architecture & tests (required) | 0 | — | — |
 | Design Review | `/plan-design-review` | UI/UX gaps | 0 | — | — |
