@@ -102,7 +102,7 @@ function RoiCalculator({ headingAs: Heading }) {
         data-cta="roi"
         className="btn-primary w-full text-base mt-5"
       >
-        Get this audit for your spa
+        Book a 15-min ROI audit
       </Link>
     </div>
   );
