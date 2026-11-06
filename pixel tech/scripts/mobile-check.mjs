@@ -1,5 +1,5 @@
 // Phone-width layout check (plan §6, eng review X7): serves dist/ with vite preview, opens each route in
-// local headless Chrome at 375×812 and exits 1 if any page is wider than the screen (sideways scroll).
+// local headless Chrome at 320 and 375px wide and exits 1 if any page is wider than the screen (sideways scroll).
 // Run with `npm run check:mobile` (builds first). Chrome is found at CHROME_PATH or the usual install paths.
 import { spawn } from 'node:child_process';
 import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
@@ -7,7 +7,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { preview } from 'vite';
 
-const WIDTH = 375;
+// 320px is the narrowest phone in common use (iPhone SE); 375px is the most common.
+const WIDTHS = [320, 375];
 const ROUTES = ['/', '/pricing', '/booking', '/booking?calls=80&missed=37&dms=10&book=25&value=500', '/about'];
 const CHROME_PATHS = [
   process.env.CHROME_PATH,
@@ -56,7 +57,6 @@ try {
   });
   send = (method, params = {}) => new Promise((r) => { const i = ++id; pending.set(i, r); ws.send(JSON.stringify({ id: i, method, params })); });
 
-  await send('Emulation.setDeviceMetricsOverride', { width: WIDTH, height: 812, deviceScaleFactor: 2, mobile: true });
   // Reports the widest offending elements so a failure points at the culprit, not just the page.
   const probe = `(() => {
     const vw = document.documentElement.clientWidth;
@@ -66,14 +66,17 @@ try {
     return { vw, scrollWidth: document.documentElement.scrollWidth, height: document.documentElement.scrollHeight, wide };
   })()`;
 
-  for (const route of ROUTES) {
-    await send('Page.navigate', { url: base + route });
-    await wait(2500);
-    const { scrollWidth, height, wide } = (await send('Runtime.evaluate', { expression: probe, returnByValue: true })).result.result.value;
-    // A page no taller than the screen means the app didn't render; that's a failure, not a pass.
-    const ok = scrollWidth <= WIDTH && height > 812;
-    if (!ok) failed = true;
-    console.log(`${ok ? 'ok  ' : 'FAIL'} ${route}  width ${scrollWidth}/${WIDTH}${height > 812 ? '' : '  (page did not render)'}${wide.length ? '  ' + wide.join(' > ') : ''}`);
+  for (const width of WIDTHS) {
+    await send('Emulation.setDeviceMetricsOverride', { width, height: 812, deviceScaleFactor: 2, mobile: true });
+    for (const route of ROUTES) {
+      await send('Page.navigate', { url: base + route });
+      await wait(2500);
+      const { scrollWidth, height, wide } = (await send('Runtime.evaluate', { expression: probe, returnByValue: true })).result.result.value;
+      // A page no taller than the screen means the app didn't render; that's a failure, not a pass.
+      const ok = scrollWidth <= width && height > 812;
+      if (!ok) failed = true;
+      console.log(`${ok ? 'ok  ' : 'FAIL'} ${width}px ${route}  width ${scrollWidth}/${width}${height > 812 ? '' : '  (page did not render)'}${wide.length ? '  ' + wide.join(' > ') : ''}`);
+    }
   }
 } catch (err) {
   failed = true;
