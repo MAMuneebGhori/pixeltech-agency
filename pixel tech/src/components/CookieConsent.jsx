@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Cookie, X, Settings2, ShieldCheck } from 'lucide-react';
 
 export default function CookieConsent() {
@@ -41,14 +40,11 @@ export default function CookieConsent() {
 
   return (
     <>
-      <AnimatePresence>
-        {isVisible && !showPreferences && (
-          <motion.div
-            initial={{ y: 100, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 100, opacity: 0 }}
-            transition={{ type: "spring", stiffness: 200, damping: 25 }}
-            className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:max-w-sm z-[100] bg-card border border-line rounded-2xl p-5 shadow-2xl flex flex-col gap-4"
+      {isVisible && !showPreferences && (
+          <div
+            role="region"
+            aria-label="Cookie consent"
+            className="animate-slide-in-up motion-reduce:animate-none fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:max-w-sm z-[100] bg-card border border-line rounded-2xl p-5 shadow-2xl flex flex-col gap-4"
           >
             <div className="flex items-start gap-3">
               <div className="p-2 bg-accent/10 rounded-full text-accent shrink-0 mt-1">
@@ -85,32 +81,28 @@ export default function CookieConsent() {
                 </button>
               </div>
             </div>
-          </motion.div>
+          </div>
         )}
-      </AnimatePresence>
 
       {/* Preferences Modal */}
-      <AnimatePresence>
         {showPreferences && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[150] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+          <div
+            className="animate-fade-in motion-reduce:animate-none fixed inset-0 z-[150] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
           >
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="w-full max-w-md bg-card border border-line rounded-2xl overflow-hidden shadow-2xl flex flex-col"
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="cookie-prefs-title"
+              className="animate-pop-in motion-reduce:animate-none w-full max-w-md bg-card border border-line rounded-2xl overflow-hidden shadow-2xl flex flex-col"
             >
               <div className="flex items-center justify-between p-5 border-b border-line">
-                <h2 className="text-lg font-bold text-ink flex items-center gap-2">
+                <h2 id="cookie-prefs-title" className="text-lg font-bold text-ink flex items-center gap-2">
                   <ShieldCheck className="w-5 h-5 text-accent" />
                   Privacy Preferences
                 </h2>
                 <button 
                   onClick={() => setShowPreferences(false)}
+                  aria-label="Close privacy preferences"
                   className="text-mut hover:text-ink p-1 rounded-md hover:bg-ink/5 transition-colors"
                 >
                   <X className="w-5 h-5" />
@@ -140,6 +132,9 @@ export default function CookieConsent() {
                     {/* Custom Toggle Switch */}
                     <button 
                       onClick={() => setFunctionalEnabled(!functionalEnabled)}
+                      role="switch"
+                      aria-checked={functionalEnabled}
+                      aria-label="Functional cookies"
                       className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${functionalEnabled ? 'bg-accent' : 'bg-line'}`}
                     >
                       <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${functionalEnabled ? 'translate-x-4.5' : 'translate-x-1'}`} />
@@ -168,10 +163,9 @@ export default function CookieConsent() {
                 </button>
               </div>
 
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
         )}
-      </AnimatePresence>
     </>
   );
 }
