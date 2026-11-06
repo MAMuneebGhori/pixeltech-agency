@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import SEO from '../components/SEO';
 
 const CALL_VOLUMES = ['Under 25', '25–50', '50–100', '100+', 'Not sure'];
@@ -8,7 +7,6 @@ const BOOKING_SOFTWARE = ['Calendly', 'Google Calendar', 'Square Appointments', 
 
 const label = 'text-[0.7rem] font-semibold text-mut uppercase tracking-[0.08em]';
 const input = 'w-full bg-bg2 border border-line rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-accent transition-colors text-ink placeholder-mut';
-const trigger = 'w-full h-[42px] bg-bg2 border-line rounded-lg px-3 py-2.5 text-sm focus-visible:border-accent text-ink';
 const Req = () => <span className="text-bad" aria-hidden="true">*</span>;
 
 const EMPTY = { firstName: '', lastName: '', email: '', phone: '', company: '', website: '', callsPerWeek: '', bookingSoftware: '', goal: '' };
@@ -98,17 +96,17 @@ export default function Booking() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                 <div className="grid gap-1.5">
                   <label htmlFor="callsPerWeek" className={label}>Calls per week</label>
-                  <Select value={form.callsPerWeek || undefined} onValueChange={(v) => set('callsPerWeek', v)}>
-                    <SelectTrigger id="callsPerWeek" className={trigger}><SelectValue placeholder="Choose…" /></SelectTrigger>
-                    <SelectContent>{CALL_VOLUMES.map((v) => <SelectItem key={v} value={v}>{v}</SelectItem>)}</SelectContent>
-                  </Select>
+                  <select id="callsPerWeek" name="callsPerWeek" value={form.callsPerWeek} onChange={onInput} className={`${input} h-[42px]`}>
+                    <option value="">Choose…</option>
+                    {CALL_VOLUMES.map((v) => <option key={v} value={v}>{v}</option>)}
+                  </select>
                 </div>
                 <div className="grid gap-1.5">
                   <label htmlFor="bookingSoftware" className={label}>Booking software</label>
-                  <Select value={form.bookingSoftware || undefined} onValueChange={(v) => set('bookingSoftware', v)}>
-                    <SelectTrigger id="bookingSoftware" className={trigger}><SelectValue placeholder="Choose…" /></SelectTrigger>
-                    <SelectContent>{BOOKING_SOFTWARE.map((v) => <SelectItem key={v} value={v}>{v}</SelectItem>)}</SelectContent>
-                  </Select>
+                  <select id="bookingSoftware" name="bookingSoftware" value={form.bookingSoftware} onChange={onInput} className={`${input} h-[42px]`}>
+                    <option value="">Choose…</option>
+                    {BOOKING_SOFTWARE.map((v) => <option key={v} value={v}>{v}</option>)}
+                  </select>
                 </div>
               </div>
 
