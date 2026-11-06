@@ -153,7 +153,7 @@ Tests: extend `roi.test.js` for the new function (defaults, bad input → 0, per
 
 **Recommendation: A.** The site is pre-client and pre-demo-line. What it needs is the honest content and the demo, not a new architecture.
 
-## 6. Build order (each slice: lint + build + `node --test` + 375px check)
+## 6. Build order (each slice: lint + build + `node --test` + `npm run check:mobile`, which tests 320px and 375px; see §10 X7/X10)
 
 1. **Copy + guardrails pass:** hero line, unified CTA label, comparison eyebrow and new row, 7-day runbook. No new components.
 2. **ROI calculator v2:** `roi.js` + tests first, then the UI.
@@ -730,17 +730,398 @@ None.
 - Parallelization: 2 lanes, 2 parallel / 1 sequential (owner)
 - Lake Score: 4/4
 
+## 10. Eng review, second pass: components, demo/ROI state, mobile (2026-11-06)
+
+**Target:** this plan, focused on component architecture, the audio/transcript demo and ROI calculator state, and mobile layout. Evidence: `conversion-wave-1` at `38da60d` (PR #9) and `origin/main` at `666b398`. Mobile evidence is a **live probe**: the production build (`vite preview`) in headless Chrome at 375×812, measuring `scrollWidth` and element bounds on `/`, `/pricing`, `/booking`, `/booking?<roi params>` and `/about` (script: `scratchpad/mobile-probe.mjs`).
+
+### 10.1 Component architecture (as built)
+
+```
+main.jsx ── StrictMode ── App (router) ── TopNavBar · <Routes> · Footer · CookieConsent · ScrollToTop
+  │  trackClicks(document)  ← one delegated listener: [data-cta] → cta_click, [data-event] → event
+  │  /_vercel/insights/script.js (prod only)
+  │
+  ├─ /            pages/Home.jsx (composition only, no state)
+  │   ├─ HeroSection ─────────── DemoCallCard            [state: hasAudio, time]
+  │   │    └─ <dialog> demo-line (only when VITE_DEMO_PHONE)
+  │   ├─ HomeSections.jsx: RevenueLeak · HowItWorks · Comparison · Stack · GoLive · Digest
+  │   │    └─ HowItWorks ─ ProductCards.jsx: CallCard · InboxCard · ReminderCard · RecallCard (static)
+  │   ├─ PricingSection ─────── RoiCalculator             [state: form (strings)]
+  │   ├─ FaqAccordion · FinalCtaSection
+  │   └─ Section (exported from HomeSections.jsx; also used by Pricing, FAQ, About)
+  ├─ /pricing     pages/Pricing.jsx → PricingSection titleAs="h1"
+  ├─ /booking     pages/Booking.jsx                       [state: roiInputs, form, status] → Scheduler [state]
+  ├─ /about       pages/About.jsx
+  └─ /admin       pages/Admin.jsx (token inbox, out of scope)
+
+lib/roi.js   pure: estimateLeak · bookingsToBreakEven · callsBucket · CALL_VOLUMES · to/fromRoiParams · format*
+lib/track.js track() · trackClicks()
+```
+
+No global store, context or data fetching outside `/booking` and `/admin`. Every piece of state lives in the leaf that renders it, and the only cross-page state is the ROI inputs, carried in the URL (E5). Right-sized for a 6-route marketing site; no change proposed.
+
+### 10.2 State: audio/transcript demo (`DemoCallCard.jsx`)
+
+```
+            mount (preload="metadata", src=/demo-call.mp3)
+                 │
+   ┌─────────────┴─────────────┐
+ loadedmetadata             error (file missing → Vercel rewrite serves index.html → decode fails)
+   │ hasAudio=true             │ hasAudio=false  → transcript-only card, <audio hidden>
+   ▼                           
+ controls visible, time=-1 → all lines normal
+   │ timeupdate (~4/s) → time=currentTime
+   ▼
+ active = last line with t ≤ time → that line border-accent, earlier/later lines text-mut
+```
+
+- **Derived, not stored:** `active` is computed in render from `time`, so the highlight can't drift from the audio.
+- **Coupling to S3:** `TRANSCRIPT[].t` is hand-timed against a recording that doesn't exist yet (`DemoCallCard.jsx:3`). When S3 lands, replace every line and time from the real recording before PR #9 merges; the §3 rule 5 honesty guardrail means the text must match the audio word for word.
+- **No click-to-seek:** lines don't seek the audio. Not in the plan; listed under 10.6.
+
+### 10.3 State: ROI calculator (`PricingSection.jsx` `RoiCalculator`)
+
+```
+ form: {callsPerWeek, missedPct, missedMessagesPerWeek, bookPct, treatmentValue}  (strings, so a field can be blank)
+   │ onChange → setForm; first edit per page load → track('roi_edit') (module flag roiEdited)
+   ▼ render (derived, nothing cached)
+ estimateLeak(form) → missedLeads, lostBookings, lostRevenue, lostRevenueLow
+ bookingsToBreakEven(form.treatmentValue) → N | null ("Enter a treatment value…")
+ toRoiParams(form) → /booking?calls&missed&dms&book&value   (CTA, data-cta="roi")
+   ▼
+ /booking: fromRoiParams(URL) → roiInputs (null on a plain visit) → callsBucket → prefilled select;
+           formatRoiEstimate(roiInputs) → roiEstimate on the lead (recomputed, never trusted from a URL total)
+```
+
+All math is in `roi.js` and unit-tested (10 tests). Calculator state is lost on Back from `/booking` (defaults return). Acceptable; listed under 10.6.
+
+### 10.4 Mobile probe results (375×812, production build)
+
+| Route | scrollWidth | Overflowing elements | Notes |
+|---|---|---|---|
+| `/` | **491** (viewport 375) | How It Works cards [16..490px] | Horizontal scroll of 116px on the whole page |
+| `/pricing` | 375 | none | ROI result lines wrap cleanly |
+| `/booking` | 375 | none | inputs 42px tall, 16px font (no iOS zoom) |
+| `/booking?<roi>` | 375 | none | prefill note fits |
+| `/about` | 375 | none | |
+
+Tap targets: the nav toggle is 32px with `aria-label="Toggle navigation menu"`; footer links are 22px tall with 16px gaps; the inline "Zenoti, 2026" source link is 15px inside a hint line. All meet WCAG 2.2 AA 2.5.8 (24px or spacing; inline links exempt). None are 44px (the AAA / Apple HIG size); no change proposed.
+
+### X5: home page scrolls sideways on phones
+Finding: 5, CRITICAL, confidence 10/10 (measured), `src/components/HomeSections.jsx:101` (`<div key={s.n} className="bg-card border border-line rounded-[18px] p-6">`, a grid item with the default `min-width: auto`) holding `src/components/ProductCards.jsx:68` (`<p className="text-mut truncate">{t.msg}</p>`, `white-space: nowrap`); reviewer: eng review (Claude). The no-wrap preview's full single-line width becomes the grid item's minimum, so the `grid gap-5` column grows to 474px and every How It Works card overflows. Same markup on `origin/main` (`HomeSections.jsx:101`), so the live site has it today.
+Plan baseline: §6 "each slice: lint + build + `node --test` + 375px check"; the 375px check never ran for slice 4 (ProductCards).
+Runtime evidence: probe at 375px: `/` scrollWidth 491; overflowing chain `div [16..490]` → `figure` → `p.truncate` ×3 (InboxCard). Other routes 375.
+Comparison grid:
+| Choice | Current | A | B |
+|---|---|---|---|
+| X5 fix | none; page 491px wide | `min-w-0` on the How It Works grid item (`HomeSections.jsx:101`), on a branch off main, own PR | same class change, on PR #9 only (held) |
+| X5 proof | none | rerun the 375px probe on all 5 routes: every scrollWidth = 375 | same probe |
+| Release | — | ships to production on merge | waits for the demo recording |
+Question D1:
+D1 — Fix the sideways-scrolling home page on phones
+Project/branch/task: PixelTech; found by a 375px probe of the production build; same bug on main.
+ELI10: On a phone, the home page is 116px wider than the screen, so it wobbles sideways when you scroll and the How It Works cards get cut off at the right edge. Med-spa owners mostly look on their phones. It's caused by the inbox mock's one-line message previews; one CSS class on the card container fixes it.
+Stakes if we pick wrong: every phone visitor sees a broken-feeling page until PR #9 ships, which is waiting on the demo recording.
+Recommendation: A because the bug is live on main today and the fix is one class with a measured before/after.
+Completeness: A=10/10, B=10/10
+Header: Mobile overflow
+Options:
+A) Fix on main now (recommended)
+New branch off main: add `min-w-0` to the How It Works grid item in HomeSections.jsx, rerun the 375px probe on all five routes (every page exactly 375 wide), lint and build, open a small PR. Ships independently of PR #9. (human: ~20 min / CC: ~3 min)
+B) Fix on PR #9 only
+Same one-class change, committed to conversion-wave-1. Production keeps the sideways scroll until PR #9 merges after the demo recording. (human: ~10 min / CC: ~2 min)
+
+State: approved
+Actual answer: A) Fix on main now. D1 answer "A) Fix on main now (recommended)".
+Accepted scope: branch off main; `min-w-0` on the How It Works grid item (`HomeSections.jsx:101`); rerun the 375px probe on all five routes (each scrollWidth = 375); lint and build; own PR.
+History: none
+
+### X6: ROI result re-announced on every keystroke
+Finding: 6, INFORMATIONAL, confidence 7/10, `src/components/PricingSection.jsx:80` (`<div className="rounded-xl bg-bg2 border border-line p-5" aria-live="polite">`) wrapping five paragraphs (break-even, range, explanation, formula); reviewer: eng review (Claude). Each `onChange` (`:68-71`) re-renders the region, so a screen reader queues the whole block (about 60 words, formula included) after each digit typed. Editing "500" to "650" queues three announcements.
+Plan baseline: §8.13 S2 (break-even headline, range underneath; approved Q9). Live-region scope: unspecified.
+Runtime evidence: static read; not run with a screen reader.
+Comparison grid:
+| Choice | Current | A | B |
+|---|---|---|---|
+| X6 live region | whole result box | only the break-even line and the range line (`aria-live="polite"` + `aria-atomic="true"` on a wrapper of those two) | unchanged |
+| S2 layout and copy | approved (Q9) | unchanged | unchanged |
+Question D2:
+D2 — Make the ROI result announce only the two numbers that matter?
+Project/branch/task: PixelTech; PR #9 (conversion-wave-1), PricingSection.jsx RoiCalculator.
+ELI10: Screen-reader users hear the calculator's result read out as they type. Right now the whole result box is marked to be read, about 60 words including the formula, after every single digit. Narrowing it to "pays for itself at N bookings" and the dollar range makes it usable.
+Stakes if we pick wrong: blind or low-vision owners hear a long, repeating wall of text and give up on the calculator.
+Recommendation: A because it moves one attribute and changes nothing visual.
+Completeness: A=10/10, B=6/10
+Header: ROI announce
+Options:
+A) Announce two lines (recommended)
+Move `aria-live="polite"` from the whole box to a wrapper around the break-even line and the range line, with `aria-atomic="true"` so each update reads as one short sentence. Nothing visual changes. Lands on PR #9 next to the calculator work. (human: ~15 min / CC: ~2 min)
+B) Leave as is
+Sighted users see no difference. Screen-reader users keep hearing the full block after each keystroke. (human: 0 / CC: 0)
+
+State: approved
+Actual answer: A) Announce two lines. D2 answer "A) Announce two lines (recommended)".
+Accepted scope: in `PricingSection.jsx` RoiCalculator, move `aria-live="polite"` off the result box onto a wrapper around the break-even line and the range line, with `aria-atomic="true"`. No visual change; S2 layout and copy unchanged. Lands on PR #9.
+History: none
+
+### X7: no repeatable 375px check
+Finding: 7, INFORMATIONAL, confidence 9/10, `package.json` (scripts: `lint`, `build`, no layout check) and plan §6 ("each slice: lint + build + `node --test` + 375px check"); reviewer: eng review (Claude). The 375px check is manual, it was skipped for slice 4, and X5 reached production. The probe used in 10.4 (headless Chrome over CDP, no new dependency, Node 24 built-in `WebSocket`) found it in one run.
+Plan baseline: §6 requires a 375px check per slice (approved with Approach A). How it runs: unspecified.
+Runtime evidence: probe run on 5 routes; `/` scrollWidth 491, others 375.
+Comparison grid:
+| Choice | Current | A | B |
+|---|---|---|---|
+| X7 check | manual, skipped once | `scripts/mobile-check.mjs` + `npm run check:mobile`: starts `vite preview`, launches local Chrome headless, fails (exit 1) if any of the 5 routes has scrollWidth > 375 | stays manual |
+| §6 slice checklist | lint + build + test + 375px (manual) | 375px step becomes `npm run check:mobile` | unchanged |
+| Dependencies | none added | none (system Chrome, Node built-ins) | none |
+Question D3:
+D3 — Turn the 375px phone check into a script?
+Project/branch/task: PixelTech; plan §6 slice checklist; the probe that found X5.
+ELI10: The plan says every change gets checked at phone width, but it's a manual step, it got skipped once, and the sideways-scroll bug went live. The quick script I used to find it can be saved as `npm run check:mobile`: it opens each page at phone width and fails if anything sticks out.
+Stakes if we pick wrong: the next card or table that's too wide ships to phones unnoticed again.
+Recommendation: A because the script already exists, adds no dependency, and it caught a live bug on its first run.
+Completeness: A=10/10, B=6/10
+Header: Mobile check
+Options:
+A) Add npm run check:mobile (recommended)
+Commit the probe as `scripts/mobile-check.mjs` with an npm script. It runs the production preview in local headless Chrome and exits 1 if any of the 5 routes is wider than 375px. Plan §6 points its 375px step at it. Needs Chrome installed; no CI exists, so it runs by hand or from /ship. Goes in the same PR as X5. (human: ~1h / CC: ~10 min)
+B) Keep it manual
+No script. The 375px step stays a person resizing DevTools, as in §6 today. (human: 0 / CC: 0)
+
+State: approved
+Actual answer: A) Add npm run check:mobile. D3 answer "A) Add npm run check:mobile (recommended)".
+Accepted scope: `scripts/mobile-check.mjs` + `npm run check:mobile` (starts `vite preview`, launches local headless Chrome, exits 1 if any of the 5 routes has scrollWidth > 375; no new dependency), in the X5 PR (#13); plan §6's 375px step points to it.
+History: none
+
+### 10.5 Outside voice (native Plan subagent, completed inside the 5-minute limit)
+Codex is not installed; the native fallback returned a complete report (12 findings). Verified by the parent reviewer:
+- **O3 (confirmed, `node` probe):** `/booking?value=500` and `?calls=abc` prefill "Under 25", because `fromRoiParams` cleans a missing or invalid `calls` to 0 (`roi.js:63`) before `callsBucket` sees it. This violates the approved §8.13 item 8 ("An invalid or missing `calls` param means no prefill"; Q2/mechanical fix). **Carried forward as required work under that approval:** `fromRoiParams` keeps `callsPerWeek` as `null` when the `calls` param is missing or not a non-negative number, and `roi.test.js` adds `/booking?value=500` and `calls=abc` → `''`.
+- **O4 (confirmed):** `formatRoiEstimate` records the raw `missedPct`/`bookPct` ("missed 150%") while `pct()` computed at 100% (`roi.js:18` vs `:74`). **Carried forward under E5 (Q7: the lead stores the estimate and the inputs behind it):** record the clamped percentages; one test row.
+- **O7 (static read):** `TRANSCRIPT.findLastIndex` (`DemoCallCard.jsx:15`) is ES2023, unpolyfilled; it throws on iOS 15.0–15.3 once audio plays. **Carried forward as a crash fix of approved behavior:** replace it with a reverse loop.
+- **O10, O11 factual corrections:** the map now says `ReminderCard`; X6's code reference is the pre-change line (the narrowed wrapper is at `PricingSection.jsx:82` on `09359c6`).
+- **Informational, no task:** O8 the active line is colour-only (no `aria-current`); O9 absurd inputs (1e308, 0.0001) print "$∞" or a 7-digit break-even; O12 the demo card header has no gap at 320px. Other `grid gap-5` items lack `min-w-0` but have no unwrappable content today.
+
+### X8: demo player hidden on iPhone
+Finding: O1, INFORMATIONAL, confidence 6/10 (medium confidence, verify this is actually an issue), `src/components/DemoCallCard.jsx:29-30` (`hidden={!hasAudio}` / `onLoadedMetadata={() => setHasAudio(true)}`); reviewer: outside voice (native Plan subagent), checked by the parent. iOS Safari has historically ignored `preload="metadata"` until a user gesture; if it still does, `loadedmetadata` never fires, the `<audio>` stays hidden and there are no controls to tap. Matters once S3's `public/demo-call.mp3` exists.
+Plan baseline: §1 "audio player hidden until `public/demo-call.mp3` exists" (v1 decision D5, demo recording planned). How presence is detected: unspecified.
+Runtime evidence: no iPhone test; headless Chrome can't show this. The file doesn't exist yet.
+Comparison grid:
+| Choice | Current | A | B | C | D |
+|---|---|---|---|---|---|
+| X8 player visibility | shown only after `loadedmetadata` | shown when a build-time constant `HAS_RECORDING = true` (set in the S3 commit that adds the mp3); no runtime probe | unchanged | unchanged until an iPhone test of PR #9 decides | unchanged, revisit when S3 lands |
+| Transcript highlight | follows `timeupdate` | unchanged | unchanged | unchanged | unchanged |
+Question D4:
+D4 — Show the demo recording's player without waiting for the browser to preload it?
+Project/branch/task: PixelTech; PR #9, DemoCallCard.jsx; matters once the S3 recording lands.
+ELI10: The hero's demo card only shows its audio player after the browser has fetched the recording's details. iPhones have often refused to fetch audio until someone taps play, so on an iPhone the player might never appear and nobody can tap it. A simple switch that we flip when we add the recording avoids depending on that.
+Stakes if we pick wrong: iPhone visitors, most of your owners, never hear the demo call that the hero promises.
+Recommendation: A because it removes the guess entirely and the switch flips in the same commit that adds the file.
+Note: options differ in kind, not coverage — no completeness score.
+Header: iPhone player
+Options:
+A) Apply: build-time switch (recommended)
+Replace the loadedmetadata check with a constant `HAS_RECORDING`, false today and set true in the commit that adds public/demo-call.mp3. The player shows exactly when the file ships; `onError` still hides it if the file is broken. Lands on PR #9. (human: ~20 min / CC: ~3 min)
+B) Keep current behavior
+The player keeps waiting for loadedmetadata. Works on desktop; on iPhone it may never show. (human: 0 / CC: 0)
+C) Investigate first
+Leave the code; when S3 lands, open PR #9's Vercel preview on a real iPhone and check that the player appears, then decide. Approves no change now. (human: ~15 min with a phone / CC: n/a)
+D) Defer this change
+Leave the row unresolved and revisit when the recording is made. Nothing changes now.
+
+State: approved
+Actual answer: A) Apply: build-time switch. D4 answer "A) Apply: build-time switch (recommended)".
+Accepted scope: in `DemoCallCard.jsx`, a constant `HAS_RECORDING` (false today) decides whether the `<audio>` renders; the S3 commit that adds `public/demo-call.mp3` sets it true; `onError` still hides a broken file; the transcript highlight is unchanged. Lands on PR #9.
+History: none
+
+### X9: Calendly scheduler too wide at 320px
+Finding: O2, INFORMATIONAL, confidence 8/10, `src/pages/Booking.jsx:80` (`'min-w-[280px] h-[680px]'`) inside `:126` (`px-5`) and `:137` (`p-5 md:p-7`); reviewer: outside voice, checked by the parent. At 320px the card's inner width is 320 − 40 − 40 = 240px, so the 280px minimum pushes the page 40px wide in the post-submit state. At 375px the inner width is 295px, so the probe passes. The probe never reaches `status === 'sent'`.
+Plan baseline: §6 375px check; §8.3 E2 inline Calendly (Q4). 320px: not stated.
+Runtime evidence: arithmetic from the classes above; not rendered (needs a real Calendly URL and a saved lead).
+Comparison grid:
+| Choice | Current | A | B | C | D |
+|---|---|---|---|---|---|
+| X9 scheduler width | `min-w-[280px]` inside card padding | drop the min width; below `md` the scheduler cancels the card padding (`-mx-5 md:mx-0`), so it gets 280px at 320 and the page stays 320 wide | unchanged | unchanged until checked with a real Calendly URL at 320px | unchanged |
+| E2 states and fallback | approved (Q4) | unchanged | unchanged | unchanged | unchanged |
+Question D5:
+D5 — Make the booking scheduler fit 320px phones?
+Project/branch/task: PixelTech; PR #9, Booking.jsx Scheduler.
+ELI10: After someone submits the booking form, the Calendly scheduler appears. It's set to be at least 280px wide, but on the smallest phones (320px, like an iPhone SE) the card only has 240px inside it, so the page goes 40px wider than the screen right at the moment they're picking a time.
+Stakes if we pick wrong: on small phones the most important step, booking the slot, wobbles sideways and gets cut off.
+Recommendation: A because it is two class changes and keeps the scheduler as wide as the screen allows.
+Note: options differ in kind, not coverage — no completeness score.
+Header: Calendly 320
+Options:
+A) Apply: let it fill the card (recommended)
+Remove the 280px minimum and, on small screens, let the scheduler stretch to the card's edges (`-mx-5 md:mx-0`), giving 280px at a 320px screen with no sideways scroll. No change to the loading, ready or fallback states. Lands on PR #9. (human: ~20 min / CC: ~3 min)
+B) Keep current behavior
+375px and wider phones are fine; 320px phones scroll sideways on the scheduler step. (human: 0 / CC: 0)
+C) Investigate first
+Set a test Calendly URL, submit on PR #9's preview at 320px, and measure before deciding. Approves no change now. (human: ~30 min / CC: ~10 min)
+D) Defer this change
+Leave the row unresolved; revisit with the design review. Nothing changes now.
+
+State: approved
+Actual answer: A) Apply: let it fill the card. D5 answer "A) Apply: let it fill the card (recommended)".
+Accepted scope: in `Booking.jsx` Scheduler, drop `min-w-[280px]`; below `md` the ready container uses `-mx-5 md:mx-0` so it spans the card's edges (280px at a 320px screen). E2 states and the 10s fallback unchanged. Lands on PR #9.
+History: none
+
+### X10: `check:mobile` widths
+Finding: O5, INFORMATIONAL, confidence 8/10, `scripts/mobile-check.mjs` (PR #13: `const WIDTH = 375;`); reviewer: outside voice, checked by the parent. The check only tests 375px, so a 320px-only overflow such as X9 passes. Post-submit states (scheduler), the nav menu and dialogs are out of reach for a route-only probe.
+Plan baseline: X7 approved (D3): 5 routes at 375px.
+Runtime evidence: the script runs one width (read).
+Comparison grid:
+| Choice | Current | A | B | C | D |
+|---|---|---|---|---|---|
+| X10 widths | 375 | 320 and 375 (each route at both; fail on either) | 375 only | unchanged until an X9-style bug is seen at 320 | unchanged |
+| X7 routes and pass rule | approved (D3) | unchanged | unchanged | unchanged | unchanged |
+| Post-submit/nav/dialog states | not covered | still not covered (listed in NOT in scope) | same | same | same |
+Question D6:
+D6 — Also run the phone check at 320px?
+Project/branch/task: PixelTech; PR #13, scripts/mobile-check.mjs.
+ELI10: The new phone check only looks at a 375px-wide screen. Smaller phones like the iPhone SE are 320px wide, and some layouts only break there. Running each page at both widths costs a few more seconds and catches that class of bug.
+Stakes if we pick wrong: a layout that only breaks on small phones ships without anyone noticing.
+Recommendation: A because it's a one-line loop and 320px is the narrowest phone still in common use.
+Note: options differ in kind, not coverage — no completeness score.
+Header: 320px check
+Options:
+A) Apply: check 320 and 375 (recommended)
+Loop each of the 5 routes at 320px and 375px and fail if either is wider than its screen. Adds about 12 seconds per run. Post-submit and menu states stay manual. Lands on PR #13. (human: ~20 min / CC: ~3 min)
+B) Keep 375 only
+The check stays as approved in D3: 375px only. (human: 0 / CC: 0)
+C) Investigate first
+Run the probe once at 320px by hand and see whether anything fails before changing the script. Approves no change now. (human: ~10 min / CC: ~2 min)
+D) Defer this change
+Leave the row unresolved; revisit with the design review. Nothing changes now.
+
+State: approved
+Actual answer: A) Apply: check 320 and 375. D6 answer "A) Apply: check 320 and 375 (recommended)".
+Accepted scope: `scripts/mobile-check.mjs` runs each of the 5 routes at 320px and 375px and fails if either is wider than its screen. Routes and pass rule otherwise as X7. Lands on PR #13.
+History: none
+
+### X11: transcript highlight after the call ends
+Finding: O6, INFORMATIONAL, confidence 8/10, `src/components/DemoCallCard.jsx:32` (`onTimeUpdate={(e) => setTime(e.currentTarget.currentTime)}`, no `onEnded`) and `:31` (`onError={() => setHasAudio(false)}`, `time` not reset); reviewer: outside voice, checked by the parent. After playback ends, the last line stays highlighted and the others stay greyed until the user seeks.
+Plan baseline: §1 DemoCallCard audio player + transcript (v1, D5). End-of-call state: unspecified.
+Runtime evidence: static read; no recording exists to play.
+Comparison grid:
+| Choice | Current | A | B | C | D |
+|---|---|---|---|---|---|
+| X11 end/error state | last line stays highlighted | `onEnded` and `onError` reset `time` to -1, so all lines return to normal | unchanged | unchanged until tested with the S3 file | unchanged |
+| X8 `HAS_RECORDING` switch | approved (D4) | unchanged | unchanged | unchanged | unchanged |
+Question D7:
+D7 — Reset the transcript highlight when the demo call ends?
+Project/branch/task: PixelTech; PR #9, DemoCallCard.jsx.
+ELI10: While the recording plays, the transcript lights up the line being spoken and greys out the rest. When the call finishes, it stays stuck that way: the last line lit, everything else grey. Resetting when the call ends puts the card back to its normal, readable look.
+Stakes if we pick wrong: after listening, the transcript looks half-faded and a little broken, right in the hero.
+Recommendation: A because it's two event handlers and makes the end state look like the start.
+Note: options differ in kind, not coverage — no completeness score.
+Header: Call end
+Options:
+A) Apply: reset on end and error (recommended)
+`onEnded` and `onError` set the time back to -1, so all transcript lines return to their normal colour. Lands on PR #9 with X8. (human: ~10 min / CC: ~2 min)
+B) Keep current behavior
+The last line stays highlighted after playback until the visitor seeks or replays. (human: 0 / CC: 0)
+C) Investigate first
+Decide after hearing the real S3 recording in the card. Approves no change now. (human: ~10 min / CC: n/a)
+D) Defer this change
+Leave the row unresolved; revisit when S3 lands. Nothing changes now.
+
+State: approved
+Actual answer: A) Apply: reset on end and error. D7 answer "A) Apply: reset on end and error (recommended)".
+Accepted scope: in `DemoCallCard.jsx`, `onEnded` and `onError` set `time` to -1 so every transcript line returns to normal. Lands on PR #9 with X8.
+History: none
+
+Approval readiness (second pass): PASS. Checked X5 (D1 A), X6 (D2 A), X7 (D3 A), X8 (D4 A), X9 (D5 A), X10 (D6 A), X11 (D7 A); carried forward O3 (§8.13 item 8, approved), O4 (E5, Q7), O7 (crash fix of approved behavior). No pending rows.
+
+### 10.6 Review sections (second pass)
+- **Scope Challenge:** scope accepted as-is. The focus areas touch 7 existing files and add 1 script, with no new classes or services.
+- **Architecture:** the component map and state diagrams are in 10.1–10.3. Leaf-owned state plus URL hand-off is right-sized; no change.
+  - `[INFORMATIONAL] (confidence: 9/10) src/components/ProductCards.jsx:78`: the map named `RemindersCard`; corrected to `ReminderCard`.
+- **Code quality** (dispositions below):
+  - `[CRITICAL] (confidence: 10/10) src/components/HomeSections.jsx:101`: page 491px wide at 375 (X5).
+  - `[INFORMATIONAL] (confidence: 8/10) src/pages/Booking.jsx:80`: scheduler 40px too wide at 320 (X9).
+  - `[INFORMATIONAL] (confidence: 8/10) src/lib/roi.js:63`: guessed "Under 25" prefill (O3).
+  - `[INFORMATIONAL] (confidence: 8/10) src/lib/roi.js:74`: lead records uncapped % (O4).
+  - `[INFORMATIONAL] (confidence: 7/10) src/components/PricingSection.jsx:80`: noisy live region (X6).
+  - `[INFORMATIONAL] (confidence: 6/10) src/components/DemoCallCard.jsx:29-30`: player may never show on iPhone (X8). Medium confidence, verify this is actually an issue.
+  - `[INFORMATIONAL] (confidence: 8/10) src/components/DemoCallCard.jsx:32`: highlight stuck after the call ends (X11).
+  - `[INFORMATIONAL] (confidence: 6/10) src/components/DemoCallCard.jsx:15`: `findLastIndex` on iOS < 15.4 (O7). Medium confidence, verify this is actually an issue.
+- **Tests:**
+
+```
+CODE PATHS                                         USER FLOWS
+[+] lib/roi.js                                     [+] Phone layout
+  ├── fromRoiParams missing/invalid calls → null     ├── [★★★ check:mobile] 5 routes × 320/375 (X7, X10)
+  │     [★★★ roi.test, O3]                           ├── [GAP] scheduler step at 320 (needs Calendly URL; manual)
+  ├── formatRoiEstimate capped %  [★★★ O4]           └── [GAP] nav menu / cookie banner / demo dialog (manual)
+  └── callsBucket ∈ CALL_VOLUMES  [★★★ X3]         [+] Demo card
+[+] DemoCallCard                                     ├── [GAP] iPhone: player visible once HAS_RECORDING=true
+  ├── activeLine loop (O7)      [GAP] trivial, no seam    (real device, S3 commit)
+  ├── onEnded/onError reset     [GAP] manual (S3)     └── [GAP] highlight resets at end (S3, manual)
+COVERAGE: 6/11 paths tested | GAPS: 5 (all manual or blocked on S3) | QUALITY: ★★★:5 ★★:1
+```
+
+  - roi.js changes are covered by 11 tests (new rows for O3 and O4).
+  - Layout is now enforced by `npm run check:mobile` (PR #13). It fails without the X5 fix (491/375, exit 1) and passes with it (10/10 runs).
+  - The demo card's audio states can only be tested once the S3 file exists. That's a manual check on a real iPhone in the S3 commit. A unit test for `activeLine` would need an export no production caller uses, so it fails the test value bar.
+  - Test plan artifact: `~/.gstack/projects/MAMuneebGhori-pixeltech-agency/mamun-docs-eng-review-eng-review-test-plan-20261106-192900.md`.
+- **Performance:** no issues found. `timeupdate` re-renders a 5-line list about 4 times a second. The calculator recomputes pure math on each keystroke. Calendly loads only after submit.
+
+### 10.7 NOT in scope
+- **Click-to-seek on transcript lines:** not in the plan; the native player has seek controls.
+- **Keeping calculator inputs on Back from `/booking`:** the URL already carries them forward; going back resets to the defaults.
+- **`aria-current` on the active transcript line:** the transcript is always visible and the player has native controls.
+- **Sanity caps for absurd ROI inputs (1e308, 0.0001):** not realistic input.
+- **Header gap at 320px on the demo card:** cosmetic.
+- **Layout checks for post-submit, menu and dialog states:** these need scripted interaction. They stay manual and are listed in the Test Plan.
+
+### 10.8 Failure modes (second pass)
+| Path | Failure | Covered by | User sees |
+|---|---|---|---|
+| Home at 375px | Unwrappable content widens a grid track | X5 fix + `check:mobile` | Fixed; the check fails if it returns |
+| Scheduler at 320px | Fixed min width | X9 | Fixed; post-submit state not in the check (manual) |
+| Demo player on iPhone | No preload, so the player stays hidden | X8 build-time switch | Player shows whenever `HAS_RECORDING` is true |
+| S3 commit forgets `HAS_RECORDING = true` | Recording never shown | Manual check in the S3 commit | Transcript-only card (no error) |
+| ROI link with bad `calls` | Guessed bucket | O3 + test | Empty select |
+
+Critical gaps: 0.
+
+### 10.9 Implementation Tasks (second pass)
+- [x] **T5 (P1, human: ~20 min / CC: ~3 min)**: layout. `min-w-0` on How It Works cards (X5). PR #13 `5b38f3d`. Verify: `npm run check:mobile`.
+- [x] **T6 (P2, human: ~1h / CC: ~10 min)**: tooling. `npm run check:mobile` at 320 and 375 (X7, X10). PR #13 `c4caebb`, `b8a3f11`. Verify: it fails without T5 and passes with it.
+- [x] **T7 (P2, human: ~15 min / CC: ~2 min)**: frontend. ROI live region narrowed (X6). PR #9 `09359c6`.
+- [x] **T8 (P2, human: ~40 min / CC: ~8 min)**: frontend. `HAS_RECORDING` switch, reset on end/error, `activeLine` loop, scheduler `-mx-5 md:mx-0`, `calls` → null, capped % on the lead (X8, X9, X11, O3, O4, O7). PR #9 `70b0121`. Verify: `npm test` 11/11, lint, build.
+- [ ] **T9 (P1, owner, human: ~15 min)**: S3. Commit `public/demo-call.mp3`, set `HAS_RECORDING = true`, retime `TRANSCRIPT` from the real call, and check on a real iPhone that the player shows and the highlight resets at the end.
+
+Parallelization: sequential, no parallelization opportunity (T5–T8 are done; T9 is one owner step).
+
+### 10.10 Completion summary (second pass)
+- Step 0: Scope Challenge — scope accepted as-is
+- Reality rows: 7/7 applicable rows emitted (PLAN_REALITY complete, from §9.1), 1 unverified premise (iOS preload behavior)
+- Architecture Review: 1 issue found
+- Code Quality Review: 8 issues found
+- Test Review: diagram produced, 5 gaps identified (all manual or blocked on S3)
+- Performance Review: 0 issues found
+- NOT in scope: written
+- What already exists: §9.7 plus `estimateLeak`/`clean`/`callsBucket` and the delegated `trackClicks`
+- TODOS.md updates: 0 items proposed to user
+- Failure modes: 0 critical gaps flagged
+- Unresolved decisions: 0 in this review
+- Outside voice: native Plan subagent completed (12 findings; 7 resolved by D4–D7 or carried-forward fixes, 2 corrections, 3 informational)
+- Parallelization: 0 lanes, sequential
+- Lake Score: 4/4 (D1, D2, D3 and D6 scored; all picked the 10/10 option)
+
 ## GSTACK REVIEW REPORT
 
 | Review | Trigger | Why | Runs | Status | Findings |
 |--------|---------|-----|------|--------|----------|
 | CEO Review | `/plan-ceo-review` | Scope & strategy | 2 | ISSUES OPEN | 8 proposals, 7 accepted, 1 deferred; build check: 2 findings, both resolved (§8.14) |
-| Outside Review | codex (eng phase), native fallback | Independent 2nd opinion | 2 | unavailable (eng); completed (CEO, native subagent) | eng: no coverage; CEO: 23 findings, 23 resolved |
-| Eng Review | `/plan-eng-review` | Architecture & tests (required) | 1 | ISSUES OPEN | 9 issues, 0 critical gaps; plus 2 Scope Challenge findings (1 CRITICAL: leaked secrets) |
+| Outside Review | native Claude subagent (codex not installed) | Independent 2nd opinion | 3 | completed (eng pass 2); unavailable (eng pass 1); completed (CEO) | eng pass 2: 12 findings, all dispositioned (§10.5); CEO: 23 findings, 23 resolved |
+| Eng Review | `/plan-eng-review` | Architecture & tests (required) | 2 | ISSUES OPEN | pass 2: 11 issues, 0 critical gaps, all fixed on PR #9/#13; pass 1: 9 issues + leaked secrets (T0–T4) |
 | Design Review | `/plan-design-review` | UI/UX gaps | 0 | — | — |
 | DX Review | `/plan-devex-review` | Developer experience gaps | 0 | — | — |
 
-- **OUTSIDE COVERAGE:** eng phase: codex not installed, and the native Plan subagent was stopped at the five-minute limit without a complete report, so the eng phase has no outside coverage. CEO phase: native Claude subagent completed (6/10). No completed external (non-Claude) review.
-- **VERDICT:** No review is CLEAR. Eng review ran with ISSUES OPEN; every finding is mapped to an approved task (T0–T4). Ready to implement once T0 (key rotation) is underway.
+- **OUTSIDE COVERAGE:** eng pass 2: a native Claude Plan subagent completed inside the five-minute limit, with 12 findings checked by the parent reviewer. Eng pass 1: unavailable (stopped at the limit). CEO: native subagent completed. No completed external (non-Claude) review.
+- **CROSS-MODEL:** not applicable. Only native Claude reviewers completed, so there is no cross-model comparison.
+- **VERDICT:** No review is CLEAR. Eng review passes 1 and 2 have ISSUES OPEN with every finding mapped to a task. Pass 2's code fixes are built (PR #13 ready; PR #9 still held for S3/T9). Remaining owner work: T0 (rotate keys), T9 (recording + iPhone check).
 
 NO UNRESOLVED DECISIONS
