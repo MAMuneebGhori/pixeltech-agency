@@ -1,299 +1,149 @@
-import React, { useId, useRef, useState } from "react";
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from "framer-motion";
-import NumberFlow from "@number-flow/react";
-import { CheckCheck, Zap } from "lucide-react";
-import { TimelineContent } from "./ui/timeline-animation";
-import { VerticalCutReveal } from "./ui/vertical-cut-reveal";
-import { cn } from "../lib/utils";
+import { Check, X } from 'lucide-react';
+import { Section } from './HomeSections';
+import { MONTHLY_PRICE, DEFAULT_INPUTS, estimateLeak, bookingsToBreakEven } from '../lib/roi';
 
-const PricingSwitch = ({
-  button1,
-  button2,
-  onSwitch,
-  className,
-  layoutId,
-}) => {
-  const [selected, setSelected] = useState("0");
-  const uniqueId = useId();
-  const switchLayoutId = layoutId || `switch-${uniqueId}`;
+// Set by hand as seats fill; never a fake countdown (plan D2).
+const FOUNDING_SEATS_LEFT = 3;
+// shortcut: D2a (7 vs 30 days) still open; 7 is the plan's recommendation, change here if the 30-day option wins.
+const TRIAL_DAYS = 7;
 
-  const handleSwitch = (value) => {
-    setSelected(value);
-    onSwitch(value);
-  };
+const FEATURES = [
+  'AI voice receptionist for your calls',
+  'Missed-call text-back',
+  'Instagram & Facebook DM replies',
+  'Appointment reminders to cut no-shows',
+  'Past-client reactivation campaigns',
+  '9 AM daily digest of every lead and booking',
+  'TCPA-compliant opt-outs and call-recording notice',
+];
+
+// Limits stated up front (plan 4.7). Each one traces to the SRD: §7 BAA, F-16 later phase, §3 unverified integrations, Phase 3 multi-location.
+const NOT_INCLUDED = [
+  'A HIPAA Business Associate Agreement (BAA)',
+  'A website chat widget (planned for later)',
+  'Booking-software integrations we haven’t confirmed for your system',
+  'More than one location',
+];
+
+const usd = (n) => n.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+
+const ROI_FIELDS = [
+  { key: 'callsPerWeek', label: 'Inbound calls per week' },
+  {
+    key: 'missedPct', label: 'Calls that go unanswered (%)', max: 100,
+    hint: <>Default is the salon & spa average, <a href="https://www.zenoti.com/thecheckin/how-track-salon-call-conversion-rate" target="_blank" rel="noopener noreferrer" className="text-accent underline underline-offset-2">Zenoti, 2026</a>.</>,
+  },
+  { key: 'missedMessagesPerWeek', label: 'Texts & DMs answered over an hour late, per week' },
+  { key: 'bookPct', label: 'Missed leads who would have booked (%)', max: 100, hint: 'Our conservative assumption. Use your own close rate if you know it.' },
+  { key: 'treatmentValue', label: 'Average first-treatment value ($)' },
+];
+
+// Inputs stay strings so a field can be cleared while typing; roi.js treats blanks as 0.
+const DEFAULT_FORM = Object.fromEntries(Object.entries(DEFAULT_INPUTS).map(([k, v]) => [k, String(v)]));
+
+function RoiCalculator({ headingAs: Heading }) {
+  const [form, setForm] = useState(DEFAULT_FORM);
+  const { missedLeads, lostBookings, lostRevenue } = estimateLeak(form);
+  const breakEven = bookingsToBreakEven(form.treatmentValue);
+
+  const field = 'mt-1.5 w-full rounded-xl border border-line bg-card px-4 py-3 font-mono text-ink focus:outline-2 focus:outline-accent';
 
   return (
-    <div
-      className={cn(
-        "relative z-10 w-full flex rounded-full bg-bg2 border border-line p-1 shadow-inner",
-        className,
-      )}
-    >
-      <button
-        onClick={() => handleSwitch("0")}
-        className={cn(
-          "relative z-10 w-full sm:h-14 h-10 rounded-full sm:px-6 px-3 sm:py-2 py-1 font-medium transition-colors outline-none",
-          selected === "0"
-            ? "text-ink"
-            : "text-mut hover:text-ink",
-        )}
-      >
-        {selected === "0" && (
-          <motion.span
-            layoutId={switchLayoutId}
-            className="absolute top-0 left-0 sm:h-14 h-10 w-full rounded-full border border-line shadow-md bg-card"
-            transition={{ type: "spring", stiffness: 500, damping: 30 }}
-          />
-        )}
-        <span className="relative">{button1}</span>
-      </button>
+    <div className="bg-card border border-line rounded-[18px] p-6 md:p-8">
+      <Heading className="text-[1.8rem] mb-1">What missed leads cost you</Heading>
+      <p className="text-mut text-[0.9rem] mb-6">Put in your own numbers. The defaults are a starting point.</p>
 
-      <button
-        onClick={() => handleSwitch("1")}
-        className={cn(
-          "relative z-10 w-full sm:h-14 h-10 flex-shrink-0 rounded-full sm:px-6 px-3 sm:py-2 py-1 font-medium transition-colors outline-none",
-          selected === "1"
-            ? "text-ink"
-            : "text-mut hover:text-ink",
-        )}
-      >
-        {selected === "1" && (
-          <motion.span
-            layoutId={switchLayoutId}
-            className="absolute top-0 left-0 sm:h-14 h-10 w-full rounded-full border border-line shadow-md bg-card"
-            transition={{ type: "spring", stiffness: 500, damping: 30 }}
-          />
-        )}
-        <span className="relative flex justify-center items-center gap-2">
-          {button2}
-        </span>
-      </button>
+      <div className="grid gap-4 sm:grid-cols-2 mb-6">
+        {ROI_FIELDS.map(({ key, label, max, hint }) => (
+          <label key={key} className="text-[0.9rem] font-medium text-ink">
+            {label}
+            <input
+              type="number" inputMode="numeric" min="0" max={max}
+              value={form[key]}
+              onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
+              className={field}
+            />
+            {hint && <span className="block mt-1 text-[0.78rem] font-normal text-mut">{hint}</span>}
+          </label>
+        ))}
+      </div>
+
+      <div className="rounded-xl bg-bg2 border border-line p-5" aria-live="polite">
+        <p className="text-[0.85rem] text-mut">Estimated revenue lost per month</p>
+        <p className="font-mono text-[2.4rem] leading-tight text-ink">{usd(lostRevenue)}</p>
+        <p className="mt-1 text-[0.85rem] text-mut">
+          About {missedLeads} missed leads a month, {lostBookings} of whom would have booked.
+        </p>
+        <p className="mt-3 text-[0.92rem] text-ink">
+          {breakEven
+            ? <>The plan is {usd(MONTHLY_PRICE)}/mo. It pays for itself if it recovers <strong>{breakEven} booking{breakEven > 1 ? 's' : ''}</strong> a month.</>
+            : <>Enter a treatment value to compare it with the {usd(MONTHLY_PRICE)}/mo plan.</>}
+        </p>
+        <p className="mt-3 text-[0.75rem] text-mut">
+          How it's worked out: (calls × unanswered % + late texts & DMs) × 4.3 weeks × booking % × treatment value.
+        </p>
+      </div>
     </div>
   );
-};
+}
 
-export default function PricingSection() {
-  const [hasLandingPage, setHasLandingPage] = useState(false);
-  const pricingRef = useRef(null);
-
-  const revealVariants = {
-    visible: (i) => ({
-      y: 0,
-      opacity: 1,
-      filter: "blur(0px)",
-      transition: {
-        delay: i * 0.3,
-        duration: 0.5,
-      },
-    }),
-    hidden: {
-      filter: "blur(10px)",
-      y: -20,
-      opacity: 0,
-    },
-  };
-
-  const timelineVaraints = {
-    visible: (i) => ({
-      y: 0,
-      opacity: 1,
-      filter: "blur(0px)",
-      transition: {
-        delay: i * 0.1,
-        duration: 0.5,
-      },
-    }),
-    hidden: {
-      filter: "blur(10px)",
-      y: -20,
-      opacity: 0,
-    },
-  };
-
-  const toggleLandingPage = (value) =>
-    setHasLandingPage(parseInt(value) === 1);
-
-  const currentPrice = hasLandingPage ? 2500 : 1500;
-  const originalPrice = hasLandingPage ? 3800 : 2500;
-
-  const features = [
-    "Custom Full-Stack Web Architecture",
-    "Booked Solid Follow-up Automation",
-    "Self-Booking Calendar Infrastructure",
-    "Missed-Call Text-Back System",
-    "Lead Reactivation Workflows",
-    hasLandingPage ? "High-Converting Landing Page" : "Core System Integration",
-    hasLandingPage ? "Premium Web Hosting & SSL" : "Standard Cloud Setup",
-    "24/7 Technical Support",
-  ];
-
+export default function PricingSection({ titleAs = 'h2' }) {
+  // One level below the section title, so /pricing (h1) doesn't skip to h3.
+  const SubHeading = titleAs === 'h1' ? 'h2' : 'h3';
   return (
-    <div className="w-full min-h-screen relative border-b border-line bg-bg overflow-hidden" ref={pricingRef}>
-      <div className="pt-24 pb-16 px-4 relative">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-accent/5 blur-[150px] rounded-full pointer-events-none" />
-        
-        <div className="max-w-4xl mx-auto text-center relative z-10">
-          <TimelineContent
-            as="div"
-            animationNum={0}
-            timelineRef={pricingRef}
-            customVariants={revealVariants}
-            className="flex items-center justify-center mb-6"
-          >
-            <Zap className="h-5 w-5 text-accent fill-accent mr-2" />
-            <span className="text-accent font-bold tracking-[0.15em] uppercase">The Solution</span>
-          </TimelineContent>
-
-          <h1 className="md:text-5xl sm:text-4xl text-3xl font-extrabold text-ink mb-6 leading-[1.2] tracking-tight">
-            <VerticalCutReveal
-              splitBy="words"
-              staggerDuration={0.15}
-              staggerFrom="first"
-              reverse={true}
-              containerClassName="justify-center"
-              transition={{
-                type: "spring",
-                stiffness: 250,
-                damping: 40,
-                delay: 0.4,
-              }}
-            >
-              Enterprise engineering. Accessible.
-            </VerticalCutReveal>
-          </h1>
-
-          <TimelineContent
-            as="p"
-            animationNum={1}
-            timelineRef={pricingRef}
-            customVariants={revealVariants}
-            className="text-lg md:text-xl text-mut max-w-2xl mx-auto"
-          >
-            Stop piecing together disparate tools. Get a unified, scalable system that converts traffic into booked appointments.
-          </TimelineContent>
-        </div>
-      </div>
-
-      {/* Product Features */}
-      <div className="px-4 pb-24 relative z-10">
-        <div className="max-w-5xl mx-auto bg-bg2 border border-line rounded-[2rem] p-8 md:p-12 shadow-2xl">
-          <div className="grid md:grid-cols-2 md:gap-16 gap-10 items-start">
-            <div>
-              <TimelineContent
-                as="h3"
-                animationNum={2}
-                timelineRef={pricingRef}
-                customVariants={revealVariants}
-                className="text-3xl font-extrabold text-ink mb-8"
-              >
-                What's included
-              </TimelineContent>
-
-              <div className="space-y-5">
-                {features.map((feature, index) => (
-                  <TimelineContent
-                    key={index}
-                    as="div"
-                    animationNum={3 + index}
-                    timelineRef={pricingRef}
-                    customVariants={timelineVaraints}
-                    className="flex items-center"
-                  >
-                    <div className="w-6 h-6 bg-accent/20 rounded-full flex items-center justify-center mr-4 shrink-0">
-                      <CheckCheck className="h-3.5 w-3.5 text-accent" />
-                    </div>
-                    <span className="text-mut font-medium">{feature}</span>
-                  </TimelineContent>
-                ))}
-              </div>
-            </div>
-
-            <div className="space-y-10 lg:pl-8 lg:border-l border-line">
-              <TimelineContent
-                as="div"
-                animationNum={3}
-                timelineRef={pricingRef}
-                customVariants={revealVariants}
-              >
-                <h4 className="font-bold text-ink mb-2 text-lg">
-                  Optional Add-on
-                </h4>
-                <p className="text-sm text-mut mb-4">
-                  Need a website? We'll build a high-converting landing page optimized for lead capture.
-                </p>
-                <PricingSwitch
-                  button1="Core System"
-                  button2="+ Landing Page"
-                  onSwitch={toggleLandingPage}
-                  className="grid grid-cols-2 w-full"
-                />
-              </TimelineContent>
-
-              <TimelineContent
-                as="div"
-                animationNum={5}
-                timelineRef={pricingRef}
-                customVariants={revealVariants}
-                className="pt-6 border-t border-line"
-              >
-                <div className="flex flex-col mb-8">
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-5xl font-extrabold text-ink tracking-tight flex items-center">
-                      $1,250
-                    </span>
-                    <span className="text-xl text-mut font-medium relative before:content-[''] before:absolute before:-left-1 before:-right-1 before:top-1/2 before:-translate-y-1/2 before:h-0.5 before:bg-mut before:z-10">
-                      $2,000
-                    </span>
-                    <span className="text-xl text-mut font-medium ml-1">
-                      setup
-                    </span>
-                  </div>
-                  <div className="flex items-baseline gap-2 mt-2">
-                    <span className="text-3xl font-bold text-accent tracking-tight">
-                      +$650
-                    </span>
-                    <span className="text-mut font-medium">
-                      /mo to run & optimize
-                    </span>
-                  </div>
-
-                  {hasLandingPage && (
-                    <motion.div 
-                      initial={{ opacity: 0, height: 0, marginTop: 0 }}
-                      animate={{ opacity: 1, height: 'auto', marginTop: 16 }}
-                      className="flex items-baseline pt-4 border-t border-line/50"
-                    >
-                      <span className="text-lg text-mut font-medium relative before:content-[''] before:absolute before:-left-1 before:-right-1 before:top-1/2 before:-translate-y-1/2 before:h-0.5 before:bg-mut before:z-10 mr-2">
-                        $1,500
-                      </span>
-                      <span className="text-2xl font-bold text-ink tracking-tight mr-2">
-                        +$1,000
-                      </span>
-                      <span className="text-sm text-mut font-medium uppercase tracking-wider">
-                        One-time for Landing Page
-                      </span>
-                    </motion.div>
-                  )}
-                </div>
-                
-                <Link to={`/booking?service=${hasLandingPage ? 'core_and_landing_page' : 'core'}`} className="block w-full">
-                  <TimelineContent
-                    as="button"
-                    animationNum={6}
-                    timelineRef={pricingRef}
-                    customVariants={revealVariants}
-                    className="btn-primary w-full h-14 rounded-xl font-bold tracking-wider uppercase text-sm"
-                  >
-                    Book a Technical Audit
-                  </TimelineContent>
-                </Link>
-                <p className="text-center text-xs text-mut mt-4">No hidden fees. Full ownership.</p>
-              </TimelineContent>
-            </div>
+    <Section
+      id="pricing"
+      eyebrow="Pricing"
+      titleAs={titleAs}
+      title="One plan. No lock-in."
+      intro="Everything below, for one flat monthly price. Cancel any month."
+    >
+      <div className="grid gap-5 lg:grid-cols-2 items-start">
+        <div className="bg-card border border-line rounded-[18px] p-6 md:p-8">
+          <p className="font-mono text-[0.72rem] uppercase tracking-wide text-accent mb-3">
+            Founding Partner · {FOUNDING_SEATS_LEFT} of 3 seats left
+          </p>
+          <div className="flex items-baseline gap-2 flex-wrap">
+            <span className="font-mono text-[3rem] leading-none text-ink">{usd(MONTHLY_PRICE)}</span>
+            <span className="text-mut">/mo after your {TRIAL_DAYS}-day free trial</span>
           </div>
+          <p className="mt-2 text-[0.95rem]">
+            <s className="text-mut">$497 setup</s> <span className="text-accent font-semibold">waived for our first 3 clinics</span>
+          </p>
+
+          <SubHeading className="mt-6 mb-3 font-body font-semibold text-[1rem]">Included</SubHeading>
+          <ul className="space-y-3">
+            {FEATURES.map((f) => (
+              <li key={f} className="flex gap-3 text-ink text-[0.95rem]">
+                <Check className="h-5 w-5 text-good shrink-0" aria-hidden="true" />
+                {f}
+              </li>
+            ))}
+          </ul>
+
+          <SubHeading className="mt-6 mb-3 font-body font-semibold text-[1rem]">Not included</SubHeading>
+          <ul className="space-y-3">
+            {NOT_INCLUDED.map((f) => (
+              <li key={f} className="flex gap-3 text-mut text-[0.95rem]">
+                <X className="h-5 w-5 text-mut shrink-0" aria-hidden="true" />
+                {f}
+              </li>
+            ))}
+          </ul>
+
+          {/* D7: soft fair-use line; no minutes cap published. */}
+          <p className="mt-6 mb-8 rounded-xl bg-bg2 border border-line p-3.5 text-[0.88rem] text-ink">
+            Covers a typical single-location spa. If your volume ever goes over, we'll tell you first. We never surprise-bill.
+          </p>
+
+          <Link to="/booking?service=core" className="btn-primary w-full text-base">Book a 15-min ROI audit</Link>
+          <p className="text-center text-[0.8rem] text-mut mt-3">No lock-in. Cancel any month.</p>
         </div>
+
+        <RoiCalculator headingAs={SubHeading} />
       </div>
-    </div>
+    </Section>
   );
 }

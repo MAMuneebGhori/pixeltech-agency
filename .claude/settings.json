@@ -1,7 +1,8 @@
 {
   "enabledPlugins": {
     "ecc@ecc": true,
-    "caveman@caveman": true
+    "caveman@caveman": true,
+    "example-skills@anthropic-agent-skills": true
   },
   "extraKnownMarketplaces": {
     "ecc": {

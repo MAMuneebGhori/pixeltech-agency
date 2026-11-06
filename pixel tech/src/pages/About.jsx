@@ -1,85 +1,48 @@
-import React from 'react';
-import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { ShieldCheck, Target, Zap } from 'lucide-react';
 import SEO from '../components/SEO';
+import { Section } from '../components/HomeSections';
+
+// Claims here stay within the SRD and the home page. No client results until client #1 (plan rule 3).
+const PRINCIPLES = [
+  ['Speed decides who gets the booking', 'Leads reached within an hour are about 7× more likely to have a real conversation than leads reached an hour later (Harvard Business Review, 2011). The system replies to missed calls and DMs within 60 seconds.'],
+  ['Done for you', "You don't learn new software. We set up your receptionist, connect your calendar, test it with you and keep it running."],
+  ['Med spas only', 'Every service menu, script and guardrail is written for aesthetic clinics: Botox, fillers, laser, facials, IV and consults. Medical questions always go to your clinician.'],
+];
 
 export default function About() {
   return (
-    <main className="min-h-screen pt-[120px] pb-[80px] bg-bg relative overflow-hidden">
-      <SEO title="About Us" description="Learn how Pixeltech Agency helps clinics grow predictably." url="/about" />
-      {/* Background Glow */}
-      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-accent/5 blur-[120px] rounded-full pointer-events-none" />
+    <main className="bg-bg">
+      <SEO title="About" description="PixelTech builds the Booked Solid System: an AI receptionist and lead-reactivation system for med spas." url="/about" />
 
-      <div className="max-w-[800px] mx-auto px-6 relative z-10">
-        
-        {/* Header Section */}
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-1.5 text-[0.65rem] tracking-[0.18em] uppercase text-accent border border-accent/20 rounded-full px-3.5 py-1.5 mb-6 bg-accent/5">
-            <span className="w-1 h-1 rounded-full bg-accent animate-pulse" />
-            Our Mission
-          </div>
-          <h1 className="text-4xl md:text-5xl font-extrabold mb-6 leading-tight">
-            We Help Clinics Stop <span className="text-gradient">Leaking Revenue.</span>
-          </h1>
-          <p className="text-mut text-[1.1rem] md:text-[1.2rem] leading-relaxed max-w-[650px] mx-auto">
-            Most Med Spas and Clinics spend thousands of dollars every month on Facebook ads, Google ads, and SEO. 
-            But when the leads finally come in, nobody replies for hours. Leads go cold, competitors swoop in, and money is burned.
+      <Section
+        titleAs="h1"
+        eyebrow="About PixelTech"
+        title={<>We help med spas stop <em className="text-accent">leaking revenue.</em></>}
+        intro="Clinics spend thousands a month on ads and SEO. Then the call lands while the front desk is with a patient, the DM sits until morning, and the lead books somewhere else."
+      >
+        <div className="max-w-[720px] space-y-5 text-ink text-[1.05rem] leading-relaxed">
+          <p>
+            Practitioners are great at treating patients. They don't have time to watch the phone for someone asking "How much is Botox?" at 9 PM.
+          </p>
+          <p>
+            Most agencies sell you more leads. We work on what happens after the lead arrives. The Booked Solid System answers your calls, replies to texts and Instagram and Facebook DMs, books into your calendar and follows up with past clients.
           </p>
         </div>
+      </Section>
 
-        {/* Content Section */}
-        <div className="bg-card border border-line p-8 md:p-12 rounded-3xl shadow-[0_0_30px_rgba(0,0,0,0.5)] mb-16">
-          <h2 className="text-2xl md:text-3xl font-bold mb-6 text-ink">Why We Exclusively Serve Med Spas</h2>
-          
-          <div className="space-y-6 text-mut leading-relaxed">
-            <p>
-              At Pixeltech Agency, we noticed a massive gap in the aesthetics industry. Doctors and practitioners are world-class at delivering results for their patients, but they are entirely too busy to sit by the phone waiting to text back a lead who asks, "How much is Botox?"
-            </p>
-            <p>
-              Traditional marketing agencies will sell you on "getting more leads." But more leads don't matter if your front desk is too overwhelmed to follow up with them immediately. 
-            </p>
-            <p>
-              <strong className="text-ink">That's why we built the Booked Solid System.</strong>
-            </p>
-            <p>
-              We don't run your ads. We fix what happens <em>after</em> the ad is clicked. We install AI-driven infrastructure that responds to every inquiry in under 60 seconds, pre-qualifies them, and books them straight into your calendar—day or night, weekends and holidays.
-            </p>
-          </div>
-        </div>
-
-        {/* Core Values / Features */}
-        <div className="grid md:grid-cols-3 gap-6 mb-16">
-          <div className="bg-bg2 border border-line p-6 rounded-2xl">
-            <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center mb-4">
-              <Zap className="w-6 h-6 text-accent" />
+      <Section eyebrow="How we work" title="Three things we won't compromise on." alt>
+        <div className="grid gap-5 md:grid-cols-3">
+          {PRINCIPLES.map(([title, text]) => (
+            <div key={title} className="bg-card border border-line rounded-[18px] p-6">
+              <h3 className="text-[1.6rem] leading-tight mb-3">{title}</h3>
+              <p className="text-mut leading-relaxed">{text}</p>
             </div>
-            <h3 className="font-bold text-lg mb-2 text-ink">Speed is Everything</h3>
-            <p className="text-mut text-sm">78% of customers buy from the first responder. Our systems ensure your clinic is always first.</p>
-          </div>
-          <div className="bg-bg2 border border-line p-6 rounded-2xl">
-            <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center mb-4">
-              <ShieldCheck className="w-6 h-6 text-accent" />
-            </div>
-            <h3 className="font-bold text-lg mb-2 text-ink">Done-For-You</h3>
-            <p className="text-mut text-sm">You shouldn't have to learn new software. We build, manage, and optimize the entire system for you.</p>
-          </div>
-          <div className="bg-bg2 border border-line p-6 rounded-2xl">
-            <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center mb-4">
-              <Target className="w-6 h-6 text-accent" />
-            </div>
-            <h3 className="font-bold text-lg mb-2 text-ink">Niche Expertise</h3>
-            <p className="text-mut text-sm">Because we focus strictly on Med Spas and Clinics, our conversational AI actually understands your services.</p>
-          </div>
+          ))}
         </div>
-
-        <div className="text-center">
-          <Link to="/booking" className="btn-primary inline-flex items-center gap-2 text-lg px-8 py-4">
-            Book Your Strategy Call
-          </Link>
+        <div className="mt-12">
+          <Link to="/booking" className="btn-primary text-base">Book a 15-min ROI audit</Link>
         </div>
-
-      </div>
+      </Section>
     </main>
   );
 }

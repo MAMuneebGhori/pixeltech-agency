@@ -8,8 +8,9 @@ const testLead = {
   email: 'test@example.com',
   phone: '+923001234567',
   company: 'Test Co',
-  budget: '$1000-$5000',
-  service: 'Web Development',
+  callsPerWeek: '50-150',
+  bookingSoftware: 'Vagaro',
+  service: 'Booked Solid System',
   goal: 'Testing notifications',
   source: 'Test Script'
 };

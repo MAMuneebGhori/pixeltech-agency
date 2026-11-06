@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Inbox, CheckCircle, Trash2, MessageSquare, Mail, Link as LinkIcon, RefreshCw, Eye, EyeOff } from 'lucide-react';
 
+const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const TOKEN_KEY = 'pixeltech_admin_token';
+
 export default function Admin() {
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return sessionStorage.getItem('pixeltech_admin_auth') === 'true';
-  });
+  const [token, setToken] = useState(() => sessionStorage.getItem(TOKEN_KEY));
+  const isAuthenticated = Boolean(token);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -14,34 +16,50 @@ export default function Admin() {
   const [leads, setLeads] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load leads from localStorage
-  const loadLeads = async () => {
+  const handleLogout = useCallback(() => {
+    setToken(null);
+    sessionStorage.removeItem(TOKEN_KEY);
+  }, []);
+
+  // Every admin call carries the server-issued token. A 401 throws an `unauthorized` error and the catch handlers log out.
+  // authFetch itself never sets state, so the load effect stays free of synchronous setState.
+  const authFetch = useCallback(async (path, options = {}) => {
+    const response = await fetch(`${apiUrl}${path}`, {
+      ...options,
+      headers: { ...options.headers, Authorization: `Bearer ${token}` }
+    });
+    if (response.status === 401) throw Object.assign(new Error('Session expired'), { unauthorized: true });
+    return response;
+  }, [token]);
+
+  const fail = (label) => (error) => (error.unauthorized ? handleLogout() : console.error(label, error));
+
+  const fetchLeads = useCallback(() =>
+    authFetch('/api/leads')
+      .then((response) => response.json())
+      .then((data) => data.sort((a, b) => new Date(b.date) - new Date(a.date))),
+  [authFetch]);
+
+  const loadLeads = () => {
     setIsLoading(true);
-    try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-      const response = await fetch(`${apiUrl}/api/leads`);
-      const data = await response.json();
-      data.sort((a, b) => new Date(b.date) - new Date(a.date));
-      setLeads(data);
-    } catch (error) {
-      console.error("Failed to load leads from backend:", error);
-    } finally {
-      setIsLoading(false);
-    }
+    fetchLeads().then(setLeads).catch(fail('Failed to load leads from backend:')).finally(() => setIsLoading(false));
   };
 
   useEffect(() => {
-    loadLeads();
-  }, []);
+    if (!token) return;
+    fetchLeads()
+      .then(setLeads)
+      .catch((error) => (error.unauthorized ? handleLogout() : console.error('Failed to load leads from backend:', error)))
+      .finally(() => setIsLoading(false));
+  }, [token, fetchLeads, handleLogout]);
 
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this lead?')) {
       try {
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-        await fetch(`${apiUrl}/api/leads/${id}`, { method: 'DELETE' });
-        setLeads(prev => prev.filter(lead => lead.id !== id));
+        const response = await authFetch(`/api/leads/${id}`, { method: 'DELETE' });
+        if (response.ok) setLeads(prev => prev.filter(lead => lead.id !== id));
       } catch (error) {
-        console.error("Failed to delete lead:", error);
+        fail('Failed to delete lead:')(error);
       }
     }
   };
@@ -53,8 +71,7 @@ export default function Admin() {
     const newStatus = leadToToggle.status === 'new' ? 'contacted' : 'new';
     
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-      const response = await fetch(`${apiUrl}/api/leads/${id}/status`, {
+      const response = await authFetch(`/api/leads/${id}/status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus })
@@ -63,24 +80,31 @@ export default function Admin() {
         setLeads(prev => prev.map(lead => lead.id === id ? { ...lead, status: newStatus } : lead));
       }
     } catch (error) {
-      console.error("Failed to update status:", error);
+      fail('Failed to update status:')(error);
     }
   };
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    if (username === 'does234' && password === '@gga Miash 09') {
-      setIsAuthenticated(true);
-      sessionStorage.setItem('pixeltech_admin_auth', 'true');
+    try {
+      const response = await fetch(`${apiUrl}/api/admin/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+      if (!response.ok) {
+        setLoginError(response.status === 401 ? 'Invalid credentials' : 'Login unavailable, try again later');
+        return;
+      }
+      const { token: newToken } = await response.json();
+      sessionStorage.setItem(TOKEN_KEY, newToken);
+      setIsLoading(true);
+      setToken(newToken);
+      setPassword('');
       setLoginError('');
-    } else {
-      setLoginError('Invalid credentials');
+    } catch {
+      setLoginError('Could not reach the server');
     }
-  };
-
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    sessionStorage.removeItem('pixeltech_admin_auth');
   };
 
   if (!isAuthenticated) {
@@ -96,7 +120,7 @@ export default function Admin() {
                 type="text" 
                 value={username} 
                 onChange={e => setUsername(e.target.value)}
-                className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors text-ink"
+                className="w-full bg-ink/[0.04] border border-ink/[0.08] rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors text-ink"
                 required
               />
             </div>
@@ -107,7 +131,7 @@ export default function Admin() {
                   type={showPassword ? "text" : "password"} 
                   value={password} 
                   onChange={e => setPassword(e.target.value)}
-                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg pl-4 pr-10 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors text-ink"
+                  className="w-full bg-ink/[0.04] border border-ink/[0.08] rounded-lg pl-4 pr-10 py-2.5 text-sm focus:outline-none focus:border-accent/60 transition-colors text-ink"
                   required
                 />
                 <button
@@ -123,7 +147,7 @@ export default function Admin() {
             {loginError && <p className="text-red-400 text-sm text-center">{loginError}</p>}
             <button 
               type="submit" 
-              className="w-full bg-accent text-white font-semibold py-3 rounded-lg hover:bg-accent/90 transition-colors mt-2"
+              className="w-full bg-ink text-bg font-semibold py-3 rounded-lg hover:bg-accent/90 transition-colors mt-2"
             >
               Login
             </button>
@@ -158,7 +182,7 @@ export default function Admin() {
             </div>
             <button 
               onClick={loadLeads}
-              className="bg-bg2 border border-line rounded-lg px-4 flex items-center justify-center hover:bg-white/5 transition-colors"
+              className="bg-bg2 border border-line rounded-lg px-4 flex items-center justify-center hover:bg-ink/5 transition-colors"
               title="Refresh Leads"
             >
               <RefreshCw className="w-5 h-5 text-mut" />
@@ -173,7 +197,7 @@ export default function Admin() {
         </div>
 
         {/* Data Table */}
-        <div className="bg-[#05050A]/80 backdrop-blur-xl border border-line rounded-2xl overflow-hidden shadow-2xl">
+        <div className="bg-bg/80 backdrop-blur-xl border border-line rounded-2xl overflow-hidden shadow-2xl">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
@@ -206,7 +230,7 @@ export default function Admin() {
                       key={lead.id}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className={`hover:bg-white/[0.02] transition-colors ${lead.status === 'contacted' ? 'opacity-60' : ''}`}
+                      className={`hover:bg-ink/[0.02] transition-colors ${lead.status === 'contacted' ? 'opacity-60' : ''}`}
                     >
                       <td className="px-6 py-5 whitespace-nowrap">
                         <button 
@@ -246,9 +270,14 @@ export default function Admin() {
                           <span className="inline-block px-2.5 py-0.5 rounded bg-accent/10 text-accent text-xs font-bold tracking-wide">
                             {lead.service}
                           </span>
-                          {lead.budget && (
+                          {lead.callsPerWeek && (
                             <span className="inline-block px-2.5 py-0.5 rounded border border-line text-mut text-xs font-semibold">
-                              Budget: {lead.budget}
+                              Calls/wk: {lead.callsPerWeek}
+                            </span>
+                          )}
+                          {lead.bookingSoftware && (
+                            <span className="inline-block px-2.5 py-0.5 rounded border border-line text-mut text-xs font-semibold">
+                              {lead.bookingSoftware}
                             </span>
                           )}
                         </div>
@@ -268,7 +297,7 @@ export default function Admin() {
                                 </summary>
                                 <div className="mt-2 space-y-2 max-h-[200px] overflow-y-auto custom-scrollbar pr-2">
                                   {lead.chatHistory.map((msg, i) => (
-                                    <div key={i} className={`p-2 rounded text-xs ${msg.role === 'user' ? 'bg-white/5 border border-white/10' : 'bg-accent/5 border border-accent/10'}`}>
+                                    <div key={i} className={`p-2 rounded text-xs ${msg.role === 'user' ? 'bg-ink/5 border border-ink/10' : 'bg-accent/5 border border-accent/10'}`}>
                                       <span className="font-bold opacity-50 block mb-0.5">{msg.role === 'user' ? 'User' : 'AI'}</span>
                                       {msg.content || msg.text}
                                     </div>

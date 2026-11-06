@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import SEO from '../components/SEO';
 import { motion } from 'framer-motion';
@@ -17,7 +16,7 @@ export default function NotFound() {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5 }}
         >
-          <h1 className="text-[6rem] md:text-[8rem] font-extrabold leading-none tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white to-white/20 mb-4">
+          <h1 className="text-[6rem] md:text-[8rem] font-extrabold leading-none tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-ink to-ink/20 mb-4">
             404
           </h1>
           <h2 className="text-2xl md:text-3xl font-bold mb-4">

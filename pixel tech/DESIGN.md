@@ -1,47 +1,41 @@
-# PixelTech Agency Design System
+# PixelTech Design System
 
-## Colors (The "Deep Void" Palette)
-- **Background (`--color-bg`)**: `#0a0a0f` (Deepest layer, void base)
-- **Background Secondary (`--color-bg2`)**: `#11111a` (Slightly elevated background)
-- **Card Surface (`--color-card`)**: `#15151f` (Primary container background)
-- **Lines / Borders (`--color-line`)**: `#262633` (Subtle element separation)
-- **Primary Text (`--color-ink`)**: `#f4f4f8` (High contrast, near-white)
-- **Muted Text (`--color-mut`)**: `#a3a3b2` (Secondary text, descriptions)
-- **Accent Pink (`--color-accent`)**: `#e0a3c0` (Brand pink start)
-- **Accent Purple (`--color-accent2`)**: `#c77fa6` (Brand pink end)
-- **Success (`--color-good`)**: `#5ec98a`
-- **Error (`--color-bad`)**: `#e06a6a`
-- **Warning/Gold (`--color-gold`)**: `#e8c46b`
+Source of truth: the `@theme` block in `src/index.css`. This file explains it. Direction comes from `Booked Solid System — Website Redesign.md`: warm, editorial, calm. No neon, no gradients, no abstract AI glow art.
 
-## Gradients
-- **Brand Primary Gradient (`--color-grad`)**: `linear-gradient(135deg, #e0a3c0, #c77fa6)`
+## Colors
+
+| Token | Value | Use |
+|---|---|---|
+| `bg` | `#FAF8F5` | Page background (alabaster) |
+| `bg2` | `#F3EFE9` | Alternate sections, inputs, footer |
+| `card` | `#FFFFFF` | Cards, menus, modals |
+| `line` | `#EAE6DF` | Borders and dividers |
+| `ink` | `#141413` | Body text, primary buttons |
+| `mut` | `#6B655C` | Secondary text, placeholders (5.0:1 or better on every surface) |
+| `accent` | `#7D5E3A` | Links, eyebrows, icons, italic emphasis (5.2:1 or better on every surface) |
+| `accent2` / `gold` | `#C59B6D` | The spec's champagne gold. **Decorative or large text only**: 2.4:1 on `bg`, so it fails WCAG AA for body text |
+| `good` | `#2E6F40` | Success |
+| `bad` | `#B3261E` | Errors |
+
+Rules:
+- Use tokens (`bg-card`, `text-mut`, `border-line`), never hex values in JSX. For translucency, use opacity on a token (`bg-ink/5`), not `white/` or `black/`.
+- Shadows are soft and warm: `rgba(20,20,19,0.06–0.08)`.
+- `.text-gradient` and `.bg-gradient-brand` are legacy class names. They now render as solid italic `accent` text and a solid `ink` fill. Don't add new uses.
 
 ## Typography
-- **Headings (Display, H1-H3)**: `Geist`
-- **Body & Labels**: `Inter`
 
-## Layout & Container
-- **Container Max-Width**: `1080px`
-- **Narrow Max-Width**: `780px`
-- **Gutter Padding**: `22px`
-- **Section Padding**: `86px 0`
+- **Display (h1–h6):** Instrument Serif, weight 400 only. `font-synthesis: none` stops the `font-bold` classes from faking a bold.
+- **Body:** Inter 400–700.
+- **Mono (`font-mono`):** JetBrains Mono, for metrics, timestamps and prices in simulations.
 
-## Components Styles
+## Layout
 
-### Glass Panels
-- **Background**: `rgba(31, 31, 41, 0.7)` (Equivalent to `#1f1f29` with opacity)
-- **Backdrop Blur**: `12px`
-- **Top Border**: `1px solid rgba(255,255,255,0.1)`
+- Container max-width `1080px` (narrow: `780px`), gutter `22px`, section padding `86px 0`.
+- Mobile check at 375 px: no horizontal scroll.
 
-### Interactive Cards
-- **Border Radius**: `16px` to `18px`
-- **Hover State**: Subtle Y-axis translation, outer glow with low opacity primary color.
+## Components
 
-### Buttons
-- **Primary Buttons**: Gradient background, dark text (`#1a0d14`), heavy font weight (800).
-- **Border Radius**: `12px`
-- **Hover State**: `transform: translateY(-2px)` and glowing box-shadow `0 10px 34px rgba(199,127,166,0.35)`
-
-### Icons & Pills
-- **Pills**: `9999px` border-radius, border `1px solid var(--color-line)`, background `var(--color-bg2)`.
-- **Icon Boxes (`ic`)**: `46px` by `46px`, `11px` border-radius, background `rgba(199,127,166,0.13)`.
+- **Primary button (`.btn-primary`):** `ink` fill, `bg` text, pill radius. Hover swaps to `accent` and lifts 1px. Visible focus ring in `accent`.
+- **Cards:** `card` background, `line` border, radius `16–24px`, soft warm shadow. No glow on hover.
+- **Pills:** pill radius, `line` border, `bg2` or `card` fill.
+- **Icon boxes:** `bg-accent/10` with an `accent` icon.

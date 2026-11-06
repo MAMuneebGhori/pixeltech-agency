@@ -1,48 +1,53 @@
-import React from 'react';
+import { Section } from './HomeSections';
+
+// Every answer traces to the SRD (section refs in comments). Don't add claims the SRD doesn't make.
+const FAQS = [
+  {
+    // SRD F-10
+    q: 'Will the AI give medical advice?',
+    a: "No. It never diagnoses or gives treatment-safety opinions. Medical questions get a scripted reply (\"That's best answered by our clinician — I'll book you a consultation and flag your question\"), and your staff are alerted. Emergencies are told to call 911.",
+  },
+  {
+    // SRD §4 Data, §7 HIPAA BAA risk
+    q: 'Is it HIPAA compliant?',
+    a: "We don't sign a Business Associate Agreement (BAA) yet. To stay out of scope, the system only handles scheduling information: name, phone number, service of interest and appointment time. No clinical notes or medical history. If you need a BAA, ask on the audit call and we'll walk you through our timeline.",
+  },
+  {
+    // SRD §4 Data, F-27
+    q: 'Where is our data stored?',
+    a: "In the US only, encrypted in transit and at rest, and kept separate from other clients' data. Only named PixelTech staff can access it. Call recordings and transcripts are kept for 90 days by default, and you can ask us to delete them at any time.",
+  },
+  {
+    // SRD F-18, F-20, §4 Compliance
+    q: 'How do you handle opt-outs and call recording?',
+    a: "Anyone who replies STOP is removed from every channel immediately. Reactivation messages only go to people who already have a relationship with your clinic. Every call opens with a recording notice, which covers two-party consent states like California and Florida.",
+  },
+  {
+    // SRD F-09
+    q: 'What happens when a caller wants a real person?',
+    a: "During business hours, the call is transferred to your front desk. After hours, the AI takes a message, tells the caller when to expect a callback, and alerts your staff by email and text.",
+  },
+  {
+    // SRD §3 integrations
+    q: 'Do we have to switch booking software?',
+    a: 'No. We connect to your existing calendar. Calendly and Google Calendar work directly today; other systems connect through direct API or monitored sync, and we confirm yours on the audit call.',
+  },
+];
 
 export default function FaqAccordion() {
-  const faqs = [
-    {
-      q: 'Do you use WordPress or templates?',
-      a: 'No. We engineer custom full-stack applications (usually React/Next.js for the frontend and Node.js for the backend). This ensures blazing-fast load times, maximum security, and the flexibility to build any specific business logic you need.'
-    },
-    {
-      q: 'How does the Booked Solid automation work?',
-      a: 'We integrate a CRM and automation engine directly into your new application. When a user submits a form or misses a call, the system instantly triggers an SMS and email sequence to capture their attention and guide them to a self-booking calendar.'
-    },
-    {
-      q: 'Will my current CRM/EMR integrate?',
-      a: 'In most cases, yes. Our engineering team can build custom API integrations or utilize Zapier/Make webhooks to pass data seamlessly between your new custom application and your existing tools.'
-    },
-    {
-      q: 'How long does a custom build take?',
-      a: 'It depends on the complexity of your requirements. A standard landing page with the automation engine can be live in 14 days. More complex SaaS or full-stack platforms generally take 4-8 weeks to engineer and deploy.'
-    },
-    {
-      q: 'What is the $650/mo fee for?',
-      a: 'This covers the ongoing cloud hosting of your application, maintenance, software updates, and the full licensing/usage of the Booked Solid automation engine (SMS/Email costs included). We also provide monthly technical reviews to optimize conversion rates.'
-    }
-  ];
-
   return (
-    <section className="py-[86px] border-b border-line bg-bg">
-      <div className="max-w-[640px] mx-auto px-[22px]">
-        <h2 className="text-center mb-[44px]">Frequently Asked Questions</h2>
-        
-        <div className="grid gap-[14px]">
-          {faqs.map((faq, idx) => (
-            <details key={idx} className="group bg-card border border-line rounded-[14px] overflow-hidden [&_summary::-webkit-details-marker]:hidden">
-              <summary className="flex items-center justify-between p-[22px_24px] font-bold text-[1.05rem] cursor-pointer hover:text-accent transition-colors">
-                {faq.q}
-                <span className="text-[1.4rem] font-light text-mut transition-transform duration-300 group-open:rotate-45">+</span>
-              </summary>
-              <div className="px-[24px] pb-[24px] text-mut leading-relaxed border-t border-line/50 mt-2 pt-4">
-                {faq.a}
-              </div>
-            </details>
-          ))}
-        </div>
+    <Section id="faq" eyebrow="FAQ" title="Questions clinics ask us.">
+      <div className="grid gap-3 max-w-[820px]">
+        {FAQS.map((faq) => (
+          <details key={faq.q} className="group bg-card border border-line rounded-[14px] [&_summary::-webkit-details-marker]:hidden">
+            <summary className="flex items-center justify-between gap-4 p-5 font-semibold text-[1.02rem] cursor-pointer hover:text-accent transition-colors">
+              {faq.q}
+              <span aria-hidden="true" className="text-[1.4rem] font-light text-mut transition-transform duration-300 group-open:rotate-45">+</span>
+            </summary>
+            <p className="px-5 pb-5 text-mut leading-relaxed">{faq.a}</p>
+          </details>
+        ))}
       </div>
-    </section>
+    </Section>
   );
 }
