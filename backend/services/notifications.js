@@ -31,6 +31,9 @@ const sendWhatsAppViaGreenAPI = async (phoneNumber, message) => {
   return data.idMessage;
 };
 
+// Lead fields come straight from the public booking form, so escape them before they go into email HTML.
+const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+
 // ─── Main Notification Function ────────────────────────────────────────────
 const sendLeadNotifications = async (leadData) => {
   const results = { email: false, whatsapp: false };
@@ -49,14 +52,15 @@ const sendLeadNotifications = async (leadData) => {
               🚀 New Lead Captured!
             </h2>
             <table style="width:100%; border-collapse: collapse; margin-top: 16px;">
-              <tr style="background:#f9f9f9;"><td style="padding:10px 12px; font-weight:bold; width:130px;">Name</td><td style="padding:10px 12px;">${leadData.firstName} ${leadData.lastName}</td></tr>
-              <tr><td style="padding:10px 12px; font-weight:bold;">Email</td><td style="padding:10px 12px;">${leadData.email}</td></tr>
-              <tr style="background:#f9f9f9;"><td style="padding:10px 12px; font-weight:bold;">Phone</td><td style="padding:10px 12px;">${leadData.phone}</td></tr>
-              <tr><td style="padding:10px 12px; font-weight:bold;">Company</td><td style="padding:10px 12px;">${leadData.company || 'N/A'}</td></tr>
-              <tr style="background:#f9f9f9;"><td style="padding:10px 12px; font-weight:bold;">Budget</td><td style="padding:10px 12px;">${leadData.budget || 'N/A'}</td></tr>
-              <tr><td style="padding:10px 12px; font-weight:bold;">Service</td><td style="padding:10px 12px;">${leadData.service || 'N/A'}</td></tr>
-              <tr style="background:#f9f9f9;"><td style="padding:10px 12px; font-weight:bold;">Message</td><td style="padding:10px 12px;">${leadData.goal || 'N/A'}</td></tr>
-              <tr><td style="padding:10px 12px; font-weight:bold;">Source</td><td style="padding:10px 12px;">${leadData.source}</td></tr>
+              <tr style="background:#f9f9f9;"><td style="padding:10px 12px; font-weight:bold; width:130px;">Name</td><td style="padding:10px 12px;">${esc(leadData.firstName)} ${esc(leadData.lastName)}</td></tr>
+              <tr><td style="padding:10px 12px; font-weight:bold;">Email</td><td style="padding:10px 12px;">${esc(leadData.email)}</td></tr>
+              <tr style="background:#f9f9f9;"><td style="padding:10px 12px; font-weight:bold;">Phone</td><td style="padding:10px 12px;">${esc(leadData.phone)}</td></tr>
+              <tr><td style="padding:10px 12px; font-weight:bold;">Company</td><td style="padding:10px 12px;">${esc(leadData.company || 'N/A')}</td></tr>
+              <tr style="background:#f9f9f9;"><td style="padding:10px 12px; font-weight:bold;">Calls/week</td><td style="padding:10px 12px;">${esc(leadData.callsPerWeek || 'N/A')}</td></tr>
+              <tr><td style="padding:10px 12px; font-weight:bold;">Booking software</td><td style="padding:10px 12px;">${esc(leadData.bookingSoftware || 'N/A')}</td></tr>
+              <tr style="background:#f9f9f9;"><td style="padding:10px 12px; font-weight:bold;">Service</td><td style="padding:10px 12px;">${esc(leadData.service || 'N/A')}</td></tr>
+              <tr><td style="padding:10px 12px; font-weight:bold;">Message</td><td style="padding:10px 12px;">${esc(leadData.goal || 'N/A')}</td></tr>
+              <tr style="background:#f9f9f9;"><td style="padding:10px 12px; font-weight:bold;">Source</td><td style="padding:10px 12px;">${esc(leadData.source)}</td></tr>
             </table>
             <p style="margin-top: 24px; color: #888; font-size: 13px;">
               Log in to your <a href="https://pixeltech-agency.onrender.com" style="color:#6c63ff;">Admin Portal</a> to manage this lead.
@@ -81,7 +85,7 @@ const sendLeadNotifications = async (leadData) => {
   // 2. WHATSAPP via Green API (free, uses your own WhatsApp number)
   if (process.env.GREEN_API_INSTANCE && process.env.GREEN_API_TOKEN && process.env.ADMIN_WHATSAPP_NUMBERS) {
     const numbers = process.env.ADMIN_WHATSAPP_NUMBERS.split(',');
-    const msg = `🚀 *New Pixeltech Lead!*\n\n*Name:* ${leadData.firstName} ${leadData.lastName}\n*Email:* ${leadData.email}\n*Phone:* ${leadData.phone}\n*Budget:* ${leadData.budget || 'N/A'}\n*Service:* ${leadData.service || 'N/A'}\n*Source:* ${leadData.source}\n\nCheck your Admin Portal for full details.`;
+    const msg = `🚀 *New Pixeltech Lead!*\n\n*Name:* ${leadData.firstName} ${leadData.lastName}\n*Email:* ${leadData.email}\n*Phone:* ${leadData.phone}\n*Calls/week:* ${leadData.callsPerWeek || 'N/A'}\n*Booking software:* ${leadData.bookingSoftware || 'N/A'}\n*Service:* ${leadData.service || 'N/A'}\n*Source:* ${leadData.source}\n\nCheck your Admin Portal for full details.`;
 
     for (const num of numbers) {
       try {
