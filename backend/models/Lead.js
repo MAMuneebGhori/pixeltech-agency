@@ -9,6 +9,7 @@ const leadSchema = new mongoose.Schema({
   company: { type: String },
   callsPerWeek: { type: String },
   bookingSoftware: { type: String },
+  roiEstimate: { type: String },
   website: { type: String },
   service: { type: String },
   goal: { type: String },

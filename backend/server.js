@@ -6,6 +6,7 @@ const crypto = require('crypto');
 
 const Lead = require('./models/Lead');
 const { sendLeadNotifications } = require('./services/notifications');
+const { pickLeadFields } = require('./lib/leadInput');
 
 dotenv.config();
 
@@ -87,8 +88,9 @@ app.post('/api/leads', async (req, res) => {
       return res.status(503).json({ error: 'Database not connected' });
     }
 
-    const newLead = new Lead(req.body);
+    const newLead = new Lead(pickLeadFields(req.body));
     const savedLead = await newLead.save();
+    console.log(`Lead saved: ${savedLead._id} source=${savedLead.source}`);
 
     // Trigger Email & WhatsApp Notifications in the background
     sendLeadNotifications(savedLead).catch(console.error);
