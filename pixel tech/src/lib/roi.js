@@ -61,9 +61,13 @@ export function toRoiParams(inputs) {
 }
 
 // null when the URL carries none of our params (a plain visit to /booking); hostile values become 0.
+// callsPerWeek stays null when `calls` is missing or invalid, so the form isn't prefilled with a guess (plan 8.13 item 8).
 export function fromRoiParams(searchParams) {
   if (!Object.keys(PARAM_KEYS).some((param) => searchParams.has(param))) return null;
-  return Object.fromEntries(Object.entries(PARAM_KEYS).map(([param, key]) => [key, clean(searchParams.get(param))]));
+  const inputs = Object.fromEntries(Object.entries(PARAM_KEYS).map(([param, key]) => [key, clean(searchParams.get(param))]));
+  const calls = searchParams.get('calls');
+  if (calls === null || calls.trim() === '' || !Number.isFinite(Number(calls)) || Number(calls) < 0) inputs.callsPerWeek = null;
+  return inputs;
 }
 
 export function formatRoiRange(inputs) {
@@ -74,5 +78,7 @@ export function formatRoiRange(inputs) {
 // One line stored on the lead, so the audit call starts from the owner's own numbers.
 export function formatRoiEstimate(inputs) {
   const v = (key) => clean(inputs[key]);
-  return `${formatRoiRange(inputs)} (calls ${v('callsPerWeek')}/wk, missed ${v('missedPct')}%, late texts & DMs ${v('missedMessagesPerWeek')}/wk, booking ${v('bookPct')}%, value ${usd(v('treatmentValue'))})`;
+  // Percentages as the math used them (capped at 100), so the lead matches the range it shows.
+  const p = (key) => Math.round(pct(inputs[key]) * 100);
+  return `${formatRoiRange(inputs)} (calls ${v('callsPerWeek')}/wk, missed ${p('missedPct')}%, late texts & DMs ${v('missedMessagesPerWeek')}/wk, booking ${p('bookPct')}%, value ${usd(v('treatmentValue'))})`;
 }

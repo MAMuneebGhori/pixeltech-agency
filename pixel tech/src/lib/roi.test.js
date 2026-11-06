@@ -67,8 +67,15 @@ test('fromRoiParams returns null without params and zeroes hostile values', () =
   assert.equal(fromRoiParams(new URLSearchParams('utm_source=x')), null);
   assert.deepEqual(
     fromRoiParams(new URLSearchParams('calls=<script>&missed=-4&value=900')),
-    { callsPerWeek: 0, missedPct: 0, missedMessagesPerWeek: 0, bookPct: 0, treatmentValue: 900 },
+    { callsPerWeek: null, missedPct: 0, missedMessagesPerWeek: 0, bookPct: 0, treatmentValue: 900 },
   );
+});
+
+test('a missing or invalid calls param means no calls/week prefill, never a guessed bucket', () => {
+  for (const qs of ['value=500', 'calls=abc', 'calls=', 'calls=-5']) {
+    assert.equal(callsBucket(fromRoiParams(new URLSearchParams(qs)).callsPerWeek), '', qs);
+  }
+  assert.equal(callsBucket(fromRoiParams(new URLSearchParams('calls=0')).callsPerWeek), 'Under 25', 'a real 0 is still a number');
 });
 
 test('formatRoiEstimate states the range and the inputs behind it', () => {
@@ -76,4 +83,6 @@ test('formatRoiEstimate states the range and the inputs behind it', () => {
     formatRoiEstimate(DEFAULT_INPUTS),
     '$10,643–$21,285/mo (calls 80/wk, missed 37%, late texts & DMs 10/wk, booking 25%, value $500)',
   );
+  // A typed 150% is computed at 100%; the lead must say what the math used.
+  assert.match(formatRoiEstimate({ ...DEFAULT_INPUTS, missedPct: 150, bookPct: 120 }), /missed 100%.*booking 100%/);
 });

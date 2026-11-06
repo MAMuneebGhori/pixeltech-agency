@@ -77,7 +77,7 @@ function Scheduler({ name, email }) {
       ) : (
         <>
           {state === 'loading' && <p className="text-center text-mut py-6" role="status">Loading the scheduler…</p>}
-          <div ref={parentRef} className={state === 'ready' ? 'min-w-[280px] h-[680px]' : 'h-0 overflow-hidden'} />
+          <div ref={parentRef} className={state === 'ready' ? '-mx-5 md:mx-0 h-[680px]' : 'h-0 overflow-hidden'} />
         </>
       )}
     </div>
