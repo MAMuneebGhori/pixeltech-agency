@@ -77,19 +77,22 @@ function RoiCalculator({ headingAs: Heading }) {
       </div>
 
       {/* Break-even leads (plan 8.13 S2): it rests on one number the owner knows. The range is context underneath. */}
-      <div className="rounded-xl bg-bg2 border border-line p-5" aria-live="polite">
-        {breakEven ? (
-          <>
-            <p className="text-[0.85rem] text-mut">At {usd(MONTHLY_PRICE)}/mo, the plan pays for itself at</p>
-            <p className="font-mono text-[2.4rem] leading-tight text-ink">{breakEven} booking{breakEven > 1 ? 's' : ''} a month</p>
-          </>
-        ) : (
-          <p className="text-[0.92rem] text-ink">Enter a treatment value to compare it with the {usd(MONTHLY_PRICE)}/mo plan.</p>
-        )}
-        <p className="mt-4 text-[0.85rem] text-mut">Estimated revenue lost to missed leads now</p>
-        <p className="font-mono text-[1.4rem] text-ink">
-          <span className="whitespace-nowrap">{usd(lostRevenueLow)}</span> – <span className="whitespace-nowrap">{usd(lostRevenue)}</span> <span className="text-[0.9rem] text-mut">/ month</span>
-        </p>
+      <div className="rounded-xl bg-bg2 border border-line p-5">
+        {/* Only the two headline numbers are announced on each edit; the explanation below stays quiet. */}
+        <div aria-live="polite" aria-atomic="true">
+          {breakEven ? (
+            <>
+              <p className="text-[0.85rem] text-mut">At {usd(MONTHLY_PRICE)}/mo, the plan pays for itself at</p>
+              <p className="font-mono text-[2.4rem] leading-tight text-ink">{breakEven} booking{breakEven > 1 ? 's' : ''} a month</p>
+            </>
+          ) : (
+            <p className="text-[0.92rem] text-ink">Enter a treatment value to compare it with the {usd(MONTHLY_PRICE)}/mo plan.</p>
+          )}
+          <p className="mt-4 text-[0.85rem] text-mut">Estimated revenue lost to missed leads now</p>
+          <p className="font-mono text-[1.4rem] text-ink">
+            <span className="whitespace-nowrap">{usd(lostRevenueLow)}</span> – <span className="whitespace-nowrap">{usd(lostRevenue)}</span> <span className="text-[0.9rem] text-mut">/ month</span>
+          </p>
+        </div>
         <p className="mt-1 text-[0.85rem] text-mut">
           About {missedLeads} missed leads a month, {lostBookings} of whom would have booked. The low end assumes half of missed leads are existing patients getting back in touch.
         </p>
