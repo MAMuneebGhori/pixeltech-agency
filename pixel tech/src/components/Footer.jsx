@@ -51,7 +51,7 @@ export default function Footer() {
 
             <h2 className="text-ink font-semibold text-sm mb-2xs mt-md">Socials</h2>
             <div className="flex flex-col gap-xs">
-              <a href="https://www.instagram.com/pixeltech.agencyy" target="_blank" rel="noreferrer" className="hover:text-accent transition-colors duration-[220ms] ease-out">
+              <a href="https://www.instagram.com/pixeltech.agency" target="_blank" rel="noreferrer" className="hover:text-accent transition-colors duration-[220ms] ease-out">
                 Instagram
               </a>
               <a href="https://x.com/pixeltechglobal" target="_blank" rel="noreferrer" className="hover:text-accent transition-colors duration-[220ms] ease-out">
