@@ -153,7 +153,7 @@ Tests: extend `roi.test.js` for the new function (defaults, bad input → 0, per
 
 **Recommendation: A.** The site is pre-client and pre-demo-line. What it needs is the honest content and the demo, not a new architecture.
 
-## 6. Build order (each slice: lint + build + `node --test` + 375px check)
+## 6. Build order (each slice: lint + build + `node --test` + `npm run check:mobile`, which tests 320px and 375px; see §10 X7/X10)
 
 1. **Copy + guardrails pass:** hero line, unified CTA label, comparison eyebrow and new row, 7-day runbook. No new components.
 2. **ROI calculator v2:** `roi.js` + tests first, then the UI.
@@ -235,7 +235,7 @@ Approval readiness: PASS. Checked R1 (Q2, Q10), R2 (Q9), R3–R5 (Q2), S1–S3 (
 **R5 Dead param.** The pricing CTA links to plain `/booking`. Only the calculator CTA (E5) carries params.
 
 **E1 Analytics.**
-- **Setup:** add `@vercel/analytics` and render `<Analytics />` from `@vercel/analytics/react` in `App.jsx`. It's cookieless, so the cookie banner copy stays true.
+- **Setup (as built, corrected in §9):** `main.jsx` injects `/_vercel/insights/script.js` in production builds; `@vercel/analytics` was not added because its React peer range conflicts with `@remix-run/react`. Web Analytics must be enabled on the Vercel project or the script 404s. It's cookieless, so the cookie banner copy stays true.
 - **Events, using `track()`:** `cta_click` {location: hero|nav|pricing|final|roi}, `roi_edit` (first edit per visit only), `booking_submit`, `booking_error` {status}, `demo_tel_tap`.
 - **Plan check:** custom events need a paid Vercel plan, and page views work on every plan. Check the plan before relying on the events. If the plan is Hobby, ship the page views and leave `track()` calls as harmless no-ops.
 
@@ -248,7 +248,7 @@ Approval readiness: PASS. Checked R1 (Q2, Q10), R2 (Q9), R3–R5 (Q2), S1–S3 (
 
 **E4 Demo-line leads (gated: ships with `VITE_DEMO_PHONE`).**
 - **Lead POST:** the n8n workflow that writes the F-05 lead record also POSTs `{firstName, lastName, phone, service: 'Demo line', source: 'Demo line', goal: <call summary>}` to `/api/leads`, with the header `X-Lead-Secret: $LEAD_INGEST_SECRET`.
-- **Backend validation:** `server.js` accepts `source: 'Demo line'` only with a matching secret. Without it, the backend forces `source = 'Booking Form'`.
+- **Backend validation:** `server.js` accepts `source: 'Demo line'` only with a matching secret, compared with the existing `safeEqual` (`server.js:38`), never `===`. Without it, the backend forces `source = 'Booking Form'`.
 - **Required fields:** `Lead.js` requires `email` and `lastName`, which phone callers may not give. Make both conditionally required (not required when `source === 'Demo line'`).
 - **Duplicates:** n8n dedupes by call ID before posting.
 - **Daily test call:** a scheduled n8n job places one test call (Twilio) to the demo line each morning. If it's not answered with the greeting within 3 rings, it alerts the team WhatsApp. This is SRD F-12 plus §4 Observability.
@@ -372,13 +372,13 @@ Booking states (E2):
 7. **Verify:** lint, tests, build, a 375px check, the Calendly fallback check, then `/design-review`.
 
 ### 8.11 Reality rows
-- REALITY: premise-table pass. All 10 findings have file:line or command receipts; F10 is marked estimated (unverified=1). Receipt: WEBSITE_REDESIGN_PLAN.md §8.1
+- REALITY: premise-table pass. All 10 findings have file:line or command receipts; F10 is marked estimated (unverified=1). Receipt: WEBSITE_REDESIGN_PLAN.md:186
 - REALITY: already-done pass. Nothing in R1–R5 or E1–E5 exists on `origin/main` at 2ed1044 (grep for analytics, `useSearchParams` and Calendly = 0 hits). Receipt: src/pages/Booking.jsx:58
 - REALITY: surface-check pass. Routes `/api/leads` (`server.js:84`) and `/booking` (`App.jsx`) exist. The `@vercel/analytics` and Calendly embed APIs are third-party, to be verified at build time. Receipt: backend/server.js:84
-- REALITY: binding-decisions pass. `gstack-decision-search` returned none. Plan §7 D1–D8 still hold; R1 amends §7 D2's trial start, answered in Q2. Receipt: WEBSITE_REDESIGN_PLAN.md §7
+- REALITY: binding-decisions pass. `gstack-decision-search` returned none. Plan §7 D1–D8 still hold; R1 amends §7 D2's trial start, answered in Q2. Receipt: WEBSITE_REDESIGN_PLAN.md:165
 - REALITY: numbers pass. $21,285 and $10,643 are re-derived from `roi.js`; vendor prices are tagged estimated. Receipt: src/lib/roi.js:18
-- REALITY: deferred-asks pass. There's no linked issue; E3 is deferred with its reason. Receipt: WEBSITE_REDESIGN_PLAN.md §8.8
-- REALITY: pr-count pass. There's no `.gstack/ship-policy.json`, so the default is one PR per wave: wave 1 = tasks 1–5 and 7; wave 2 = task 6, with the demo line. Receipt: WEBSITE_REDESIGN_PLAN.md §8.10
+- REALITY: deferred-asks pass. There's no linked issue; E3 is deferred with its reason. Receipt: WEBSITE_REDESIGN_PLAN.md:352
+- REALITY: pr-count pass. There's no `.gstack/ship-policy.json`, so the default is one PR per wave: wave 1 = tasks 1–5 and 7; wave 2 = task 6, with the demo line. Receipt: WEBSITE_REDESIGN_PLAN.md:365
 
 ### 8.12 Completion summary
 ```
@@ -461,17 +461,785 @@ Matches: R1, R3, R4, R5, S1, S2, E1, E5; the backend sets `source` itself and ca
 
 Launch config, not decisions: set `VITE_CALENDLY_URL` (E2 is inert without it), enable Vercel Web Analytics (E1), and set `VITE_DEMO_PHONE` only after Phase 0 passes.
 
+## 9. Eng review (2026-11-06)
+
+**Target:** `pixel tech/WEBSITE_REDESIGN_PLAN.md` as merged to main (`666b398`, PR #8), checked against the wave-1 code on `conversion-wave-1` (PR #9, `0c9d177`) and `backend/` on main.
+
+## Decision ledger
+
+### X1: committed live secrets in `backend/.env`
+Finding: 1, CRITICAL, confidence 10/10, `backend/.env` (tracked on `origin/main`, blob `ec1339b`; first tracked in `0817ff1`, last changed `ee9b1ce` 2026-06-09); reviewer: eng review (Claude). Repo `MAMuneebGhori/pixeltech-agency` visibility = PUBLIC (`gh repo view`). Keys present: `GEMINI_API_KEY`, `MONGODB_URI`, `RESEND_API_KEY`, `GREEN_API_INSTANCE`, `GREEN_API_TOKEN`, `DEEPSEEK_API_KEY` (values not reproduced). `backend/.gitignore` lists `.env`, which does not untrack a committed file.
+Plan baseline: not in the plan; §8.5 item 3 covers `/api/leads` only.
+Runtime evidence: `git ls-tree origin/main backend/.env` lists the file; masked `git show` confirms non-empty values for every key above. Whether Render reads env vars from its dashboard or depends on this file: unknown.
+Comparison grid:
+| Choice | Current | A | B |
+|---|---|---|---|
+| X1 key rotation (owner: you) | not done | rotate all 6 now | rotate all 6 now |
+| X1 untrack `.env` | tracked, public | `git rm --cached backend/.env` in its own PR; `.env.template` stays | same as A |
+| X1 history rewrite | none | none (keys rotated, so old values are dead) | `git filter-repo` + force-push main (destructive, rewrites every SHA) |
+Question D1:
+D1 — Committed live secrets in a public repo
+Project/branch/task: PixelTech eng review of WEBSITE_REDESIGN_PLAN.md; found on main while reading backend/.
+ELI10: backend/.env holds your database password and API keys, and it's in a public GitHub repo. Anyone can copy them; bots scan GitHub for exactly this. Hiding the file now doesn't help, because the old copies stay readable. Only new keys fix it.
+Stakes if we pick wrong: someone reads or wipes every lead in MongoDB, sends email as you via Resend, or spams from your WhatsApp number.
+Recommendation: A because rotating the keys makes the leaked values useless; a history rewrite adds force-push risk and protects nothing once rotated.
+Completeness: A=10/10, B=10/10
+Header: Leaked keys
+Options:
+A) Rotate + untrack (recommended)
+You rotate all 6 keys today (MongoDB user password, Resend, Green API, Gemini, DeepSeek) and put the new values in Render's env settings. I open a small PR that runs `git rm --cached backend/.env`. History is untouched. Check Render's env vars are set before merging, or the deployed backend loses its config. (human: ~30 min / CC: ~2 min)
+B) Rotate + rewrite history
+Same rotation and untrack, plus `git filter-repo` to delete the file from every commit and a force-push of main. Rewrites every commit SHA, breaks open PRs (#9) and other clones, and GitHub caches and forks still keep the old blob. (human: ~1h / CC: ~10 min)
+
+State: approved
+Actual answer: A) Rotate + untrack. D1 answer "chose that is better", which delegates to the recommendation (A).
+Accepted scope: owner rotates all 6 keys and sets the new values in Render; Claude opens a PR running `git rm --cached backend/.env` (no history rewrite), merged only after Render's env vars are confirmed set.
+History: none
+
+### X2: rate limit on `POST /api/leads` (TODOS.md item, plan §8.5 item 3)
+Finding: 2, INFORMATIONAL, confidence 8/10, `backend/server.js:17-18` (`app.use(cors()); app.use(express.json());`, no `trust proxy`, no limiter) and `TODOS.md:20` ("a per-IP rate limit on `POST /api/leads` (e.g. 5 per 10 minutes)"); reviewer: eng review (Claude). The backend runs behind Render's proxy (plan §8.5 item 1). Without `app.set('trust proxy', 1)`, `req.ip` is the proxy's address, so a per-IP limit becomes one shared bucket: 5 real prospects in 10 minutes lock out everyone. E4 (wave 2) also routes every demo-line lead from n8n's single IP through this route.
+Plan baseline: Q8 deferred rate limiting to TODOS.md, P2 ("Add to TODOS.md (recommended)").
+Runtime evidence: `grep "trust proxy\|rate" backend/server.js` = 0 hits. `express-rate-limit` is not in `backend/package.json`.
+Comparison grid:
+| Choice | Current | A | B |
+|---|---|---|---|
+| X2 when | deferred (Q8), TODOS.md P2 | build now, own PR | stays deferred |
+| X2 spec | per-IP 5/10 min + honeypot | `trust proxy` 1, per-IP 5/10 min, honeypot field, skip limiter when a valid `X-Lead-Secret` arrives (E4) | TODOS.md item amended with the same three requirements |
+| X2 tests | none | backend `node --test`: 6th POST in window gets 429; filled honeypot is dropped without saving | none until built |
+Question D2:
+D2 — Rate limit on the public lead form: build now or keep deferred?
+Project/branch/task: PixelTech eng review; backend/server.js POST /api/leads, TODOS.md item from CEO Q8.
+ELI10: Anyone can hit the lead form's API as fast as they like, and each hit sends you an email and a WhatsApp alert. The TODO plans a limit of 5 per visitor per 10 minutes, but as written it would see every visitor as the same one (they all arrive through Render's proxy), so 5 real prospects would block everyone else.
+Stakes if we pick wrong: a bot floods your alerts, or a naive limit silently turns real prospects away with an error.
+Recommendation: A because the fix is about 25 lines plus 2 tests, and spam on the only lead path is the plan's one existing critical gap (§8.6).
+Completeness: A=10/10, B=7/10
+Header: Rate limit
+Options:
+A) Build now (recommended)
+Separate small backend PR: `app.set('trust proxy', 1)`, a 5-per-10-minute per-IP limit on POST /api/leads (in-memory, ~20 lines, no new dependency), a hidden honeypot field on the booking form, and an exemption for requests with a valid demo-line secret once E4 ships. Two backend tests. Closes the §8.6 critical gap. (human: ~2h / CC: ~15 min)
+B) Keep deferred, fix the TODO
+No code now. Amend the TODOS.md item with the trust-proxy and n8n-exemption requirements so whoever builds it doesn't ship the shared-bucket bug. The spam gap stays open. (human: ~5 min / CC: ~1 min)
+
+State: approved
+Actual answer: A) Build now. D2 answer "A) Build now (recommended)".
+Accepted scope: own backend PR: `trust proxy` 1, in-memory per-IP limit of 5 per 10 minutes on POST /api/leads (no new dependency), honeypot field on the booking form, limiter skipped for a valid `X-Lead-Secret` once E4 ships, and two backend tests (429 on the 6th POST; filled honeypot not saved). Supersedes the Q8 deferral; the TODOS.md item is removed when this merges.
+History: Q8 deferred this to TODOS.md (CEO review).
+
+### X3: call-volume labels kept in two places
+Finding: 3, INFORMATIONAL, confidence 8/10, `src/pages/Booking.jsx:7` (`const CALL_VOLUMES = ['Under 25', '25–50', '50–100', '100+', 'Not sure'];`) and `src/lib/roi.js:47-50` (`return 'Under 25'` … `return '100+'`); reviewer: eng review (Claude), red flag 8 (hand-synced list). `roi.test.js:43-50` asserts the literal strings, not membership in the form's list. Renaming a label on one side makes E5 prefill pick a value the `<select>` doesn't have, so the field renders empty, with every test green.
+Plan baseline: §8.3 E5 "maps `calls` to the select bucket via a new `callsBucket()` in `roi.js`" (approved, Q7). Shape of the label list: unspecified.
+Runtime evidence: both lists match today (static read, PR #9 `0c9d177`).
+Comparison grid:
+| Choice | Current | A | B |
+|---|---|---|---|
+| X3 label source | two hand-synced lists | `CALL_VOLUMES` exported from `roi.js`; `Booking.jsx` imports it; `callsBucket` returns entries of it | unchanged |
+| X3 test | literals only | add one assertion: every non-empty `callsBucket` result is in `CALL_VOLUMES` | unchanged |
+| E5 behavior | approved (Q7) | unchanged | unchanged |
+Question D3:
+D3 — Keep the booking form's call-volume labels in one place?
+Project/branch/task: PixelTech eng review; PR #9 (conversion-wave-1), Booking.jsx and roi.js.
+ELI10: When someone comes from the ROI calculator, the booking form pre-picks their calls-per-week option. The option names live in Booking.jsx, and roi.js has its own copy of the same names. Change one copy and the pre-pick quietly stops working, and no test notices.
+Stakes if we pick wrong: calculator visitors land on a form with the calls field blank, and nobody finds out.
+Recommendation: A because it's a 4-line move plus one assertion, and it removes the silent failure for good.
+Completeness: A=10/10, B=7/10
+Header: Label list
+Options:
+A) One list in roi.js (recommended)
+Move `CALL_VOLUMES` into roi.js and export it; Booking.jsx imports it; callsBucket returns its entries. Add one test assertion that every bucket is a real form option. Lands on PR #9. (human: ~15 min / CC: ~3 min)
+B) Leave as is
+Both lists match today. Anyone editing the labels has to remember the other file. (human: 0 / CC: 0)
+
+State: approved
+Actual answer: A) One list in roi.js. D3 answer "A) One list in roi.js (recommended)".
+Accepted scope: export `CALL_VOLUMES` from `roi.js`, import it in `Booking.jsx`, have `callsBucket` return its entries, and add one assertion in `roi.test.js` that every non-empty bucket is in `CALL_VOLUMES`. Lands on PR #9; E5 behavior unchanged.
+History: none
+
+### X4: Calendly script listeners outlive the scheduler
+Finding: 4, INFORMATIONAL, confidence 6/10 (medium confidence, verify this is actually an issue), `src/pages/Booking.jsx:55-56` (`script.addEventListener('load', init); script.addEventListener('error', () => setState('failed'));`) with cleanup at `:58-61` removing only the `message` listener and the timer; reviewer: eng review (Claude). Under `<StrictMode>` (`src/main.jsx:18`) React mounts effects twice in dev, so `init` is queued twice and `Calendly.initInlineWidget` may run twice into one parent. Production mounts once, so the user-facing effect there is unverified and likely nil.
+Plan baseline: §8.3 E2 states and the §8.13 item 6 "loaded" rule (approved, Q4). Listener lifetime: unspecified.
+Runtime evidence: not run in a browser; whether a second `initInlineWidget` call renders a second iframe is unknown.
+Comparison grid:
+| Choice | Current | A | B |
+|---|---|---|---|
+| X4 listener cleanup | `load`/`error` never removed | both removed in the effect cleanup (named handlers) | unchanged |
+| E2 states and timeout | approved (Q4) | unchanged | unchanged |
+Question D4:
+D4 — Clean up the Calendly script listeners?
+Project/branch/task: PixelTech eng review; PR #9 (conversion-wave-1), Booking.jsx Scheduler.
+ELI10: After a booking is saved, the page loads Calendly's script and waits for it. The code attaches "script loaded" handlers but never removes them, so in development mode (which mounts things twice on purpose) the scheduler may start twice. Real visitors probably never see it, but it's two lines to make it correct.
+Stakes if we pick wrong: at worst a doubled scheduler during local testing that sends someone chasing a fake bug; production impact unverified.
+Recommendation: A because it's two lines that make the component correct under React's own rules.
+Completeness: A=10/10, B=8/10
+Header: Listeners
+Options:
+A) Remove on cleanup (recommended)
+Name the load and error handlers and remove both in the effect cleanup, next to the existing message-listener removal. Lands on PR #9. No change to the E2 states or the 10-second fallback. (human: ~10 min / CC: ~2 min)
+B) Leave as is
+Production mounts once, so visitors are very likely unaffected. Local dev may show a doubled widget. (human: 0 / CC: 0)
+
+State: approved
+Actual answer: A) Remove on cleanup. D4 answer "A) Remove on cleanup (recommended)".
+Accepted scope: name the script `load` and `error` handlers in `Booking.jsx` Scheduler and remove both in the effect cleanup. Lands on PR #9; E2 states and the 10-second fallback unchanged.
+History: none
+
+Approval readiness: PASS. Checked X1 (D1 "chose that is better" → A), X2 (D2 "A) Build now (recommended)"), X3 (D3 "A) One list in roi.js (recommended)"), X4 (D4 "A) Remove on cleanup (recommended)"). No pending rows.
+
+### 9.1 Scope Challenge
+- **Result:** scope accepted as-is. What's left of the plan is wave 2 (E4) plus the TODOs: under 8 files, no new classes or services, so the complexity gate didn't trip.
+- **Findings:**
+  - `[CRITICAL] (confidence: 10/10) backend/.env` — live keys committed to a public repo. X1, approved (D1).
+  - `[INFORMATIONAL] (confidence: 8/10) backend/server.js:17` — the planned per-IP limit would key on Render's proxy IP. X2, approved: build now (D2).
+- **Reality rows:**
+REALITY: premise-table pass. 11 claims checked against code: E1 setup claim FALSE (corrected in §8.3); others hold. unverified=2 (Render env-var source, Calendly double-init). Receipt: 0c9d177 (PR #9; src/main.jsx line 11 there)
+REALITY: already-done pass. Wave 1 is built on PR #9 (`0c9d177`); E4 and the rate limit are absent on main (`grep "trust proxy\|rate" backend/server.js` = 0). Receipt: backend/server.js:85
+REALITY: surface-check pass. `/api/leads` (`server.js:85`), `/booking`, `/_vercel/insights/script.js` (`main.jsx:11`) and the backend `npm test` script (`backend/package.json` `node --test "lib/*.test.js"`, 6/6 pass) exist. Receipt: backend/package.json:8
+REALITY: binding-decisions pass. D1–D8, Q1–Q10 and §8.14 D2/D3 kept. X2 supersedes the Q8 deferral by explicit answer (D2). Receipt: WEBSITE_REDESIGN_PLAN.md:201
+REALITY: numbers pass. 5 per 10 minutes and the 10s Calendly timeout are taken from TODOS.md:20 and Booking.jsx:15; no new benchmarks. Receipt: src/pages/Booking.jsx:15
+REALITY: deferred-asks pass. No linked issue; E3 and the deposit stay deferred in TODOS.md. Receipt: TODOS.md:3
+REALITY: pr-count pass. Default one PR per wave. This review adds PR #10 (secrets) and one backend PR (X2) on top of PR #9; X3/X4 land on PR #9. Each extra PR is one more review and merge. Receipt: WEBSITE_REDESIGN_PLAN.md:374
+
+### 9.2 Architecture
+- **Design-twice:** no new module, service or public boundary. E4 adds a secret check inside an existing route, so there's no second shape to compare.
+- **Findings:**
+  - `[INFORMATIONAL] (confidence: 8/10) src/pages/Booking.jsx:7` + `src/lib/roi.js:47` — hand-synced label list (red flag 8). X3, approved (D3).
+  - `[INFORMATIONAL] (confidence: 8/10) src/main.jsx:11` — §8.3 E1 described `@vercel/analytics`; the build injects the insights script. Factual correction, applied in §8.3; no behavior change.
+  - `[INFORMATIONAL] (confidence: 7/10) WEBSITE_REDESIGN_PLAN.md §8.3 E4` — "matching secret" didn't name a comparison. The existing `safeEqual` (`server.js:38`) is now specified. Reuses an existing helper for approved behavior (Q6); no new choice.
+- **Dispositions:** X3 accepted (D3); E1 drift corrected; E4 compare corrected.
+
+### 9.3 Code quality
+- **Findings:**
+  - `[INFORMATIONAL] (confidence: 6/10) src/pages/Booking.jsx:55` — Calendly script listeners never removed. Medium confidence, verify this is actually an issue. X4, approved (D4).
+  - `[INFORMATIONAL] (confidence: 5/10) src/pages/Booking.jsx:99` — `VITE_API_URL || 'http://localhost:3001'`. If the Vercel env var is missing, every production submit fails with the error state. Medium confidence, verify this is actually an issue. Added to the launch config list below; no code change.
+  - `[INFORMATIONAL] (confidence: 7/10) backend/server.js:120-124` — admin `PATCH /status` passes `req.body.status` to `findByIdAndUpdate` without `runValidators`, so the `['new','contacted']` enum isn't enforced. Admin-only, existing, outside the plan. Noted; no task.
+- **Dispositions:** X4 accepted (D4); `VITE_API_URL` → launch config; admin PATCH noted only.
+
+### 9.4 Tests
+Framework: `node --test` (frontend `src/lib/*.test.js`, backend `lib/*.test.js`). No CLAUDE.md testing section.
+
+```
+CODE PATHS                                         USER FLOWS
+[+] src/lib/roi.js                                 [+] Calculator → booking
+  ├── estimateLeak / break-even [★★★ roi.test]       ├── [★★ TESTED] params round-trip — roi.test fromRoiParams
+  ├── callsBucket boundaries     [★★★ roi.test]       ├── [GAP] bucket ∈ form options (X3)
+  └── to/fromRoiParams hostile   [★★★ roi.test]       └── [GAP] [→E2E] calc → submit → alert → Calendly (manual)
+[+] backend/lib/leadInput.js                       [+] Lead form abuse
+  └── whitelist/caps/source      [★★★ 6 tests]        ├── [GAP] 6th POST in 10 min → 429 (X2)
+[+] backend/server.js POST /api/leads                 └── [GAP] honeypot filled → not saved (X2)
+  ├── 503 when DB down            [GAP] (existing, low value)
+  └── rate limit (X2, planned)    [GAP]            [+] Scheduler (Booking.jsx)
+[+] src/lib/track.js              never throws;       ├── loading → ready → widget   [manual, plan §8.5 item 6]
+                                  no test (trivial)   └── 10s / script error → link  [manual]
+COVERAGE: 5/11 paths tested | GAPS: 4 (1 E2E-manual) | QUALITY: ★★★:4 ★★:1
+```
+
+- **Proposed tests:**
+  - `roi.test.js`, one assertion: every non-empty `callsBucket` result is in `CALL_VOLUMES` (X3). Value: protects=prefill hits a real option; fails_when=a label changes on one side; why_new=literals only today; seam=none; no_claim=select rendering.
+  - Backend `lib/*.test.js`: the 6th POST in the window returns 429, and a filled honeypot isn't saved (X2). Value cards are in the Test Plan artifact.
+  - The end-to-end path stays manual on the Vercel preview (plan §8.5 item 6).
+- **Tests made obsolete:** none.
+- **Test plan artifact:** `~/.gstack/projects/MAMuneebGhori-pixeltech-agency/mamun-docs-eng-review-eng-review-test-plan-20261106-174432.md`.
+
+### 9.5 Performance
+No issues found. `GET /api/leads` loads every lead unpaginated (`server.js:72`); the scale is tens of leads before client #1, so it's fine until the hundreds. Calendly loads only after submit.
+
+### 9.6 Outside voice
+Unavailable. Codex isn't installed, and the native Plan subagent didn't return a complete report within five minutes, so it was stopped. No outside coverage.
+
+### 9.7 What already exists
+- `safeEqual` (`server.js:38`): reused for E4.
+- `pickLeadFields` (`backend/lib/leadInput.js`): the honeypot check goes next to it.
+- `clean` / `callsBucket` / `fromRoiParams` (`roi.js`): X3 builds on them.
+- `track()` (`track.js`).
+- The Calendly `Scheduler` (`Booking.jsx:25`).
+
+### 9.8 NOT in scope
+- **Git history rewrite for `.env`:** rejected in D1. Rotation makes the leaked values dead.
+- **Admin PATCH enum validation:** admin-only, existing, low impact.
+- **Pagination of `GET /api/leads`:** not needed at the current scale.
+- **E4 build:** still wave 2, with the demo line.
+
+### 9.9 Failure modes
+| Path | Failure | Covered by | User sees |
+|---|---|---|---|
+| Rate limit (X2) | Keyed on the proxy IP, so real prospects get blocked | `trust proxy` + 429 test | "We couldn't send your request" (existing error state) |
+| Honeypot (X2) | Autofill fills the hidden field | `autocomplete="off"`, `tabindex=-1`, `aria-hidden` | A real user is silently dropped (watch the lead count after deploy) |
+| `.env` untrack (PR #10) | Render has no env vars set | Merge gate in the PR checklist | Backend 503s on every lead |
+| E5 prefill (X3) | Label drift | X3 assertion | Blank select |
+
+Critical gaps: 0. The earlier spam gap (§8.6) closes when X2 ships.
+
+### 9.10 Launch config additions
+- Confirm `VITE_API_URL` is set on Vercel production.
+- Enable Web Analytics on the Vercel project.
+- Rotate the six leaked keys and set them in Render before PR #10 merges.
+
+## Implementation Tasks
+Synthesized from this review's findings. Each task derives from a specific finding above.
+
+- [ ] **T0 (P1, human: ~30 min / CC: n/a)** — secrets — Rotate all six leaked keys and set them in Render (owner)
+  - Surfaced by: Scope Challenge — X1 `backend/.env`
+  - Files: none (Render dashboard; MongoDB Atlas, Resend, Green API, Google AI Studio, DeepSeek consoles)
+  - Verify: the old MongoDB password fails to connect, and a test lead on the deployed backend still alerts
+- [ ] **T1 (P1, human: ~5 min / CC: ~1 min)** — repo — Merge PR #10 after T0
+  - Surfaced by: X1
+  - Files: `backend/.env` (untracked)
+  - Verify: `git ls-files backend/.env` is empty on main; the Render deploy is healthy
+- [ ] **T2 (P2, human: ~2h / CC: ~15 min)** — backend — Rate limit + honeypot on POST /api/leads
+  - Surfaced by: Scope Challenge — X2 `server.js:17`
+  - Files: `backend/server.js`, `backend/lib/leadInput.js`, `backend/lib/*.test.js`, `pixel tech/src/pages/Booking.jsx` (hidden field), `pixel tech/TODOS.md` (remove the item)
+  - Verify: `cd backend && npm test`; on deploy, one real submit succeeds and the 6th rapid one gets 429
+- [ ] **T3 (P2, human: ~15 min / CC: ~3 min)** — frontend — One `CALL_VOLUMES` list in roi.js
+  - Surfaced by: Architecture — X3 `Booking.jsx:7`
+  - Files: `src/lib/roi.js`, `src/lib/roi.test.js`, `src/pages/Booking.jsx`
+  - Verify: `node --test src/lib/roi.test.js`, `npm run lint`
+- [ ] **T4 (P2, human: ~10 min / CC: ~2 min)** — frontend — Remove Calendly script listeners on cleanup
+  - Surfaced by: Code quality — X4 `Booking.jsx:55`
+  - Files: `src/pages/Booking.jsx`
+  - Verify: `npm run lint`, `npm run build`; one scheduler renders in `npm run dev`
+
+_No new tasks from Performance._
+
+### Parallelization
+| Step | Modules touched | Depends on |
+|------|----------------|------------|
+| T1 | repo config | T0 |
+| T2 | backend/, pixel tech/src/pages | — |
+| T3 + T4 | pixel tech/src/lib, pixel tech/src/pages | — |
+
+- **Lane A:** T3 → T4 (PR #9).
+- **Lane B:** T2 backend part (its own PR).
+- **Conflict:** T2's honeypot input touches `Booking.jsx`, which PR #9 also changes. Land PR #9 first, then add the honeypot field.
+- **Owner lane:** T0 → T1.
+
+### Unresolved decisions
+None.
+
+### Completion summary
+- Step 0: Scope Challenge — scope accepted as-is
+- Reality rows: 7/7 applicable rows emitted (PLAN_REALITY below), 2 unverified premises
+- Architecture Review: 3 issues found
+- Code Quality Review: 3 issues found
+- Test Review: diagram produced, 3 gaps identified
+- Performance Review: 0 issues found
+- NOT in scope: written
+- What already exists: written
+- TODOS.md updates: 0 items proposed to user (the rate-limit item is superseded by X2 and removed when T2 merges)
+- Failure modes: 0 critical gaps flagged
+- Unresolved decisions: 0 in this review
+- Outside voice: codex unavailable (not installed); native fallback gave no complete report in five minutes
+- Parallelization: 2 lanes, 2 parallel / 1 sequential (owner)
+- Lake Score: 4/4
+
+## 10. Eng review, second pass: components, demo/ROI state, mobile (2026-11-06)
+
+**Target:** this plan, focused on component architecture, the audio/transcript demo and ROI calculator state, and mobile layout. Evidence: `conversion-wave-1` at `38da60d` (PR #9) and `origin/main` at `666b398`. Mobile evidence is a **live probe**: the production build (`vite preview`) in headless Chrome at 375×812, measuring `scrollWidth` and element bounds on `/`, `/pricing`, `/booking`, `/booking?<roi params>` and `/about` (script: `scratchpad/mobile-probe.mjs`).
+
+### 10.1 Component architecture (as built)
+
+```
+main.jsx ── StrictMode ── App (router) ── TopNavBar · <Routes> · Footer · CookieConsent · ScrollToTop
+  │  trackClicks(document)  ← one delegated listener: [data-cta] → cta_click, [data-event] → event
+  │  /_vercel/insights/script.js (prod only)
+  │
+  ├─ /            pages/Home.jsx (composition only, no state)
+  │   ├─ HeroSection ─────────── DemoCallCard            [state: hasAudio, time]
+  │   │    └─ <dialog> demo-line (only when VITE_DEMO_PHONE)
+  │   ├─ HomeSections.jsx: RevenueLeak · HowItWorks · Comparison · Stack · GoLive · Digest
+  │   │    └─ HowItWorks ─ ProductCards.jsx: CallCard · InboxCard · ReminderCard · RecallCard (static)
+  │   ├─ PricingSection ─────── RoiCalculator             [state: form (strings)]
+  │   ├─ FaqAccordion · FinalCtaSection
+  │   └─ Section (exported from HomeSections.jsx; also used by Pricing, FAQ, About)
+  ├─ /pricing     pages/Pricing.jsx → PricingSection titleAs="h1"
+  ├─ /booking     pages/Booking.jsx                       [state: roiInputs, form, status] → Scheduler [state]
+  ├─ /about       pages/About.jsx
+  └─ /admin       pages/Admin.jsx (token inbox, out of scope)
+
+lib/roi.js   pure: estimateLeak · bookingsToBreakEven · callsBucket · CALL_VOLUMES · to/fromRoiParams · format*
+lib/track.js track() · trackClicks()
+```
+
+No global store, context or data fetching outside `/booking` and `/admin`. Every piece of state lives in the leaf that renders it, and the only cross-page state is the ROI inputs, carried in the URL (E5). Right-sized for a 6-route marketing site; no change proposed.
+
+### 10.2 State: audio/transcript demo (`DemoCallCard.jsx`)
+
+```
+            mount (preload="metadata", src=/demo-call.mp3)
+                 │
+   ┌─────────────┴─────────────┐
+ loadedmetadata             error (file missing → Vercel rewrite serves index.html → decode fails)
+   │ hasAudio=true             │ hasAudio=false  → transcript-only card, <audio hidden>
+   ▼                           
+ controls visible, time=-1 → all lines normal
+   │ timeupdate (~4/s) → time=currentTime
+   ▼
+ active = last line with t ≤ time → that line border-accent, earlier/later lines text-mut
+```
+
+- **Derived, not stored:** `active` is computed in render from `time`, so the highlight can't drift from the audio.
+- **Coupling to S3:** `TRANSCRIPT[].t` is hand-timed against a recording that doesn't exist yet (`DemoCallCard.jsx:3`). When S3 lands, replace every line and time from the real recording before PR #9 merges; the §3 rule 5 honesty guardrail means the text must match the audio word for word.
+- **No click-to-seek:** lines don't seek the audio. Not in the plan; listed under 10.6.
+
+### 10.3 State: ROI calculator (`PricingSection.jsx` `RoiCalculator`)
+
+```
+ form: {callsPerWeek, missedPct, missedMessagesPerWeek, bookPct, treatmentValue}  (strings, so a field can be blank)
+   │ onChange → setForm; first edit per page load → track('roi_edit') (module flag roiEdited)
+   ▼ render (derived, nothing cached)
+ estimateLeak(form) → missedLeads, lostBookings, lostRevenue, lostRevenueLow
+ bookingsToBreakEven(form.treatmentValue) → N | null ("Enter a treatment value…")
+ toRoiParams(form) → /booking?calls&missed&dms&book&value   (CTA, data-cta="roi")
+   ▼
+ /booking: fromRoiParams(URL) → roiInputs (null on a plain visit) → callsBucket → prefilled select;
+           formatRoiEstimate(roiInputs) → roiEstimate on the lead (recomputed, never trusted from a URL total)
+```
+
+All math is in `roi.js` and unit-tested (10 tests). Calculator state is lost on Back from `/booking` (defaults return). Acceptable; listed under 10.6.
+
+### 10.4 Mobile probe results (375×812, production build)
+
+| Route | scrollWidth | Overflowing elements | Notes |
+|---|---|---|---|
+| `/` | **491** (viewport 375) | How It Works cards [16..490px] | Horizontal scroll of 116px on the whole page |
+| `/pricing` | 375 | none | ROI result lines wrap cleanly |
+| `/booking` | 375 | none | inputs 42px tall, 16px font (no iOS zoom) |
+| `/booking?<roi>` | 375 | none | prefill note fits |
+| `/about` | 375 | none | |
+
+Tap targets: the nav toggle is 32px with `aria-label="Toggle navigation menu"`; footer links are 22px tall with 16px gaps; the inline "Zenoti, 2026" source link is 15px inside a hint line. All meet WCAG 2.2 AA 2.5.8 (24px or spacing; inline links exempt). None are 44px (the AAA / Apple HIG size); no change proposed.
+
+### X5: home page scrolls sideways on phones
+Finding: 5, CRITICAL, confidence 10/10 (measured), `src/components/HomeSections.jsx:101` (`<div key={s.n} className="bg-card border border-line rounded-[18px] p-6">`, a grid item with the default `min-width: auto`) holding `src/components/ProductCards.jsx:68` (`<p className="text-mut truncate">{t.msg}</p>`, `white-space: nowrap`); reviewer: eng review (Claude). The no-wrap preview's full single-line width becomes the grid item's minimum, so the `grid gap-5` column grows to 474px and every How It Works card overflows. Same markup on `origin/main` (`HomeSections.jsx:101`), so the live site has it today.
+Plan baseline: §6 "each slice: lint + build + `node --test` + 375px check"; the 375px check never ran for slice 4 (ProductCards).
+Runtime evidence: probe at 375px: `/` scrollWidth 491; overflowing chain `div [16..490]` → `figure` → `p.truncate` ×3 (InboxCard). Other routes 375.
+Comparison grid:
+| Choice | Current | A | B |
+|---|---|---|---|
+| X5 fix | none; page 491px wide | `min-w-0` on the How It Works grid item (`HomeSections.jsx:101`), on a branch off main, own PR | same class change, on PR #9 only (held) |
+| X5 proof | none | rerun the 375px probe on all 5 routes: every scrollWidth = 375 | same probe |
+| Release | — | ships to production on merge | waits for the demo recording |
+Question D1:
+D1 — Fix the sideways-scrolling home page on phones
+Project/branch/task: PixelTech; found by a 375px probe of the production build; same bug on main.
+ELI10: On a phone, the home page is 116px wider than the screen, so it wobbles sideways when you scroll and the How It Works cards get cut off at the right edge. Med-spa owners mostly look on their phones. It's caused by the inbox mock's one-line message previews; one CSS class on the card container fixes it.
+Stakes if we pick wrong: every phone visitor sees a broken-feeling page until PR #9 ships, which is waiting on the demo recording.
+Recommendation: A because the bug is live on main today and the fix is one class with a measured before/after.
+Completeness: A=10/10, B=10/10
+Header: Mobile overflow
+Options:
+A) Fix on main now (recommended)
+New branch off main: add `min-w-0` to the How It Works grid item in HomeSections.jsx, rerun the 375px probe on all five routes (every page exactly 375 wide), lint and build, open a small PR. Ships independently of PR #9. (human: ~20 min / CC: ~3 min)
+B) Fix on PR #9 only
+Same one-class change, committed to conversion-wave-1. Production keeps the sideways scroll until PR #9 merges after the demo recording. (human: ~10 min / CC: ~2 min)
+
+State: approved
+Actual answer: A) Fix on main now. D1 answer "A) Fix on main now (recommended)".
+Accepted scope: branch off main; `min-w-0` on the How It Works grid item (`HomeSections.jsx:101`); rerun the 375px probe on all five routes (each scrollWidth = 375); lint and build; own PR.
+History: none
+
+### X6: ROI result re-announced on every keystroke
+Finding: 6, INFORMATIONAL, confidence 7/10, `src/components/PricingSection.jsx:80` (`<div className="rounded-xl bg-bg2 border border-line p-5" aria-live="polite">`) wrapping five paragraphs (break-even, range, explanation, formula); reviewer: eng review (Claude). Each `onChange` (`:68-71`) re-renders the region, so a screen reader queues the whole block (about 60 words, formula included) after each digit typed. Editing "500" to "650" queues three announcements.
+Plan baseline: §8.13 S2 (break-even headline, range underneath; approved Q9). Live-region scope: unspecified.
+Runtime evidence: static read; not run with a screen reader.
+Comparison grid:
+| Choice | Current | A | B |
+|---|---|---|---|
+| X6 live region | whole result box | only the break-even line and the range line (`aria-live="polite"` + `aria-atomic="true"` on a wrapper of those two) | unchanged |
+| S2 layout and copy | approved (Q9) | unchanged | unchanged |
+Question D2:
+D2 — Make the ROI result announce only the two numbers that matter?
+Project/branch/task: PixelTech; PR #9 (conversion-wave-1), PricingSection.jsx RoiCalculator.
+ELI10: Screen-reader users hear the calculator's result read out as they type. Right now the whole result box is marked to be read, about 60 words including the formula, after every single digit. Narrowing it to "pays for itself at N bookings" and the dollar range makes it usable.
+Stakes if we pick wrong: blind or low-vision owners hear a long, repeating wall of text and give up on the calculator.
+Recommendation: A because it moves one attribute and changes nothing visual.
+Completeness: A=10/10, B=6/10
+Header: ROI announce
+Options:
+A) Announce two lines (recommended)
+Move `aria-live="polite"` from the whole box to a wrapper around the break-even line and the range line, with `aria-atomic="true"` so each update reads as one short sentence. Nothing visual changes. Lands on PR #9 next to the calculator work. (human: ~15 min / CC: ~2 min)
+B) Leave as is
+Sighted users see no difference. Screen-reader users keep hearing the full block after each keystroke. (human: 0 / CC: 0)
+
+State: approved
+Actual answer: A) Announce two lines. D2 answer "A) Announce two lines (recommended)".
+Accepted scope: in `PricingSection.jsx` RoiCalculator, move `aria-live="polite"` off the result box onto a wrapper around the break-even line and the range line, with `aria-atomic="true"`. No visual change; S2 layout and copy unchanged. Lands on PR #9.
+History: none
+
+### X7: no repeatable 375px check
+Finding: 7, INFORMATIONAL, confidence 9/10, `package.json` (scripts: `lint`, `build`, no layout check) and plan §6 ("each slice: lint + build + `node --test` + 375px check"); reviewer: eng review (Claude). The 375px check is manual, it was skipped for slice 4, and X5 reached production. The probe used in 10.4 (headless Chrome over CDP, no new dependency, Node 24 built-in `WebSocket`) found it in one run.
+Plan baseline: §6 requires a 375px check per slice (approved with Approach A). How it runs: unspecified.
+Runtime evidence: probe run on 5 routes; `/` scrollWidth 491, others 375.
+Comparison grid:
+| Choice | Current | A | B |
+|---|---|---|---|
+| X7 check | manual, skipped once | `scripts/mobile-check.mjs` + `npm run check:mobile`: starts `vite preview`, launches local Chrome headless, fails (exit 1) if any of the 5 routes has scrollWidth > 375 | stays manual |
+| §6 slice checklist | lint + build + test + 375px (manual) | 375px step becomes `npm run check:mobile` | unchanged |
+| Dependencies | none added | none (system Chrome, Node built-ins) | none |
+Question D3:
+D3 — Turn the 375px phone check into a script?
+Project/branch/task: PixelTech; plan §6 slice checklist; the probe that found X5.
+ELI10: The plan says every change gets checked at phone width, but it's a manual step, it got skipped once, and the sideways-scroll bug went live. The quick script I used to find it can be saved as `npm run check:mobile`: it opens each page at phone width and fails if anything sticks out.
+Stakes if we pick wrong: the next card or table that's too wide ships to phones unnoticed again.
+Recommendation: A because the script already exists, adds no dependency, and it caught a live bug on its first run.
+Completeness: A=10/10, B=6/10
+Header: Mobile check
+Options:
+A) Add npm run check:mobile (recommended)
+Commit the probe as `scripts/mobile-check.mjs` with an npm script. It runs the production preview in local headless Chrome and exits 1 if any of the 5 routes is wider than 375px. Plan §6 points its 375px step at it. Needs Chrome installed; no CI exists, so it runs by hand or from /ship. Goes in the same PR as X5. (human: ~1h / CC: ~10 min)
+B) Keep it manual
+No script. The 375px step stays a person resizing DevTools, as in §6 today. (human: 0 / CC: 0)
+
+State: approved
+Actual answer: A) Add npm run check:mobile. D3 answer "A) Add npm run check:mobile (recommended)".
+Accepted scope: `scripts/mobile-check.mjs` + `npm run check:mobile` (starts `vite preview`, launches local headless Chrome, exits 1 if any of the 5 routes has scrollWidth > 375; no new dependency), in the X5 PR (#13); plan §6's 375px step points to it.
+History: none
+
+### 10.5 Outside voice (native Plan subagent, completed inside the 5-minute limit)
+Codex is not installed; the native fallback returned a complete report (12 findings). Verified by the parent reviewer:
+- **O3 (confirmed, `node` probe):** `/booking?value=500` and `?calls=abc` prefill "Under 25", because `fromRoiParams` cleans a missing or invalid `calls` to 0 (`roi.js:63`) before `callsBucket` sees it. This violates the approved §8.13 item 8 ("An invalid or missing `calls` param means no prefill"; Q2/mechanical fix). **Carried forward as required work under that approval:** `fromRoiParams` keeps `callsPerWeek` as `null` when the `calls` param is missing or not a non-negative number, and `roi.test.js` adds `/booking?value=500` and `calls=abc` → `''`.
+- **O4 (confirmed):** `formatRoiEstimate` records the raw `missedPct`/`bookPct` ("missed 150%") while `pct()` computed at 100% (`roi.js:18` vs `:74`). **Carried forward under E5 (Q7: the lead stores the estimate and the inputs behind it):** record the clamped percentages; one test row.
+- **O7 (static read):** `TRANSCRIPT.findLastIndex` (`DemoCallCard.jsx:15`) is ES2023, unpolyfilled; it throws on iOS 15.0–15.3 once audio plays. **Carried forward as a crash fix of approved behavior:** replace it with a reverse loop.
+- **O10, O11 factual corrections:** the map now says `ReminderCard`; X6's code reference is the pre-change line (the narrowed wrapper is at `PricingSection.jsx:82` on `09359c6`).
+- **Informational, no task:** O8 the active line is colour-only (no `aria-current`); O9 absurd inputs (1e308, 0.0001) print "$∞" or a 7-digit break-even; O12 the demo card header has no gap at 320px. Other `grid gap-5` items lack `min-w-0` but have no unwrappable content today.
+
+### X8: demo player hidden on iPhone
+Finding: O1, INFORMATIONAL, confidence 6/10 (medium confidence, verify this is actually an issue), `src/components/DemoCallCard.jsx:29-30` (`hidden={!hasAudio}` / `onLoadedMetadata={() => setHasAudio(true)}`); reviewer: outside voice (native Plan subagent), checked by the parent. iOS Safari has historically ignored `preload="metadata"` until a user gesture; if it still does, `loadedmetadata` never fires, the `<audio>` stays hidden and there are no controls to tap. Matters once S3's `public/demo-call.mp3` exists.
+Plan baseline: §1 "audio player hidden until `public/demo-call.mp3` exists" (v1 decision D5, demo recording planned). How presence is detected: unspecified.
+Runtime evidence: no iPhone test; headless Chrome can't show this. The file doesn't exist yet.
+Comparison grid:
+| Choice | Current | A | B | C | D |
+|---|---|---|---|---|---|
+| X8 player visibility | shown only after `loadedmetadata` | shown when a build-time constant `HAS_RECORDING = true` (set in the S3 commit that adds the mp3); no runtime probe | unchanged | unchanged until an iPhone test of PR #9 decides | unchanged, revisit when S3 lands |
+| Transcript highlight | follows `timeupdate` | unchanged | unchanged | unchanged | unchanged |
+Question D4:
+D4 — Show the demo recording's player without waiting for the browser to preload it?
+Project/branch/task: PixelTech; PR #9, DemoCallCard.jsx; matters once the S3 recording lands.
+ELI10: The hero's demo card only shows its audio player after the browser has fetched the recording's details. iPhones have often refused to fetch audio until someone taps play, so on an iPhone the player might never appear and nobody can tap it. A simple switch that we flip when we add the recording avoids depending on that.
+Stakes if we pick wrong: iPhone visitors, most of your owners, never hear the demo call that the hero promises.
+Recommendation: A because it removes the guess entirely and the switch flips in the same commit that adds the file.
+Note: options differ in kind, not coverage — no completeness score.
+Header: iPhone player
+Options:
+A) Apply: build-time switch (recommended)
+Replace the loadedmetadata check with a constant `HAS_RECORDING`, false today and set true in the commit that adds public/demo-call.mp3. The player shows exactly when the file ships; `onError` still hides it if the file is broken. Lands on PR #9. (human: ~20 min / CC: ~3 min)
+B) Keep current behavior
+The player keeps waiting for loadedmetadata. Works on desktop; on iPhone it may never show. (human: 0 / CC: 0)
+C) Investigate first
+Leave the code; when S3 lands, open PR #9's Vercel preview on a real iPhone and check that the player appears, then decide. Approves no change now. (human: ~15 min with a phone / CC: n/a)
+D) Defer this change
+Leave the row unresolved and revisit when the recording is made. Nothing changes now.
+
+State: approved
+Actual answer: A) Apply: build-time switch. D4 answer "A) Apply: build-time switch (recommended)".
+Accepted scope: in `DemoCallCard.jsx`, a constant `HAS_RECORDING` (false today) decides whether the `<audio>` renders; the S3 commit that adds `public/demo-call.mp3` sets it true; `onError` still hides a broken file; the transcript highlight is unchanged. Lands on PR #9.
+History: none
+
+### X9: Calendly scheduler too wide at 320px
+Finding: O2, INFORMATIONAL, confidence 8/10, `src/pages/Booking.jsx:80` (`'min-w-[280px] h-[680px]'`) inside `:126` (`px-5`) and `:137` (`p-5 md:p-7`); reviewer: outside voice, checked by the parent. At 320px the card's inner width is 320 − 40 − 40 = 240px, so the 280px minimum pushes the page 40px wide in the post-submit state. At 375px the inner width is 295px, so the probe passes. The probe never reaches `status === 'sent'`.
+Plan baseline: §6 375px check; §8.3 E2 inline Calendly (Q4). 320px: not stated.
+Runtime evidence: arithmetic from the classes above; not rendered (needs a real Calendly URL and a saved lead).
+Comparison grid:
+| Choice | Current | A | B | C | D |
+|---|---|---|---|---|---|
+| X9 scheduler width | `min-w-[280px]` inside card padding | drop the min width; below `md` the scheduler cancels the card padding (`-mx-5 md:mx-0`), so it gets 280px at 320 and the page stays 320 wide | unchanged | unchanged until checked with a real Calendly URL at 320px | unchanged |
+| E2 states and fallback | approved (Q4) | unchanged | unchanged | unchanged | unchanged |
+Question D5:
+D5 — Make the booking scheduler fit 320px phones?
+Project/branch/task: PixelTech; PR #9, Booking.jsx Scheduler.
+ELI10: After someone submits the booking form, the Calendly scheduler appears. It's set to be at least 280px wide, but on the smallest phones (320px, like an iPhone SE) the card only has 240px inside it, so the page goes 40px wider than the screen right at the moment they're picking a time.
+Stakes if we pick wrong: on small phones the most important step, booking the slot, wobbles sideways and gets cut off.
+Recommendation: A because it is two class changes and keeps the scheduler as wide as the screen allows.
+Note: options differ in kind, not coverage — no completeness score.
+Header: Calendly 320
+Options:
+A) Apply: let it fill the card (recommended)
+Remove the 280px minimum and, on small screens, let the scheduler stretch to the card's edges (`-mx-5 md:mx-0`), giving 280px at a 320px screen with no sideways scroll. No change to the loading, ready or fallback states. Lands on PR #9. (human: ~20 min / CC: ~3 min)
+B) Keep current behavior
+375px and wider phones are fine; 320px phones scroll sideways on the scheduler step. (human: 0 / CC: 0)
+C) Investigate first
+Set a test Calendly URL, submit on PR #9's preview at 320px, and measure before deciding. Approves no change now. (human: ~30 min / CC: ~10 min)
+D) Defer this change
+Leave the row unresolved; revisit with the design review. Nothing changes now.
+
+State: approved
+Actual answer: A) Apply: let it fill the card. D5 answer "A) Apply: let it fill the card (recommended)".
+Accepted scope: in `Booking.jsx` Scheduler, drop `min-w-[280px]`; below `md` the ready container uses `-mx-5 md:mx-0` so it spans the card's edges (280px at a 320px screen). E2 states and the 10s fallback unchanged. Lands on PR #9.
+History: none
+
+### X10: `check:mobile` widths
+Finding: O5, INFORMATIONAL, confidence 8/10, `scripts/mobile-check.mjs` (PR #13: `const WIDTH = 375;`); reviewer: outside voice, checked by the parent. The check only tests 375px, so a 320px-only overflow such as X9 passes. Post-submit states (scheduler), the nav menu and dialogs are out of reach for a route-only probe.
+Plan baseline: X7 approved (D3): 5 routes at 375px.
+Runtime evidence: the script runs one width (read).
+Comparison grid:
+| Choice | Current | A | B | C | D |
+|---|---|---|---|---|---|
+| X10 widths | 375 | 320 and 375 (each route at both; fail on either) | 375 only | unchanged until an X9-style bug is seen at 320 | unchanged |
+| X7 routes and pass rule | approved (D3) | unchanged | unchanged | unchanged | unchanged |
+| Post-submit/nav/dialog states | not covered | still not covered (listed in NOT in scope) | same | same | same |
+Question D6:
+D6 — Also run the phone check at 320px?
+Project/branch/task: PixelTech; PR #13, scripts/mobile-check.mjs.
+ELI10: The new phone check only looks at a 375px-wide screen. Smaller phones like the iPhone SE are 320px wide, and some layouts only break there. Running each page at both widths costs a few more seconds and catches that class of bug.
+Stakes if we pick wrong: a layout that only breaks on small phones ships without anyone noticing.
+Recommendation: A because it's a one-line loop and 320px is the narrowest phone still in common use.
+Note: options differ in kind, not coverage — no completeness score.
+Header: 320px check
+Options:
+A) Apply: check 320 and 375 (recommended)
+Loop each of the 5 routes at 320px and 375px and fail if either is wider than its screen. Adds about 12 seconds per run. Post-submit and menu states stay manual. Lands on PR #13. (human: ~20 min / CC: ~3 min)
+B) Keep 375 only
+The check stays as approved in D3: 375px only. (human: 0 / CC: 0)
+C) Investigate first
+Run the probe once at 320px by hand and see whether anything fails before changing the script. Approves no change now. (human: ~10 min / CC: ~2 min)
+D) Defer this change
+Leave the row unresolved; revisit with the design review. Nothing changes now.
+
+State: approved
+Actual answer: A) Apply: check 320 and 375. D6 answer "A) Apply: check 320 and 375 (recommended)".
+Accepted scope: `scripts/mobile-check.mjs` runs each of the 5 routes at 320px and 375px and fails if either is wider than its screen. Routes and pass rule otherwise as X7. Lands on PR #13.
+History: none
+
+### X11: transcript highlight after the call ends
+Finding: O6, INFORMATIONAL, confidence 8/10, `src/components/DemoCallCard.jsx:32` (`onTimeUpdate={(e) => setTime(e.currentTarget.currentTime)}`, no `onEnded`) and `:31` (`onError={() => setHasAudio(false)}`, `time` not reset); reviewer: outside voice, checked by the parent. After playback ends, the last line stays highlighted and the others stay greyed until the user seeks.
+Plan baseline: §1 DemoCallCard audio player + transcript (v1, D5). End-of-call state: unspecified.
+Runtime evidence: static read; no recording exists to play.
+Comparison grid:
+| Choice | Current | A | B | C | D |
+|---|---|---|---|---|---|
+| X11 end/error state | last line stays highlighted | `onEnded` and `onError` reset `time` to -1, so all lines return to normal | unchanged | unchanged until tested with the S3 file | unchanged |
+| X8 `HAS_RECORDING` switch | approved (D4) | unchanged | unchanged | unchanged | unchanged |
+Question D7:
+D7 — Reset the transcript highlight when the demo call ends?
+Project/branch/task: PixelTech; PR #9, DemoCallCard.jsx.
+ELI10: While the recording plays, the transcript lights up the line being spoken and greys out the rest. When the call finishes, it stays stuck that way: the last line lit, everything else grey. Resetting when the call ends puts the card back to its normal, readable look.
+Stakes if we pick wrong: after listening, the transcript looks half-faded and a little broken, right in the hero.
+Recommendation: A because it's two event handlers and makes the end state look like the start.
+Note: options differ in kind, not coverage — no completeness score.
+Header: Call end
+Options:
+A) Apply: reset on end and error (recommended)
+`onEnded` and `onError` set the time back to -1, so all transcript lines return to their normal colour. Lands on PR #9 with X8. (human: ~10 min / CC: ~2 min)
+B) Keep current behavior
+The last line stays highlighted after playback until the visitor seeks or replays. (human: 0 / CC: 0)
+C) Investigate first
+Decide after hearing the real S3 recording in the card. Approves no change now. (human: ~10 min / CC: n/a)
+D) Defer this change
+Leave the row unresolved; revisit when S3 lands. Nothing changes now.
+
+State: approved
+Actual answer: A) Apply: reset on end and error. D7 answer "A) Apply: reset on end and error (recommended)".
+Accepted scope: in `DemoCallCard.jsx`, `onEnded` and `onError` set `time` to -1 so every transcript line returns to normal. Lands on PR #9 with X8.
+History: none
+
+Approval readiness (second pass): PASS. Checked X5 (D1 A), X6 (D2 A), X7 (D3 A), X8 (D4 A), X9 (D5 A), X10 (D6 A), X11 (D7 A); carried forward O3 (§8.13 item 8, approved), O4 (E5, Q7), O7 (crash fix of approved behavior). No pending rows.
+
+### 10.6 Review sections (second pass)
+- **Scope Challenge:** scope accepted as-is. The focus areas touch 7 existing files and add 1 script, with no new classes or services.
+- **Architecture:** the component map and state diagrams are in 10.1–10.3. Leaf-owned state plus URL hand-off is right-sized; no change.
+  - `[INFORMATIONAL] (confidence: 9/10) src/components/ProductCards.jsx:78`: the map named `RemindersCard`; corrected to `ReminderCard`.
+- **Code quality** (dispositions below):
+  - `[CRITICAL] (confidence: 10/10) src/components/HomeSections.jsx:101`: page 491px wide at 375 (X5).
+  - `[INFORMATIONAL] (confidence: 8/10) src/pages/Booking.jsx:80`: scheduler 40px too wide at 320 (X9).
+  - `[INFORMATIONAL] (confidence: 8/10) src/lib/roi.js:63`: guessed "Under 25" prefill (O3).
+  - `[INFORMATIONAL] (confidence: 8/10) src/lib/roi.js:74`: lead records uncapped % (O4).
+  - `[INFORMATIONAL] (confidence: 7/10) src/components/PricingSection.jsx:80`: noisy live region (X6).
+  - `[INFORMATIONAL] (confidence: 6/10) src/components/DemoCallCard.jsx:29-30`: player may never show on iPhone (X8). Medium confidence, verify this is actually an issue.
+  - `[INFORMATIONAL] (confidence: 8/10) src/components/DemoCallCard.jsx:32`: highlight stuck after the call ends (X11).
+  - `[INFORMATIONAL] (confidence: 6/10) src/components/DemoCallCard.jsx:15`: `findLastIndex` on iOS < 15.4 (O7). Medium confidence, verify this is actually an issue.
+- **Tests:**
+
+```
+CODE PATHS                                         USER FLOWS
+[+] lib/roi.js                                     [+] Phone layout
+  ├── fromRoiParams missing/invalid calls → null     ├── [★★★ check:mobile] 5 routes × 320/375 (X7, X10)
+  │     [★★★ roi.test, O3]                           ├── [GAP] scheduler step at 320 (needs Calendly URL; manual)
+  ├── formatRoiEstimate capped %  [★★★ O4]           └── [GAP] nav menu / cookie banner / demo dialog (manual)
+  └── callsBucket ∈ CALL_VOLUMES  [★★★ X3]         [+] Demo card
+[+] DemoCallCard                                     ├── [GAP] iPhone: player visible once HAS_RECORDING=true
+  ├── activeLine loop (O7)      [GAP] trivial, no seam    (real device, S3 commit)
+  ├── onEnded/onError reset     [GAP] manual (S3)     └── [GAP] highlight resets at end (S3, manual)
+COVERAGE: 6/11 paths tested | GAPS: 5 (all manual or blocked on S3) | QUALITY: ★★★:5 ★★:1
+```
+
+  - roi.js changes are covered by 11 tests (new rows for O3 and O4).
+  - Layout is now enforced by `npm run check:mobile` (PR #13). It fails without the X5 fix (491/375, exit 1) and passes with it (10/10 runs).
+  - The demo card's audio states can only be tested once the S3 file exists. That's a manual check on a real iPhone in the S3 commit. A unit test for `activeLine` would need an export no production caller uses, so it fails the test value bar.
+  - Test plan artifact: `~/.gstack/projects/MAMuneebGhori-pixeltech-agency/mamun-docs-eng-review-eng-review-test-plan-20261106-192900.md`.
+- **Performance:** no issues found. `timeupdate` re-renders a 5-line list about 4 times a second. The calculator recomputes pure math on each keystroke. Calendly loads only after submit.
+
+### 10.7 NOT in scope
+- **Click-to-seek on transcript lines:** not in the plan; the native player has seek controls.
+- **Keeping calculator inputs on Back from `/booking`:** the URL already carries them forward; going back resets to the defaults.
+- **`aria-current` on the active transcript line:** the transcript is always visible and the player has native controls.
+- **Sanity caps for absurd ROI inputs (1e308, 0.0001):** not realistic input.
+- **Header gap at 320px on the demo card:** cosmetic.
+- **Layout checks for post-submit, menu and dialog states:** these need scripted interaction. They stay manual and are listed in the Test Plan.
+
+### 10.8 Failure modes (second pass)
+| Path | Failure | Covered by | User sees |
+|---|---|---|---|
+| Home at 375px | Unwrappable content widens a grid track | X5 fix + `check:mobile` | Fixed; the check fails if it returns |
+| Scheduler at 320px | Fixed min width | X9 | Fixed; post-submit state not in the check (manual) |
+| Demo player on iPhone | No preload, so the player stays hidden | X8 build-time switch | Player shows whenever `HAS_RECORDING` is true |
+| S3 commit forgets `HAS_RECORDING = true` | Recording never shown | Manual check in the S3 commit | Transcript-only card (no error) |
+| ROI link with bad `calls` | Guessed bucket | O3 + test | Empty select |
+
+Critical gaps: 0.
+
+### 10.9 Implementation Tasks (second pass)
+- [x] **T5 (P1, human: ~20 min / CC: ~3 min)**: layout. `min-w-0` on How It Works cards (X5). PR #13 `5b38f3d`. Verify: `npm run check:mobile`.
+- [x] **T6 (P2, human: ~1h / CC: ~10 min)**: tooling. `npm run check:mobile` at 320 and 375 (X7, X10). PR #13 `c4caebb`, `b8a3f11`. Verify: it fails without T5 and passes with it.
+- [x] **T7 (P2, human: ~15 min / CC: ~2 min)**: frontend. ROI live region narrowed (X6). PR #9 `09359c6`.
+- [x] **T8 (P2, human: ~40 min / CC: ~8 min)**: frontend. `HAS_RECORDING` switch, reset on end/error, `activeLine` loop, scheduler `-mx-5 md:mx-0`, `calls` → null, capped % on the lead (X8, X9, X11, O3, O4, O7). PR #9 `70b0121`. Verify: `npm test` 11/11, lint, build.
+- [ ] **T9 (P1, owner, human: ~15 min)**: S3. Commit `public/demo-call.mp3`, set `HAS_RECORDING = true`, retime `TRANSCRIPT` from the real call, and check on a real iPhone that the player shows and the highlight resets at the end.
+
+Parallelization: sequential, no parallelization opportunity (T5–T8 are done; T9 is one owner step).
+
+### 10.10 Completion summary (second pass)
+- Step 0: Scope Challenge — scope accepted as-is
+- Reality rows: 7/7 applicable rows emitted (PLAN_REALITY complete, from §9.1), 1 unverified premise (iOS preload behavior)
+- Architecture Review: 1 issue found
+- Code Quality Review: 8 issues found
+- Test Review: diagram produced, 5 gaps identified (all manual or blocked on S3)
+- Performance Review: 0 issues found
+- NOT in scope: written
+- What already exists: §9.7 plus `estimateLeak`/`clean`/`callsBucket` and the delegated `trackClicks`
+- TODOS.md updates: 0 items proposed to user
+- Failure modes: 0 critical gaps flagged
+- Unresolved decisions: 0 in this review
+- Outside voice: native Plan subagent completed (12 findings; 7 resolved by D4–D7 or carried-forward fixes, 2 corrections, 3 informational)
+- Parallelization: 0 lanes, sequential
+- Lake Score: 4/4 (D1, D2, D3 and D6 scored; all picked the 10/10 option)
+
+## 11. Design review (2026-11-06 to 2026-11-07)
+
+**Target:** this plan, rated against the site as built on `design-migration` (PR #15, DESIGN.md v2 applied).
+- **Evidence:**
+  - Screenshots at 375 and 1280px.
+  - The Hallmark rendered tier: 0 FAIL.
+  - The booking E2E (22/22) and the WebKit iPhone-profile check (20/20).
+- **Calibrated against:** `DESIGN.md` v2 (PR #14).
+- **Mockups:** none. The designer has no image API key, so this review is text-only.
+- **Outside design voice:** a native Claude subagent completed (13 findings). Codex is unavailable (not installed).
+
+### 11.1 Ratings
+| Pass | Before | After approved fixes | What changed |
+|---|---|---|---|
+| Step 0 impression | 6 | n/a | The plan named content and components but not hierarchy, mobile order, the ROI result's type or the loading/error states |
+| 1 Information architecture | 6 | 9 | D3 calculator first on phones, D4 consent bar, D5 FAQ data, D6 product name in the hero |
+| 2 States | 7 | 9 | D7 honest submit label and step line, D8 seats at 0, D9 reserved scheduler space |
+| 3 Journey | 7 | 9 | D7 fixes the "booked?" break; D10 keeps the owner's numbers on Back |
+| 4 AI slop | 8 | 9 | The migration removed eyebrows, nested cards, mono labels and shadows; D6 adds the product name |
+| 5 Design system | 9 | 9 | Lint 0 FAIL; 44c open on inner pages (deliberate, see `DESIGN.md`) |
+| 6 Responsive and a11y | 8 | 9 | D4; field edges at 3:1; WebKit 20/20; 44px targets |
+
+**Overall** (the lowest rated pass): 6 → 9.
+
+### 11.2 Journey storyboard (phone, first visit)
+| Step | Owner does | Owner feels | Plan specifies |
+|---|---|---|---|
+| 1 | Lands on `/` | "Is this for me?" | Headline names Botox and filler and voicemail; D6 puts the product name in the line; D4 keeps the consent bar off the hero |
+| 2 | Scrolls the demo call | "It sounds real" | Simulation well; the transcript stays static until S3, then the audio player (HAS_RECORDING) |
+| 3 | Reaches pricing | "Is it worth $297?" | D3 puts the calculator first on phones; the break-even numeral in mono |
+| 4 | Taps the audit button | "What happens next?" | D7: "Step 1 of 2" line and "Continue to pick a time" |
+| 5 | Waits for Calendly | Impatience | D9 reserves 680px; the 10s link fallback |
+| 6 | Picks a time | Relief, committed | `calendly_booked` fires; the lead is already saved |
+| 7 | Hits Back to re-check | "Did I get that right?" | D10 restores their calculator numbers |
+
+### 11.3 Litmus (after the migration)
+- Brand in the first screen: NO → YES with D6.
+- One visual anchor: YES, the call simulation.
+- Scannable by headlines: YES.
+- One job per section: YES; on `/pricing`, the page head, the card and the calculator are now separate.
+- Cards necessary: YES; only interactive surfaces are cards.
+- Motion improves hierarchy: YES; one 8px settle on the hero simulation.
+- Premium without shadows: YES; card shadows are gone.
+- Hard rejections: none.
+
+### 11.4 Decisions (all answered; each recommendation taken)
+- **D3:** below 1024px the calculator stacks above the price card (CSS `order`; desktop unchanged). The price stays in the section intro.
+- **D4:** under 768px the consent card becomes a full-width bottom bar of about 64px: one line plus Accept and Manage. Reject lives in Manage. Desktop is unchanged.
+- **D5:** `FaqAccordion` renders FAQPage JSON-LD generated from the same `FAQS` array.
+- **D6:** the hero line becomes "Booked Solid answers every call, text and DM, then books the patient." (12 words).
+- **D7:**
+  - With Calendly set, the submit reads "Continue to pick a time"; without it, "Send my details".
+  - A line above the form: "Step 1 of 2: your details. Step 2: pick a time."
+  - This one button is a recorded exception to plan §4.1's one-label rule.
+- **D8:** at `FOUNDING_SEATS_LEFT = 0`, the founding line is hidden and the $497 setup shows without strike-through or "waived". A test covers 3, 1 and 0.
+- **D9:** while Calendly loads, the scheduler area is a 680px `bg2` well with "Loading the scheduler…" centred. The widget fades in; the 10s fallback is unchanged.
+- **D10:** the five calculator inputs persist in `sessionStorage`, wrapped in try/catch, falling back to defaults when storage is blocked. Cleared when the tab closes.
+
+### 11.5 NOT in scope
+- **Form length:** settled by CEO S1 (three required fields).
+- **The static transcript before S3:** settled by R2/S3, with PR #9 held until the recording exists.
+- **Blank ROI fields showing "$0 to $0":** truthful arithmetic, and the break-even line already has a blank state.
+- **Mockups:** the designer needs an image key (`$D setup --provider gemini`).
+
+### 11.6 What already exists
+- `.btn-primary` and `.btn-secondary`, the `Section` component, `container-page`.
+- The tokens in `src/index.css`.
+- `CALL_VOLUMES`, `fromRoiParams` and `toRoiParams` (`roi.js`), `track()`, the Scheduler state machine.
+- The `FAQS` array (`FaqAccordion.jsx`).
+
+### 11.7 Implementation tasks (design review)
+- [x] **T10 (P2, human ~30m / CC ~3m):** pricing. D3 calculator first below 1024px. Files: `src/components/PricingSection.jsx`. Verify: 375px screenshot, `npm run check:mobile`.
+- [x] **T11 (P2, human ~1h / CC ~10m):** consent. D4 bar under 768px. Files: `src/components/CookieConsent.jsx`. Verify: 375px first-visit screenshot, 44px targets, the Manage path still offers Reject.
+- [x] **T12 (P3, human ~30m / CC ~3m):** SEO. D5 FAQPage JSON-LD. Files: `src/components/FaqAccordion.jsx`. Verify: the JSON parses, and its question count equals the `FAQS` length.
+- [x] **T13 (P2, human ~10m / CC ~2m):** hero. D6 line. Files: `src/components/HeroSection.jsx`. Verify: lint (58), 12 words.
+- [x] **T14 (P1, human ~20m / CC ~3m):** booking. D7 label and step line. Files: `src/pages/Booking.jsx`. Verify: the booking E2E (labels updated).
+- [x] **T15 (P2, human ~30m / CC ~5m):** pricing. D8 zero-seat state, with a test. Files: `src/components/PricingSection.jsx` (+ a test). Verify: `npm test`.
+- [x] **T16 (P2, human ~30m / CC ~5m):** booking. D9 reserved 680px. Files: `src/pages/Booking.jsx`. Verify: the booking E2E, plus no layout shift at load.
+- [x] **T17 (P2, human ~45m / CC ~5m):** pricing. D10 `sessionStorage`. Files: `src/components/PricingSection.jsx`. Verify: edit, go to `/booking`, go Back, and the numbers are kept; storage blocked falls back to defaults.
+
+Built on `design-migration` in `d82fa05` (PR #15). Verified:
+- Mocked booking E2E 28/28 (D7 label and step line, D9 the 680px held before Calendly reports).
+- Design-fix check 9/9 (D3 calculator order at 375 and 1280px; D4 a 68px bar with two 44px buttons; D5 JSON-LD with 6 of 6 FAQs; D6 the hero line; D10 numbers kept across Back and defaults when storage is blocked).
+- `npm test` 14/14 (`foundingOffer` at 3, 1 and 0; `restoreRoiForm`), `check:mobile` 10/10, rendered Hallmark tier 0 FAIL.
+
+## Design Review Completion Summary
+```
+  +====================================================================+
+  |         DESIGN PLAN REVIEW — COMPLETION SUMMARY                    |
+  +====================================================================+
+  | System Audit         | DESIGN.md v2 present; UI scope: 4 sections  |
+  | Step 0               | 6/10; all 7 passes; mockups unavailable     |
+  | Pass 1  (Info Arch)  | 6/10 → 9/10 after fixes                     |
+  | Pass 2  (States)     | 7/10 → 9/10 after fixes                     |
+  | Pass 3  (Journey)    | 7/10 → 9/10 after fixes                     |
+  | Pass 4  (AI Slop)    | 8/10 → 9/10 after fixes                     |
+  | Pass 5  (Design Sys) | 9/10 → 9/10 after fixes                     |
+  | Pass 6  (Responsive) | 8/10 → 9/10 after fixes                     |
+  | Pass 7  (Decisions)  | 8 resolved, 0 deferred                      |
+  +--------------------------------------------------------------------+
+  | NOT in scope         | written (4 items)                           |
+  | What already exists  | written                                     |
+  | TODOS.md updates     | 0 items proposed                            |
+  | Approved Mockups     | 0 generated, 0 approved                     |
+  | Decisions made       | 8 added to plan                             |
+  | Decisions deferred   | 0                                           |
+  | Overall design score | 6/10 → 9/10                                 |
+  +====================================================================+
+```
+Every rated pass is 8 or above once the fixes land. Run `/design-review` after T10 to T17 for visual QA.
+
+### Unresolved Decisions
+None.
+
 ## GSTACK REVIEW REPORT
 
 | Review | Trigger | Why | Runs | Status | Findings |
 |--------|---------|-----|------|--------|----------|
 | CEO Review | `/plan-ceo-review` | Scope & strategy | 2 | ISSUES OPEN | 8 proposals, 7 accepted, 1 deferred; build check: 2 findings, both resolved (§8.14) |
-| Outside Review | native Claude subagent (user-requested) | Independent 2nd opinion | 1 | completed | 23 findings; 23 resolved (4 by user decision Q9, 1 by Q10, 18 as mechanical fixes in §8.13); 0 unresolved |
-| Eng Review | `/plan-eng-review` | Architecture & tests (required) | 0 | — | — |
-| Design Review | `/plan-design-review` | UI/UX gaps | 0 | — | — |
+| Outside Review | native Claude subagent (codex not installed) | Independent 2nd opinion | 4 | completed (design); completed (eng pass 2); unavailable (eng pass 1); completed (CEO) | design: 13 findings, folded into §11; eng pass 2: 12, all dispositioned (§10.5); CEO: 23, 23 resolved |
+| Eng Review | `/plan-eng-review` | Architecture & tests (required) | 2 | ISSUES OPEN | pass 2: 11 issues, 0 critical gaps, all fixed on PR #9/#13; pass 1: 9 issues + leaked secrets (T0–T4) |
+| Design Review | `/plan-design-review` | UI/UX gaps | 1 | CLEAR | score: 6/10 → 9/10, 8 decisions (§11; tasks T10–T17) |
 | DX Review | `/plan-devex-review` | Developer experience gaps | 0 | — | — |
 
-- **OUTSIDE COVERAGE:** native Claude subagent, spec review/outside voice, completed (score 6/10). Backend files were unreadable to it, and I verified those claims directly. No completed external (non-Claude) review.
-- **VERDICT:** CEO review complete, with 1 existing critical gap (spam and mass assignment on the public lead endpoint, partly addressed by task 1's field whitelist). Eng review required.
+- **OUTSIDE COVERAGE:**
+  - Design phase: a native Claude subagent completed (13 findings); codex unavailable (not installed).
+  - Eng pass 2: native subagent completed. Eng pass 1: unavailable.
+  - CEO: native subagent completed.
+  - No completed external (non-Claude) review.
+- **CROSS-MODEL:** not applicable. Only native Claude reviewers completed.
+- **VERDICT:** DESIGN CLEARED (plan; T10 to T17 to build). Eng review is not CLEAR (ISSUES OPEN, every finding mapped to tasks), so an eng review is required. Remaining owner work: T0 (rotate keys), T9 (recording + iPhone check).
 
 NO UNRESOLVED DECISIONS
