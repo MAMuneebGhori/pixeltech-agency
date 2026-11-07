@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { pickLeadFields, LIMITS } = require('./leadInput');
+const { pickLeadFields, isHoneypotHit, LIMITS } = require('./leadInput');
 
 test('keeps booking-form fields and trims them', () => {
   const lead = pickLeadFields({ firstName: '  Ana ', email: 'ana@spa.com', callsPerWeek: '50–100', roiEstimate: '$1–$2/mo' });
@@ -24,6 +24,14 @@ test('ignores non-strings and blank strings', () => {
 test('caps field length', () => {
   const lead = pickLeadFields({ goal: 'x'.repeat(5000) });
   assert.equal(lead.goal.length, LIMITS.goal);
+});
+
+test('honeypot: a filled hidden field marks the request as a bot; empty or missing does not', () => {
+  assert.equal(isHoneypotHit({ firstName: 'A', fax: '555-0100' }), true);
+  assert.equal(isHoneypotHit({ firstName: 'A', fax: '  ' }), false);
+  assert.equal(isHoneypotHit({ firstName: 'A' }), false);
+  assert.equal(isHoneypotHit(undefined), false);
+  assert.equal(pickLeadFields({ fax: 'x' }).fax, undefined, 'the honeypot is never stored');
 });
 
 test('handles a missing or non-object body', () => {

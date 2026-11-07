@@ -6,12 +6,16 @@ const crypto = require('crypto');
 
 const Lead = require('./models/Lead');
 const { sendLeadNotifications } = require('./services/notifications');
-const { pickLeadFields } = require('./lib/leadInput');
+const { pickLeadFields, isHoneypotHit } = require('./lib/leadInput');
+const { createRateLimiter } = require('./lib/rateLimit');
 
 dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3001;
+// Render sits one proxy hop in front of us; without this, req.ip is the proxy and every visitor shares one rate-limit bucket.
+app.set('trust proxy', 1);
+const allowLead = createRateLimiter({ limit: 5, windowMs: 10 * 60 * 1000 });
 
 // Middleware
 app.use(cors());
@@ -84,6 +88,15 @@ app.get('/api/leads', requireAdmin, async (req, res) => {
 
 app.post('/api/leads', async (req, res) => {
   try {
+    // The demo-line ingest (plan E4, n8n) posts from one IP, so a valid shared secret skips the limit.
+    const secret = process.env.LEAD_INGEST_SECRET;
+    const trusted = Boolean(secret) && safeEqual(req.get('X-Lead-Secret') || '', secret);
+    if (!trusted && !allowLead(req.ip)) {
+      return res.status(429).json({ error: 'Too many requests, try again in a few minutes' });
+    }
+    // Bots that fill the hidden field get a normal-looking success, and nothing is saved or alerted.
+    if (isHoneypotHit(req.body)) return res.status(201).json({});
+
     if (mongoose.connection.readyState !== 1) {
       return res.status(503).json({ error: 'Database not connected' });
     }

@@ -98,7 +98,7 @@ export function HowItWorksSection() {
     >
       <div className="grid gap-5 md:grid-cols-2">
         {STEPS.map((s) => (
-          <div key={s.n} className="bg-card border border-line rounded-[18px] p-6">
+          <div key={s.n} className="min-w-0 bg-card border border-line rounded-[18px] p-6">
             <span className="font-mono text-[0.8rem] text-accent">{s.n}</span>
             <h3 className="text-[1.8rem] mt-1 mb-3">{s.title}</h3>
             <p className="text-mut leading-relaxed mb-5">{s.text}</p>
