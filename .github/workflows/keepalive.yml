@@ -1,0 +1,27 @@
+# Keeps the free-tier backend alive: Render sleeps a free web service after ~15 idle minutes, and MongoDB Atlas
+# pauses a free cluster after 30 days without connections. /api/health wakes the server and pings the database.
+# shortcut: GitHub runs schedules best-effort (often a few minutes late) and disables them in a public repo after
+# 60 days with no commits; re-enable from the Actions tab, or move to an uptime monitor if that becomes a problem.
+name: Keep backend awake
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Ping /api/health
+        run: |
+          # A sleeping instance takes up to a minute to wake, so retry before calling it down.
+          for i in 1 2 3 4; do
+            if curl -fsS --max-time 60 https://pixeltech-agency.onrender.com/api/health; then exit 0; fi
+            sleep 15
+          done
+          echo "::error::Backend or database is down (see Render logs and MongoDB Atlas)"
+          exit 1
