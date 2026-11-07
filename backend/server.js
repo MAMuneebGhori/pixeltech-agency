@@ -42,6 +42,22 @@ if (process.env.MONGODB_URI) {
 }
 
 // ==========================================
+// HEALTH (keep-alive)
+// ==========================================
+// Pinged every 10 minutes by .github/workflows/keepalive.yml. Each ping keeps Render's free instance awake (it
+// sleeps after ~15 idle minutes) and touches the database, so Atlas never sees the 30 idle days that pause a free
+// cluster. Reports only up/down; 503 makes the scheduled run fail, which emails the repo owner.
+app.get('/api/health', async (req, res) => {
+  try {
+    if (mongoose.connection.readyState !== 1) return res.status(503).json({ ok: false, db: 'down' });
+    await mongoose.connection.db.admin().ping();
+    res.json({ ok: true, db: 'up' });
+  } catch {
+    res.status(503).json({ ok: false, db: 'down' });
+  }
+});
+
+// ==========================================
 // ADMIN AUTH
 // ==========================================
 // shortcut: without ADMIN_SESSION_SECRET the secret is per-process, so a restart logs admins out; set it to persist sessions.
