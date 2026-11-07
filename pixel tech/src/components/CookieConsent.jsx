@@ -118,7 +118,7 @@ export default function CookieConsent() {
                     <span className="text-xs font-semibold text-accent uppercase tracking-wider">Always Active</span>
                   </div>
                   <p className="text-xs text-mut leading-relaxed">
-                    These cookies are essential for the website to function properly. They cannot be disabled and do not store any personally identifiable information.
+                    These cookies are essential for the website to function properly. They cannot be disabled and do not store any personally identifiable information. Our visitor analytics are cookieless. If you book a call, the scheduling step loads Calendly, which sets its own cookies.
                   </p>
                 </div>
 

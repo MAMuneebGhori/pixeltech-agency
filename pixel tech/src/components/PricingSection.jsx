@@ -2,11 +2,16 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Check, X } from 'lucide-react';
 import { Section } from './HomeSections';
-import { MONTHLY_PRICE, DEFAULT_INPUTS, estimateLeak, bookingsToBreakEven } from '../lib/roi';
+import { MONTHLY_PRICE, DEFAULT_INPUTS, estimateLeak, bookingsToBreakEven, toRoiParams, usd } from '../lib/roi';
+import { track } from '../lib/track';
 
-// Set by hand as seats fill; never a fake countdown (plan D2).
+// roi_edit fires once per page load, not on every keystroke.
+let roiEdited = false;
+
+// Set by hand as seats fill; never a fake countdown (plan D2). At 3 the label shows no count (plan 8.3 R4).
+const FOUNDING_SEATS = 3;
 const FOUNDING_SEATS_LEFT = 3;
-// shortcut: D2a (7 vs 30 days) still open; 7 is the plan's recommendation, change here if the 30-day option wins.
+// Trial clock starts at go-live, not signup (plan 8.3 R1; 7 vs 14 days revisited with the guarantee, TODOS.md).
 const TRIAL_DAYS = 7;
 
 const FEATURES = [
@@ -27,8 +32,6 @@ const NOT_INCLUDED = [
   'More than one location',
 ];
 
-const usd = (n) => n.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
-
 const ROI_FIELDS = [
   { key: 'callsPerWeek', label: 'Inbound calls per week' },
   {
@@ -45,7 +48,7 @@ const DEFAULT_FORM = Object.fromEntries(Object.entries(DEFAULT_INPUTS).map(([k, 
 
 function RoiCalculator({ headingAs: Heading }) {
   const [form, setForm] = useState(DEFAULT_FORM);
-  const { missedLeads, lostBookings, lostRevenue } = estimateLeak(form);
+  const { missedLeads, lostBookings, lostRevenue, lostRevenueLow } = estimateLeak(form);
   const breakEven = bookingsToBreakEven(form.treatmentValue);
 
   const field = 'mt-1.5 w-full rounded-xl border border-line bg-card px-4 py-3 font-mono text-ink focus:outline-2 focus:outline-accent';
@@ -62,7 +65,10 @@ function RoiCalculator({ headingAs: Heading }) {
             <input
               type="number" inputMode="numeric" min="0" max={max}
               value={form[key]}
-              onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
+              onChange={(e) => {
+                if (!roiEdited) { roiEdited = true; track('roi_edit'); }
+                setForm((f) => ({ ...f, [key]: e.target.value }));
+              }}
               className={field}
             />
             {hint && <span className="block mt-1 text-[0.78rem] font-normal text-mut">{hint}</span>}
@@ -70,21 +76,37 @@ function RoiCalculator({ headingAs: Heading }) {
         ))}
       </div>
 
-      <div className="rounded-xl bg-bg2 border border-line p-5" aria-live="polite">
-        <p className="text-[0.85rem] text-mut">Estimated revenue lost per month</p>
-        <p className="font-mono text-[2.4rem] leading-tight text-ink">{usd(lostRevenue)}</p>
+      {/* Break-even leads (plan 8.13 S2): it rests on one number the owner knows. The range is context underneath. */}
+      <div className="rounded-xl bg-bg2 border border-line p-5">
+        {/* Only the two headline numbers are announced on each edit; the explanation below stays quiet. */}
+        <div aria-live="polite" aria-atomic="true">
+          {breakEven ? (
+            <>
+              <p className="text-[0.85rem] text-mut">At {usd(MONTHLY_PRICE)}/mo, the plan pays for itself at</p>
+              <p className="font-mono text-[2.4rem] leading-tight text-ink">{breakEven} booking{breakEven > 1 ? 's' : ''} a month</p>
+            </>
+          ) : (
+            <p className="text-[0.92rem] text-ink">Enter a treatment value to compare it with the {usd(MONTHLY_PRICE)}/mo plan.</p>
+          )}
+          <p className="mt-4 text-[0.85rem] text-mut">Estimated revenue lost to missed leads now</p>
+          <p className="font-mono text-[1.4rem] text-ink">
+            <span className="whitespace-nowrap">{usd(lostRevenueLow)}</span> – <span className="whitespace-nowrap">{usd(lostRevenue)}</span> <span className="text-[0.9rem] text-mut">/ month</span>
+          </p>
+        </div>
         <p className="mt-1 text-[0.85rem] text-mut">
-          About {missedLeads} missed leads a month, {lostBookings} of whom would have booked.
-        </p>
-        <p className="mt-3 text-[0.92rem] text-ink">
-          {breakEven
-            ? <>The plan is {usd(MONTHLY_PRICE)}/mo. It pays for itself if it recovers <strong>{breakEven} booking{breakEven > 1 ? 's' : ''}</strong> a month.</>
-            : <>Enter a treatment value to compare it with the {usd(MONTHLY_PRICE)}/mo plan.</>}
+          About {missedLeads} missed leads a month, {lostBookings} of whom would have booked. The low end assumes half of missed leads are existing patients getting back in touch.
         </p>
         <p className="mt-3 text-[0.75rem] text-mut">
           How it's worked out: (calls × unanswered % + late texts & DMs) × 4.3 weeks × booking % × treatment value.
         </p>
       </div>
+      <Link
+        to={`/booking?${toRoiParams(form)}`}
+        data-cta="roi"
+        className="btn-primary w-full text-base mt-5"
+      >
+        Book a 15-min ROI audit
+      </Link>
     </div>
   );
 }
@@ -103,11 +125,13 @@ export default function PricingSection({ titleAs = 'h2' }) {
       <div className="grid gap-5 lg:grid-cols-2 items-start">
         <div className="bg-card border border-line rounded-[18px] p-6 md:p-8">
           <p className="font-mono text-[0.72rem] uppercase tracking-wide text-accent mb-3">
-            Founding Partner · {FOUNDING_SEATS_LEFT} of 3 seats left
+            {FOUNDING_SEATS_LEFT < FOUNDING_SEATS
+              ? `Founding Partner pricing · ${FOUNDING_SEATS_LEFT} of ${FOUNDING_SEATS} left`
+              : `Founding Partner pricing · first ${FOUNDING_SEATS} clinics`}
           </p>
           <div className="flex items-baseline gap-2 flex-wrap">
             <span className="font-mono text-[3rem] leading-none text-ink">{usd(MONTHLY_PRICE)}</span>
-            <span className="text-mut">/mo after your {TRIAL_DAYS}-day free trial</span>
+            <span className="text-mut">/mo after {TRIAL_DAYS} days free, starting the day you go live</span>
           </div>
           <p className="mt-2 text-[0.95rem]">
             <s className="text-mut">$497 setup</s> <span className="text-accent font-semibold">waived for our first 3 clinics</span>
@@ -138,7 +162,7 @@ export default function PricingSection({ titleAs = 'h2' }) {
             Covers a typical single-location spa. If your volume ever goes over, we'll tell you first. We never surprise-bill.
           </p>
 
-          <Link to="/booking?service=core" className="btn-primary w-full text-base">Book a 15-min ROI audit</Link>
+          <Link to="/booking" data-cta="pricing" className="btn-primary w-full text-base">Book a 15-min ROI audit</Link>
           <p className="text-center text-[0.8rem] text-mut mt-3">No lock-in. Cancel any month.</p>
         </div>
 

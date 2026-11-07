@@ -9,10 +9,20 @@ const TRANSCRIPT = [
   { t: 18, who: 'AI', text: "You're booked for Saturday at 11 AM. I've just texted you a confirmation." },
 ];
 
+// Set true in the same commit that adds public/demo-call.mp3 (plan S3). A build-time switch, not a
+// loadedmetadata probe, because iOS Safari may not preload audio until a tap, which would hide the player forever.
+const HAS_RECORDING = false;
+
+// Last transcript line already reached at `time` (a loop, not findLastIndex, which crashes iOS < 15.4).
+function activeLine(time) {
+  for (let i = TRANSCRIPT.length - 1; i >= 0; i--) if (TRANSCRIPT[i].t <= time) return i;
+  return -1;
+}
+
 export default function DemoCallCard() {
-  const [hasAudio, setHasAudio] = useState(false);
+  const [hasAudio, setHasAudio] = useState(HAS_RECORDING);
   const [time, setTime] = useState(-1);
-  const active = hasAudio && time >= 0 ? TRANSCRIPT.findLastIndex((l) => l.t <= time) : -1;
+  const active = hasAudio && time >= 0 ? activeLine(time) : -1;
 
   return (
     <div className="bg-card border border-line rounded-[18px] p-5 sm:p-6 shadow-[0_30px_80px_rgba(20,20,19,0.08)] text-left">
@@ -21,17 +31,18 @@ export default function DemoCallCard() {
         <span className="font-mono text-[0.72rem] text-mut">9:42 PM</span>
       </div>
 
-      {/* Hidden until the file loads, so the card is transcript-only while demo-call.mp3 doesn't exist. */}
-      <audio
-        controls
-        preload="metadata"
-        src="/demo-call.mp3"
-        hidden={!hasAudio}
-        onLoadedMetadata={() => setHasAudio(true)}
-        onError={() => setHasAudio(false)}
-        onTimeUpdate={(e) => setTime(e.currentTarget.currentTime)}
-        className="w-full mb-4"
-      />
+      {/* Transcript-only until the recording ships; a broken file still hides the player. */}
+      {hasAudio && (
+        <audio
+          controls
+          preload="metadata"
+          src="/demo-call.mp3"
+          onError={() => { setHasAudio(false); setTime(-1); }}
+          onTimeUpdate={(e) => setTime(e.currentTarget.currentTime)}
+          onEnded={() => setTime(-1)}
+          className="w-full mb-4"
+        />
+      )}
 
       <ol className="space-y-2.5">
         {TRANSCRIPT.map((line, i) => (

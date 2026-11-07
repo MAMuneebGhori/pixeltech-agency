@@ -42,7 +42,7 @@ export default function TopNavBar() {
 
         <div className="flex items-center gap-4">
           {/* CTA Button */}
-          <Link to="/booking" className="inline-flex items-center rounded-full bg-ink text-bg font-semibold px-5 py-2.5 text-[0.85rem] whitespace-nowrap hover:bg-accent transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
+          <Link to="/booking" data-cta="nav" className="inline-flex items-center rounded-full bg-ink text-bg font-semibold px-5 py-2.5 text-[0.85rem] whitespace-nowrap hover:bg-accent transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
             Book a 15-min ROI audit
           </Link>
 
@@ -88,6 +88,7 @@ export default function TopNavBar() {
           <div className="mt-3 pt-3 border-t border-line/50">
             <Link
               to="/booking"
+              data-cta="nav"
               onClick={() => setMobileOpen(false)}
               className="btn-primary w-full text-center text-[0.95rem] py-3"
             >

@@ -10,7 +10,7 @@ export default function FinalCtaSection() {
         <p className="max-w-[580px] mx-auto mb-9 text-mut text-[1.1rem]">
           We'll show you exactly where your clinic is leaking leads — free, in a 15-minute call. If you want it fixed, we build the system for you.
         </p>
-        <Link to="/booking" className="btn-primary">Book a 15-min ROI audit</Link>
+        <Link to="/booking" data-cta="final" className="btn-primary">Book a 15-min ROI audit</Link>
         <p className="text-[0.85rem] text-mut mt-4 font-medium">No commitment. Target go-live in 7 days.</p>
       </div>
     </section>
