@@ -19,7 +19,7 @@ export default function About() {
         title="We help med spas stop leaking revenue."
         intro="Clinics spend thousands a month on ads and SEO. Then the call lands while the front desk is with a patient, the DM sits until morning, and the lead books somewhere else."
       >
-        <div className="max-w-[65ch] space-y-5 text-ink leading-relaxed">
+        <div className="max-w-[65ch] space-y-lg text-ink leading-relaxed">
           <p>
             Practitioners are great at treating patients. They don’t have time to watch the phone for someone asking “How much is Botox?” at 9 PM.
           </p>
@@ -31,15 +31,15 @@ export default function About() {
 
       <Section title="Three things we won’t compromise on." alt>
         {/* Hairlines, not white cards on the tinted band. */}
-        <div className="grid gap-10 md:gap-8 md:grid-cols-3">
+        <div className="grid gap-xl md:gap-(--gap-columns) md:grid-cols-3">
           {PRINCIPLES.map(([title, text]) => (
-            <div key={title} className="border-t border-line pt-6">
-              <h3 className="text-title mb-3">{title}</h3>
+            <div key={title} className="border-t border-line pt-lg">
+              <h3 className="text-title mb-sm">{title}</h3>
               <p className="text-mut leading-relaxed">{text}</p>
             </div>
           ))}
         </div>
-        <div className="mt-12">
+        <div className="mt-xl">
           <Link to="/booking" className="btn-primary text-base">Book a 15-min ROI audit</Link>
         </div>
       </Section>

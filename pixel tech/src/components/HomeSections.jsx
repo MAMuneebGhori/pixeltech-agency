@@ -3,11 +3,11 @@ import { CallCard, InboxCard, ReminderCard, RecallCard } from './ProductCards';
 // DESIGN.md: no eyebrow; the heading announces the section. 96px between sections on phones, 144px from md.
 export function Section({ id, title, intro, alt, titleAs: Title = 'h2', children }) {
   return (
-    <section id={id} className={`py-12 md:py-[72px] scroll-mt-20 ${alt ? 'bg-bg2' : ''}`}>
+    <section id={id} className={`py-xl md:py-2xl scroll-mt-20 ${alt ? 'bg-bg2' : ''}`}>
       <div className="container-page">
-        <Title className="text-section max-w-[30ch] mb-5">{title}</Title>
+        <Title className="text-section max-w-[30ch] mb-lg">{title}</Title>
         {intro && <p className="text-lead text-mut max-w-[60ch]">{intro}</p>}
-        <div className="mt-12 md:mt-16">{children}</div>
+        <div className="mt-xl md:mt-2xl">{children}</div>
       </div>
     </section>
   );
@@ -45,11 +45,11 @@ export function RevenueLeakSection() {
       intro="You pay to make the phone ring. Then the call lands while your team is with a patient, the DM sits until morning, and the lead books somewhere else."
     >
       {/* Sibling stats part with a top hairline, not cards on the tinted band. */}
-      <div className="grid gap-10 lg:gap-8 lg:grid-cols-3">
+      <div className="grid gap-xl lg:gap-(--gap-columns) lg:grid-cols-3">
         {LEAK_STATS.map((s) => (
-          <div key={s.figure} className="border-t border-line pt-6 flex flex-col">
-            <span className="font-mono text-[2.6rem] leading-none text-ink mb-4 tabular-nums">{s.figure}</span>
-            <p className="text-ink leading-relaxed mb-6">{s.text}</p>
+          <div key={s.figure} className="border-t border-line pt-lg flex flex-col">
+            <span className="font-mono text-[2.6rem] leading-none text-ink mb-md tabular-nums">{s.figure}</span>
+            <p className="text-ink leading-relaxed mb-lg">{s.text}</p>
             <a href={s.href} target="_blank" rel="noopener noreferrer" className="mt-auto text-sm text-accent underline underline-offset-[0.18em] visited:text-ink2">
               Source: {s.source}
             </a>
@@ -87,16 +87,16 @@ export function HowItWorksSection() {
   return (
     <Section id="how-it-works" title="One system, from the first ring to the follow-up.">
       {/* Each step sits on the page; its simulation is the only surface (no card around it). */}
-      <ol className="grid gap-x-8 gap-y-16 md:grid-cols-2">
+      <ol className="grid gap-x-(--gap-columns) gap-y-2xl md:grid-cols-2">
         {STEPS.map((s) => (
           <li key={s.title} className="min-w-0 flex flex-col">
-            <h3 className="text-title mb-3">{s.title}</h3>
-            <p className="text-mut leading-relaxed mb-6 max-w-[60ch]">{s.text}</p>
+            <h3 className="text-title mb-sm">{s.title}</h3>
+            <p className="text-mut leading-relaxed mb-lg max-w-[60ch]">{s.text}</p>
             <s.Card />
           </li>
         ))}
       </ol>
-      <p className="mt-10 text-sm text-mut">Examples use Glow Med Spa, a fictional clinic.</p>
+      <p className="mt-xl text-sm text-mut">Examples use Glow Med Spa, a fictional clinic.</p>
     </Section>
   );
 }
@@ -120,18 +120,18 @@ export function ComparisonSection() {
       <table className="hidden md:table w-full text-left">
         <thead>
           <tr className="border-b border-ink/20">
-            <th scope="col" className="py-4 pr-4 text-sm font-semibold text-mut w-[22%]">Front-desk need</th>
+            <th scope="col" className="py-md pr-md text-sm font-semibold text-mut w-[22%]">Front-desk need</th>
             {COMPARE_COLS.map((c, i) => (
-              <th key={c} scope="col" className={`py-4 px-4 text-sm font-semibold ${i === 2 ? 'text-ink bg-bg3 rounded-t-inner' : 'text-mut'}`}>{c}</th>
+              <th key={c} scope="col" className={`py-md px-md text-sm font-semibold ${i === 2 ? 'text-ink bg-bg3 rounded-t-inner' : 'text-mut'}`}>{c}</th>
             ))}
           </tr>
         </thead>
         <tbody>
           {COMPARE_ROWS.map(([need, ...cells]) => (
             <tr key={need} className="border-b border-line last:border-0 align-top">
-              <th scope="row" className="py-4 pr-4 font-semibold text-ink">{need}</th>
+              <th scope="row" className="py-md pr-md font-semibold text-ink">{need}</th>
               {cells.map((c, i) => (
-                <td key={i} className={`py-4 px-4 leading-relaxed ${i === 2 ? 'text-ink bg-bg3' : 'text-mut'}`}>{c}</td>
+                <td key={i} className={`py-md px-md leading-relaxed ${i === 2 ? 'text-ink bg-bg3' : 'text-mut'}`}>{c}</td>
               ))}
             </tr>
           ))}
@@ -141,11 +141,11 @@ export function ComparisonSection() {
       {/* Phones: each row restacks as a labelled block, parted by hairlines. */}
       <div className="md:hidden">
         {COMPARE_ROWS.map(([need, ...cells]) => (
-          <div key={need} className="border-t border-line py-6">
-            <h3 className="font-body font-semibold text-base mb-4">{need}</h3>
-            <dl className="space-y-3">
+          <div key={need} className="border-t border-line py-lg">
+            <h3 className="font-body font-semibold text-base mb-md">{need}</h3>
+            <dl className="space-y-sm">
               {cells.map((c, i) => (
-                <div key={i} className={i === 2 ? 'rounded-inner bg-bg3 p-3' : ''}>
+                <div key={i} className={i === 2 ? 'rounded-inner bg-bg3 p-sm' : ''}>
                   <dt className="text-sm font-semibold text-mut">{COMPARE_COLS[i]}</dt>
                   <dd className={i === 2 ? 'text-ink' : 'text-mut'}>{c}</dd>
                 </div>
@@ -170,19 +170,19 @@ export function StackSection() {
       intro="We connect to your calendar so the receptionist only offers times you actually have open."
     >
       {/* Wells, not cards: nothing here is clickable. */}
-      <div className="grid gap-5 md:grid-cols-2">
-        <div className="bg-bg2 rounded-well p-6 md:p-10">
-          <h3 className="font-body font-semibold text-base mb-1">Working today</h3>
-          <p className="text-mut text-sm mb-4">Direct integrations.</p>
-          <ul className="flex flex-wrap gap-2">
-            {VERIFIED.map((v) => <li key={v} className="rounded-full bg-card px-3.5 py-1.5 text-sm text-ink">{v}</li>)}
+      <div className="grid gap-lg md:grid-cols-2">
+        <div className="bg-bg2 rounded-well p-lg md:p-xl">
+          <h3 className="font-body font-semibold text-base mb-2xs">Working today</h3>
+          <p className="text-mut text-sm mb-md">Direct integrations.</p>
+          <ul className="flex flex-wrap gap-xs">
+            {VERIFIED.map((v) => <li key={v} className="rounded-full bg-card px-2.5 py-2xs text-sm text-ink">{v}</li>)}
           </ul>
         </div>
-        <div className="bg-bg2 rounded-well p-6 md:p-10">
-          <h3 className="font-body font-semibold text-base mb-1">Compatible via direct API or monitored sync</h3>
-          <p className="text-mut text-sm mb-4">We confirm the setup for your system on the audit call.</p>
-          <ul className="flex flex-wrap gap-2">
-            {COMPATIBLE.map((v) => <li key={v} className="rounded-full bg-bg3 px-3.5 py-1.5 text-sm text-mut">{v}</li>)}
+        <div className="bg-bg2 rounded-well p-lg md:p-xl">
+          <h3 className="font-body font-semibold text-base mb-2xs">Compatible via direct API or monitored sync</h3>
+          <p className="text-mut text-sm mb-md">We confirm the setup for your system on the audit call.</p>
+          <ul className="flex flex-wrap gap-xs">
+            {COMPATIBLE.map((v) => <li key={v} className="rounded-full bg-bg3 px-2.5 py-2xs text-sm text-mut">{v}</li>)}
           </ul>
         </div>
       </div>
@@ -206,24 +206,24 @@ export function DigestSection() {
       intro="Each morning you get one email: yesterday’s leads, what got booked, and anything that needs a person. Full transcripts are searchable in your dashboard."
     >
       {/* A simulation well (DESIGN.md): one surface, hairline rows, no stat tiles. */}
-      <figure className="max-w-[560px] bg-bg2 rounded-well p-4 sm:p-6">
-        <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 mb-4">
+      <figure className="max-w-[560px] bg-bg2 rounded-well p-md sm:p-lg">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-sm gap-y-2xs mb-md">
           <p className="text-sm font-semibold text-ink">Daily digest from Glow Med Spa</p>
           <time className="font-mono text-[13px] text-mut">9:00 AM</time>
         </div>
-        <dl className="mb-4">
+        <dl className="mb-md">
           {DIGEST.map(([label, n]) => (
-            <div key={label} className="flex items-baseline justify-between gap-4 border-t border-line py-3">
+            <div key={label} className="flex items-baseline justify-between gap-md border-t border-line py-sm">
               <dt className="text-ink">{label}</dt>
               <dd className="font-mono text-lg text-ink tabular-nums">{n}</dd>
             </div>
           ))}
         </dl>
-        <div className="rounded-inner bg-card px-3.5 py-3">
-          <p className="text-[13px] font-semibold text-ink2 mb-1">Needs a person</p>
+        <div className="rounded-inner bg-card px-3.5 py-sm">
+          <p className="text-[13px] font-semibold text-ink2 mb-2xs">Needs a person</p>
           <p className="text-ink">Jessica M. asked whether she can get filler while breastfeeding. Flagged for your clinician, with a consult booked for Thursday.</p>
         </div>
-        <figcaption className="mt-4 text-sm text-mut">An example email for Glow Med Spa, a fictional clinic.</figcaption>
+        <figcaption className="mt-md text-sm text-mut">An example email for Glow Med Spa, a fictional clinic.</figcaption>
       </figure>
     </Section>
   );
@@ -251,8 +251,8 @@ export function GoLiveSection() {
       {/* One column of seven rows, so no row is ever left orphaned. */}
       <ol className="max-w-[820px]">
         {RUNBOOK.map((text, i) => (
-          <li key={i} className="grid grid-cols-[5rem_minmax(0,1fr)] gap-4 border-t border-line py-5 last:border-b">
-            <span className="text-sm font-semibold text-ink2 pt-0.5">Day <span className="font-mono tabular-nums">{i + 1}</span></span>
+          <li key={i} className="grid grid-cols-[5rem_minmax(0,1fr)] gap-md border-t border-line py-lg last:border-b">
+            <span className="text-sm font-semibold text-ink2 pt-3xs">Day <span className="font-mono tabular-nums">{i + 1}</span></span>
             <p className="text-ink leading-relaxed">{text}</p>
           </li>
         ))}
