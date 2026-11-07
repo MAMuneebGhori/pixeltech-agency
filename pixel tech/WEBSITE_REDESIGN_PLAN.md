@@ -1,6 +1,6 @@
 # Website Redesign Plan v2 — Booked Solid System
 
-**Status:** Approved. Slices 1–5 are built (not committed). Slice 6 (Lighthouse) is in progress. See §0.
+**Status (2026-11-07):** Approved. Slices 1–5 and T1–T8, T10–T17 are merged to main (PRs #9–#18). Slice 6: Google Fonts made non-blocking; Lighthouse re-run still owed (needs a machine with free RAM). Open: T0 key rotation, T9 demo recording, then the Retell demo line (`VITE_DEMO_PHONE`) last.
 
 ## 0. Implementation status (checked 2026-11-06)
 
