@@ -22,10 +22,14 @@ export const usd = (n) => n.toLocaleString('en-US', { style: 'currency', currenc
 // Monthly estimate: (calls x missed% + late DMs/texts) x 4.3 weeks, then x book% x treatment value.
 // lostRevenueLow is the same total with the existing-patient share taken out.
 export function estimateLeak({ callsPerWeek, missedPct, missedMessagesPerWeek, bookPct, treatmentValue }) {
-  const missed = (clean(callsPerWeek) * pct(missedPct) + clean(missedMessagesPerWeek)) * WEEKS_PER_MONTH;
+  const missedCalls = clean(callsPerWeek) * pct(missedPct) * WEEKS_PER_MONTH;
+  const missedMessages = clean(missedMessagesPerWeek) * WEEKS_PER_MONTH;
+  const missed = missedCalls + missedMessages;
   const bookings = missed * pct(bookPct);
   const revenue = bookings * clean(treatmentValue);
   return {
+    missedCalls: Math.round(missedCalls),
+    missedMessages: Math.round(missedMessages),
     missedLeads: Math.round(missed),
     lostBookings: Math.round(bookings),
     lostRevenue: Math.round(revenue),

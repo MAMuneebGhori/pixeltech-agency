@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { Link } from 'react-router-dom';
-import DemoCallCard from './DemoCallCard';
+import ClinicInbox from './ClinicInbox';
 
 // Unset until the demo line exists; setting it switches the primary CTA to click-to-call with no code change.
 const DEMO_PHONE = import.meta.env.VITE_DEMO_PHONE;
@@ -11,7 +11,7 @@ export default function HeroSection() {
   const dialogRef = useRef(null);
 
   return (
-    <section className="pt-xl lg:pt-xl pb-2xl lg:pb-xl border-b border-line">
+    <section className="pt-xl lg:pt-xl pb-2xl lg:pb-xl">
       <div className="container-page grid grid-cols-1 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] gap-12 items-center">
         {/* No entrance animation: the headline is the LCP element, and a fade-in delays it. */}
         <div className="min-w-0">
@@ -44,8 +44,8 @@ export default function HeroSection() {
           )}
         </div>
 
-        <div className="motion-safe:animate-fade-up w-full max-w-[460px] mx-auto lg:mr-0">
-          <DemoCallCard />
+        <div className="motion-safe:animate-fade-up w-full max-w-[480px] mx-auto lg:mr-0">
+          <ClinicInbox />
         </div>
       </div>
 

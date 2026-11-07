@@ -15,6 +15,7 @@ export default function About() {
       <SEO title="About" description="PixelTech builds the Booked Solid System: an AI receptionist and lead-reactivation system for med spas." url="/about" />
 
       <Section
+        seam={false}
         titleAs="h1"
         title="We help med spas stop leaking revenue."
         intro="Clinics spend thousands a month on ads and SEO. Then the call lands while the front desk is with a patient, the DM sits until morning, and the lead books somewhere else."
