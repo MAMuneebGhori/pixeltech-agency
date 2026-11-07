@@ -32,6 +32,7 @@ OKLCH is canonical; hex is the sRGB conversion for tools that need it. Token nam
 | `bg3` *(new)* | `oklch(92.4% 0.014 72)` | `#ECE5DC` | Deep well: the caller's bubble, chips | n/a |
 | `card` | `oklch(99.3% 0.003 80)` | `#FEFDFA` | Raised surfaces: dialogs, the clinic's bubble | n/a |
 | `line` | `oklch(90.5% 0.012 76)` | `#E4DFD7` | Hairlines and the one card border | 1.24:1 (decorative) |
+| `field` *(new)* | `oklch(62% 0.016 70)` | `#8D857C` | Input, select and textarea edges | 3.6 on `card`, 3.4 on `bg`, 3.2 on `bg2` (WCAG 1.4.11 needs 3:1) |
 | `ink` | `oklch(19.5% 0.006 70)` | `#171412` | Body text, headings, primary fill | 17.2:1 on `bg` |
 | `ink2` *(new)* | `oklch(33% 0.010 70)` | `#393530` | Secondary heads, strong captions | 10.6:1 on `bg2` |
 | `mut` | `oklch(50% 0.018 70)` | `#6A6258` | Captions, helper text, placeholders | 5.6 on `bg`, 4.8 on `bg3` |
@@ -82,7 +83,7 @@ Three weights in total: serif 400, sans 400 and 600. Mono is one outlier role, f
 - **Primary:** `ink` fill, `bg` text, `--radius-pill`, 52px tall (48px on phones, full width under 640px), sans 600 16px. Hover: fill steps to `accent` (colour only, no lift). One filled primary per viewport; a second action on the same screen is secondary.
 - **Secondary:** 1px `ink` outline, transparent fill, same radius and height. Hover: `bg2` fill.
 - **Text link:** `accent`, underline offset 0.18em, 1px; visited `ink2`.
-- **Inputs:** `bg2` fill, 1px `line` border at all times, `--radius-inner`, 48px tall, 16px text. The label sits above in `--text-sm` 600 sentence case; placeholders are examples, never the label.
+- **Inputs:** `bg2` fill, 1px `field` border at all times (`line` is too faint for a field edge, 1.3:1), `--radius-inner`, 48px tall, 16px text. The label sits above in `--text-sm` 600 sentence case; placeholders are examples, never the label.
 - **Focus:** `outline: 2px solid var(--color-focus)` at a 2px offset (inset on inputs), shown instantly via `:focus-visible` on every interactive element.
 - **States:** default, hover, focus-visible, active (`translateY(1px)`), disabled (`opacity: 0.55`, `cursor: not-allowed`, native attribute), loading (label plus spinner after 200ms), error (`bad` text under the field, field keeps its value), success.
 - **Touch:** 44px minimum hit target on every control.
@@ -126,7 +127,7 @@ The cards that show the product working: call transcripts, the unified inbox, re
 
 - **Before:** the sloplint static pass over `src/` and `index.html` found 51 FAIL, 11 REFLEX and 21 WARN in 23 files.
 - **After** the migration (branch `design-migration`): the public site is **0 FAIL, 0 REFLEX, 0 WARN**, with one NOTE. The NOTE is gate 19: the SRD F-10 deflection line is kept word for word, stamped `copy: verbatim`.
-- **Not run:** the rendered tier, because puppeteer isn't installed.
+- **Rendered tier** (puppeteer-core with the local Chrome, on `/`, `/pricing`, `/booking`, `/about`): 0 FAIL on every route. It caught and fixed: field edges under 3:1, the `/pricing` action below the 1280x800 fold, the `/pricing` head running past 1920x1080, a 22px footer control, a 5-item orphan row, and `h2`s rendering at 16px. Waivers are stamped in `src/index.css` (49b, 77, 59) with one dismissal (59, the approved section count).
 
 Done:
 1. **Labels and eyebrows:** no tracked caps or mono labels; `Section` no longer takes an eyebrow.
@@ -158,5 +159,9 @@ Done:
 11. **Layout check:** `check:mobile` now catches overflow that `overflow-x: clip` hides from `scrollWidth`. It fails on any element past the screen edge, and it was verified by reintroducing the old How It Works bug.
 
 Still open:
-- `src/pages/Admin.jsx` (internal, not a marketing page): 16 FAIL and 5 WARN remain, and it still imports `framer-motion`.
-- The rendered sloplint tier and a real-device pass (iPhone) have not run.
+- **44c (Reflex) on `/pricing`, `/booking` and `/about`:** the head does not fill the first screen. This is deliberate, so the price card and the form show without scrolling. It cannot be waived, because its guard needs a Banner hero posture and the stamp's one posture is the home page's.
+- **A real iPhone pass:** not run. It is the owner’s step, in the S3 commit that sets `HAS_RECORDING = true`, checking that the player shows and the transcript highlight resets. Closest proxy, run 2026-11-07: WebKit 18 (Playwright) at the iPhone 13 profile, 20/20. Five routes render with no overflow past 390px and no JS errors; the menu opens on tap; the calculator updates; inputs are 16px. This does not reproduce iOS media or autoplay policy.
+
+Also done since the first pass:
+- `Admin.jsx` migrated (0 FAIL), and `framer-motion` removed from the project.
+- `/booking` tested end to end with the network mocked, 22/22 at 320, 375 and 1280px: the lead with its ROI estimate and empty honeypot, the calls/week prefill, Calendly reaching ready from its own message, `calendly_booked`, the blocked-script and 10-second fallbacks, and the API-error state. Calendly’s real service is not covered; it needs `VITE_CALENDLY_URL`.
