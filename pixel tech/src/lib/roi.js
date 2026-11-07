@@ -70,6 +70,20 @@ export function fromRoiParams(searchParams) {
   return inputs;
 }
 
+// Calculator inputs saved for the visit (design review D10). The stored text is untrusted: anything that is not
+// a JSON object of our five keys with short numeric strings is ignored, and a missing key keeps its default.
+export function restoreRoiForm(raw) {
+  let saved;
+  try { saved = JSON.parse(raw); } catch { return null; }
+  if (!saved || typeof saved !== 'object' || Array.isArray(saved)) return null;
+  const form = {};
+  for (const [key, def] of Object.entries(DEFAULT_INPUTS)) {
+    const v = saved[key];
+    form[key] = typeof v === 'string' && v.length <= 12 && /^\d*\.?\d*$/.test(v) ? v : String(def);
+  }
+  return form;
+}
+
 export function formatRoiRange(inputs) {
   const { lostRevenue, lostRevenueLow } = estimateLeak(inputs);
   return `${usd(lostRevenueLow)}–${usd(lostRevenue)}/mo`;

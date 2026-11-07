@@ -77,8 +77,13 @@ function Scheduler({ name, email }) {
         </p>
       ) : (
         <>
-          {state === 'loading' && <p className="text-center text-mut py-6" role="status">Loading the scheduler…</p>}
-          <div ref={parentRef} className={state === 'ready' ? '-mx-5 md:mx-0 h-[680px]' : 'h-0 overflow-hidden'} />
+          {/* The scheduler's 680px is held from the start, so nothing jumps when Calendly arrives (D9). */}
+          <div className="relative -mx-5 md:mx-0 h-[680px]">
+            {state === 'loading' && (
+              <p className="absolute inset-0 grid place-items-center rounded-inner bg-bg2 text-mut" role="status">Loading the scheduler…</p>
+            )}
+            <div ref={parentRef} data-state={state} className={`h-full transition-opacity duration-[220ms] ease-out ${state === 'ready' ? 'opacity-100' : 'opacity-0'}`} />
+          </div>
         </>
       )}
     </div>
@@ -144,6 +149,7 @@ export default function Booking() {
             )
           ) : (
             <form className="grid gap-4" onSubmit={handleSubmit}>
+              {CALENDLY_URL && <p className="text-sm text-mut">Step 1 of 2: your details. Step 2: pick a time.</p>}
               {roiInputs && (
                 <p className="rounded-lg border border-line bg-bg2 p-3 text-[0.85rem] text-mut">
                   We’ll bring your calculator numbers to the call: {formatRoiRange(roiInputs)} in missed revenue.
@@ -219,7 +225,8 @@ export default function Booking() {
               )}
 
               <button type="submit" disabled={status === 'sending'} className="btn-primary w-full mt-1 text-base disabled:opacity-60">
-                {status === 'sending' ? 'Sending…' : 'Book a 15-min ROI audit'}
+                {/* Honest about what this button does: it saves details; the time is picked next (design review D7). */}
+                {status === 'sending' ? 'Sending…' : CALENDLY_URL ? 'Continue to pick a time' : 'Send my details'}
               </button>
             </form>
           )}

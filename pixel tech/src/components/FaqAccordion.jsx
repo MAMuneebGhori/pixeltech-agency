@@ -34,9 +34,18 @@ const FAQS = [
   },
 ];
 
+// FAQPage structured data built from the same list the page shows, so the two can't drift (design review D5).
+// "<" is escaped so no answer text can close the script tag.
+const FAQ_JSON_LD = JSON.stringify({
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: FAQS.map(({ q, a }) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })),
+}).replace(/</g, '\\u003c');
+
 export default function FaqAccordion() {
   return (
     <Section id="faq" title="Questions clinics ask us.">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: FAQ_JSON_LD }} />
       {/* A hairline list, not a stack of cards. */}
       <div className="max-w-[820px] border-b border-line">
         {FAQS.map((faq) => (

@@ -44,25 +44,27 @@ export default function CookieConsent() {
           <div
             role="region"
             aria-label="Cookie consent"
-            className="animate-slide-in-up motion-reduce:animate-none fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:max-w-sm z-[100] bg-card rounded-card p-5 shadow-raised flex flex-col gap-4"
+            // Phones: a full-width bar at the bottom, one line plus Accept and Manage (Reject is one tap away in Manage),
+            // so it covers far less of the hero (design review D4). From md up: the card in the corner.
+            className="animate-slide-in-up motion-reduce:animate-none fixed z-[100] bg-card shadow-raised inset-x-0 bottom-0 px-4 py-3 flex items-center gap-3 md:inset-x-auto md:bottom-4 md:right-4 md:max-w-sm md:rounded-card md:p-5 md:flex-col md:items-stretch md:gap-4"
           >
-            <div>
-              <div>
-                <h3 className="font-semibold text-ink text-sm mb-1">We value your privacy</h3>
-                <p className="text-sm text-mut leading-relaxed">
-                  We use cookies and local storage to enhance your browsing experience and remember your preferences.
-                </p>
-              </div>
+            <div className="min-w-0 flex-1">
+              <h3 className="hidden md:block font-semibold text-ink text-sm mb-1">We value your privacy</h3>
+              <p className="text-sm text-mut leading-snug md:leading-relaxed">
+                <span className="md:hidden">We use cookies to remember your choices.</span>
+                <span className="hidden md:inline">We use cookies and local storage to enhance your browsing experience and remember your preferences.</span>
+              </p>
             </div>
-            
-            {/* One row of 44px pills: meets the touch target while keeping the banner short on phones. */}
-            <div className="grid grid-cols-3 gap-2 mt-1">
+
+            <div className="flex shrink-0 gap-2 md:grid md:grid-cols-3 md:mt-1">
               <button type="button" onClick={handleAcceptAll} className="btn-primary !min-h-11 !px-3 text-sm">
-                Accept all
+                Accept<span className="hidden md:inline">&nbsp;all</span>
               </button>
-              <button type="button" onClick={handleRejectAll} className="btn-secondary !min-h-11 !px-3 text-sm">
-                Reject all
-              </button>
+              <span className="hidden md:contents">
+                <button type="button" onClick={handleRejectAll} className="btn-secondary !min-h-11 !px-3 text-sm">
+                  Reject all
+                </button>
+              </span>
               <button type="button" onClick={() => setShowPreferences(true)} className="btn-secondary !min-h-11 !px-3 text-sm">
                 Manage
               </button>

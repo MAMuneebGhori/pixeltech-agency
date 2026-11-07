@@ -2,8 +2,18 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Check, X } from 'lucide-react';
 import { Section } from './HomeSections';
-import { MONTHLY_PRICE, DEFAULT_INPUTS, estimateLeak, bookingsToBreakEven, toRoiParams, usd } from '../lib/roi';
+import { MONTHLY_PRICE, DEFAULT_INPUTS, estimateLeak, bookingsToBreakEven, toRoiParams, usd, restoreRoiForm } from '../lib/roi';
+import { foundingOffer, SETUP_FEE } from '../lib/offer';
 import { track } from '../lib/track';
+
+// The owner's calculator numbers, kept for this visit only (design review D10); storage can be blocked, so every access is guarded.
+const ROI_STORAGE_KEY = 'pixeltech-roi-inputs';
+const loadRoiForm = (fallback) => {
+  try { return restoreRoiForm(sessionStorage.getItem(ROI_STORAGE_KEY)) || fallback; } catch { return fallback; }
+};
+const saveRoiForm = (form) => {
+  try { sessionStorage.setItem(ROI_STORAGE_KEY, JSON.stringify(form)); } catch { /* private mode or blocked storage: the numbers just aren't kept */ }
+};
 
 // roi_edit fires once per page load, not on every keystroke.
 let roiEdited = false;
@@ -47,7 +57,7 @@ const ROI_FIELDS = [
 const DEFAULT_FORM = Object.fromEntries(Object.entries(DEFAULT_INPUTS).map(([k, v]) => [k, String(v)]));
 
 function RoiCalculator({ headingAs: Heading }) {
-  const [form, setForm] = useState(DEFAULT_FORM);
+  const [form, setForm] = useState(() => loadRoiForm(DEFAULT_FORM));
   const { missedLeads, lostBookings, lostRevenue, lostRevenueLow } = estimateLeak(form);
   const breakEven = bookingsToBreakEven(form.treatmentValue);
 
@@ -73,7 +83,7 @@ function RoiCalculator({ headingAs: Heading }) {
               value={form[key]}
               onChange={(e) => {
                 if (!roiEdited) { roiEdited = true; track('roi_edit'); }
-                setForm((f) => ({ ...f, [key]: e.target.value }));
+                setForm((f) => { const next = { ...f, [key]: e.target.value }; saveRoiForm(next); return next; });
               }}
               className={field}
             />
@@ -122,7 +132,8 @@ function RoiCalculator({ headingAs: Heading }) {
 }
 
 const TITLE = 'One plan. No lock-in.';
-const INTRO = 'Everything below, for one flat monthly price. Cancel any month.';
+// The price sits in the intro so it is still read first when the calculator leads on phones (D3).
+const INTRO = `${usd(MONTHLY_PRICE)} a month for everything below, one flat price. Cancel any month.`;
 
 export default function PricingSection({ titleAs = 'h2' }) {
   // One level below the section title, so /pricing (h1) doesn't skip to h3.
@@ -158,26 +169,27 @@ export default function PricingSection({ titleAs = 'h2' }) {
 function PricingGrid({ SubHeading }) {
   return (
     <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 items-start">
-      <PriceCard />
-      <RoiCalculator headingAs={SubHeading} />
+      {/* Phones (under 1024px): the calculator comes first, so the break-even line isn't 1,100px down (design review D3). */}
+      <div className="order-2 lg:order-1 min-w-0"><PriceCard /></div>
+      <div className="order-1 lg:order-2 min-w-0"><RoiCalculator headingAs={SubHeading} /></div>
     </div>
   );
 }
 
 function PriceCard() {
+  const offer = foundingOffer(FOUNDING_SEATS_LEFT, FOUNDING_SEATS);
   return (
         <div className="bg-card border border-line rounded-card p-6 md:p-10">
-          <p className="text-sm font-semibold text-accent mb-3">
-            {FOUNDING_SEATS_LEFT < FOUNDING_SEATS
-              ? `Founding partner pricing, ${FOUNDING_SEATS_LEFT} of ${FOUNDING_SEATS} seats left`
-              : `Founding partner pricing for the first ${FOUNDING_SEATS} clinics`}
-          </p>
+          {offer && <p className="text-sm font-semibold text-accent mb-3">{offer}</p>}
           <div className="flex items-baseline gap-2 flex-wrap">
             <span className="font-mono text-[3rem] leading-none text-ink tabular-nums">{usd(MONTHLY_PRICE)}</span>
             <span className="text-mut">/mo after {TRIAL_DAYS} days free, starting the day you go live</span>
           </div>
+          {/* Once the founding seats are gone the fee is real, so it stops being struck through (D8). */}
           <p className="mt-2">
-            <s className="text-mut">$497 setup</s> <span className="text-accent font-semibold">waived for our first 3 clinics</span>
+            {offer
+              ? <><s className="text-mut">{usd(SETUP_FEE)} setup</s> <span className="text-accent font-semibold">waived for our first {FOUNDING_SEATS} clinics</span></>
+              : <span className="text-ink">{usd(SETUP_FEE)} one-time setup</span>}
           </p>
 
           <p className="mt-8 mb-3 font-semibold">Included</p>

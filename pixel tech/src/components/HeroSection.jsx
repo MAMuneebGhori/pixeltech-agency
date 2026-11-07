@@ -21,7 +21,7 @@ export default function HeroSection() {
           </h1>
 
           <p className="text-lead max-w-[36ch] mb-10 text-mut">
-            Every call, text and DM answered and booked into your calendar.
+            Booked Solid answers every call, text and DM, then books the patient.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3">
