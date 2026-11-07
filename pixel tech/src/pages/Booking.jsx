@@ -13,8 +13,9 @@ const CALENDLY_SCRIPT = 'https://assets.calendly.com/assets/external/widget.js';
 const CALENDLY_ORIGIN = /^https:\/\/([a-z0-9-]+\.)?calendly\.com$/;
 const CALENDLY_TIMEOUT_MS = 10000;
 
-const label = 'text-[0.7rem] font-semibold text-mut uppercase tracking-[0.08em]';
-const input = 'w-full bg-bg2 border border-line rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-accent transition-colors text-ink placeholder-mut';
+const label = 'text-sm font-semibold text-ink';
+// DESIGN.md inputs: constant 1px border, 48px, 16px text (no iOS zoom); focus is the global outline ring.
+const input = 'w-full min-h-12 bg-bg2 border border-field rounded-inner px-3 py-2.5 text-base text-ink placeholder-mut';
 const Req = () => <span className="text-bad" aria-hidden="true">*</span>;
 
 const EMPTY = { firstName: '', lastName: '', email: '', phone: '', company: '', website: '', callsPerWeek: '', bookingSoftware: '', goal: '', fax: '' };
@@ -67,17 +68,22 @@ function Scheduler({ name, email }) {
   return (
     <div>
       <h2 className="text-3xl mb-2 text-center">Pick a time for your audit</h2>
-      <p className="text-mut text-center mb-4">Your details are saved. Choose a slot and you're booked.</p>
+      <p className="text-mut text-center mb-4">Your details are saved. Choose a slot and you’re booked.</p>
       {state === 'failed' ? (
         <p className="text-center text-mut leading-relaxed py-6" role="status">
-          The scheduler didn't load.{' '}
+          The scheduler didn’t load.{' '}
           <a href={CALENDLY_URL} target="_blank" rel="noopener noreferrer" className="text-accent underline">Pick a time on Calendly</a>
-          , or we'll email you to set a time.
+          , or we’ll email you to set a time.
         </p>
       ) : (
         <>
-          {state === 'loading' && <p className="text-center text-mut py-6" role="status">Loading the scheduler…</p>}
-          <div ref={parentRef} className={state === 'ready' ? '-mx-5 md:mx-0 h-[680px]' : 'h-0 overflow-hidden'} />
+          {/* The scheduler's 680px is held from the start, so nothing jumps when Calendly arrives (D9). */}
+          <div className="relative -mx-5 md:mx-0 h-[680px]">
+            {state === 'loading' && (
+              <p className="absolute inset-0 grid place-items-center rounded-inner bg-bg2 text-mut" role="status">Loading the scheduler…</p>
+            )}
+            <div ref={parentRef} data-state={state} className={`h-full transition-opacity duration-[220ms] ease-out ${state === 'ready' ? 'opacity-100' : 'opacity-0'}`} />
+          </div>
         </>
       )}
     </div>
@@ -121,16 +127,13 @@ export default function Booking() {
 
   return (
     <main className="pt-[100px] lg:pt-[120px] pb-[80px] bg-bg">
-      <SEO title="Book a 15-min ROI audit" description="Book a free 15-minute call. We'll show you where your med spa is losing leads and what fixing it is worth." url="/booking" />
+      <SEO title="Book a 15-min ROI audit" description="Book a free 15-minute call. We’ll show you where your med spa is losing leads and what fixing it is worth." url="/booking" />
 
       <div className="max-w-[560px] w-full mx-auto px-5">
         <div className="text-center mb-8">
-          <p className="font-mono text-[0.72rem] uppercase tracking-wider text-mut mb-3">Free · 15 minutes</p>
-          <h1 className="text-4xl md:text-5xl leading-[1.08] mb-3">
-            Book your <em className="text-accent">ROI audit.</em>
-          </h1>
+          <h1 className="text-display-s mb-3">Book your free 15-minute ROI audit.</h1>
           <p className="text-mut max-w-[420px] mx-auto">
-            We'll look at where your calls and DMs go unanswered, and what fixing it is worth to your clinic. We'll also walk you through a real demo call.
+            We’ll look at where your calls and DMs go unanswered, and what fixing it is worth to your clinic. We’ll also walk you through a real demo call.
           </p>
         </div>
 
@@ -141,14 +144,15 @@ export default function Booking() {
             ) : (
               <div className="text-center py-10" role="status">
                 <h2 className="text-3xl mb-3">Request received</h2>
-                <p className="text-mut leading-relaxed">We'll email you to set a time for your audit.</p>
+                <p className="text-mut leading-relaxed">We’ll email you to set a time for your audit.</p>
               </div>
             )
           ) : (
             <form className="grid gap-4" onSubmit={handleSubmit}>
+              {CALENDLY_URL && <p className="text-sm text-mut">Step 1 of 2: your details. Step 2: pick a time.</p>}
               {roiInputs && (
                 <p className="rounded-lg border border-line bg-bg2 p-3 text-[0.85rem] text-mut">
-                  We'll bring your calculator numbers to the call: {formatRoiRange(roiInputs)} in missed revenue.
+                  We’ll bring your calculator numbers to the call: {formatRoiRange(roiInputs)} in missed revenue.
                 </p>
               )}
               {/* Honeypot: off-screen and skipped by keyboard and screen readers; the backend drops any lead that fills it. */}
@@ -194,14 +198,14 @@ export default function Booking() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                 <div className="grid gap-1.5">
                   <label htmlFor="callsPerWeek" className={label}>Calls per week</label>
-                  <select id="callsPerWeek" name="callsPerWeek" value={form.callsPerWeek} onChange={onInput} className={`${input} h-[42px]`}>
+                  <select id="callsPerWeek" name="callsPerWeek" value={form.callsPerWeek} onChange={onInput} className={input}>
                     <option value="">Choose…</option>
                     {CALL_VOLUMES.map((v) => <option key={v} value={v}>{v}</option>)}
                   </select>
                 </div>
                 <div className="grid gap-1.5">
                   <label htmlFor="bookingSoftware" className={label}>Booking software</label>
-                  <select id="bookingSoftware" name="bookingSoftware" value={form.bookingSoftware} onChange={onInput} className={`${input} h-[42px]`}>
+                  <select id="bookingSoftware" name="bookingSoftware" value={form.bookingSoftware} onChange={onInput} className={input}>
                     <option value="">Choose…</option>
                     {BOOKING_SOFTWARE.map((v) => <option key={v} value={v}>{v}</option>)}
                   </select>
@@ -215,13 +219,14 @@ export default function Booking() {
 
               {status === 'error' && (
                 <p role="alert" className="rounded-lg border border-bad/40 bg-bad/5 p-3 text-sm text-ink">
-                  We couldn't send your request. Please try again, or email us at{' '}
+                  We couldn’t send your request. Please try again, or email us at{' '}
                   <a href="mailto:info@pixeltech.agency" className="text-accent underline">info@pixeltech.agency</a>.
                 </p>
               )}
 
               <button type="submit" disabled={status === 'sending'} className="btn-primary w-full mt-1 text-base disabled:opacity-60">
-                {status === 'sending' ? 'Sending…' : 'Book a 15-min ROI audit'}
+                {/* Honest about what this button does: it saves details; the time is picked next (design review D7). */}
+                {status === 'sending' ? 'Sending…' : CALENDLY_URL ? 'Continue to pick a time' : 'Send my details'}
               </button>
             </form>
           )}

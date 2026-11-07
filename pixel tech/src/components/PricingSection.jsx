@@ -2,8 +2,18 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Check, X } from 'lucide-react';
 import { Section } from './HomeSections';
-import { MONTHLY_PRICE, DEFAULT_INPUTS, estimateLeak, bookingsToBreakEven, toRoiParams, usd } from '../lib/roi';
+import { MONTHLY_PRICE, DEFAULT_INPUTS, estimateLeak, bookingsToBreakEven, toRoiParams, usd, restoreRoiForm } from '../lib/roi';
+import { foundingOffer, SETUP_FEE } from '../lib/offer';
 import { track } from '../lib/track';
+
+// The owner's calculator numbers, kept for this visit only (design review D10); storage can be blocked, so every access is guarded.
+const ROI_STORAGE_KEY = 'pixeltech-roi-inputs';
+const loadRoiForm = (fallback) => {
+  try { return restoreRoiForm(sessionStorage.getItem(ROI_STORAGE_KEY)) || fallback; } catch { return fallback; }
+};
+const saveRoiForm = (form) => {
+  try { sessionStorage.setItem(ROI_STORAGE_KEY, JSON.stringify(form)); } catch { /* private mode or blocked storage: the numbers just aren't kept */ }
+};
 
 // roi_edit fires once per page load, not on every keystroke.
 let roiEdited = false;
@@ -36,7 +46,7 @@ const ROI_FIELDS = [
   { key: 'callsPerWeek', label: 'Inbound calls per week' },
   {
     key: 'missedPct', label: 'Calls that go unanswered (%)', max: 100,
-    hint: <>Default is the salon & spa average, <a href="https://www.zenoti.com/thecheckin/how-track-salon-call-conversion-rate" target="_blank" rel="noopener noreferrer" className="text-accent underline underline-offset-2">Zenoti, 2026</a>.</>,
+    hint: <>Default is the salon & spa average, <a href="https://www.zenoti.com/thecheckin/how-track-salon-call-conversion-rate" target="_blank" rel="noopener noreferrer" className="text-accent underline underline-offset-2 whitespace-nowrap">Zenoti, 2026</a>.</>,
   },
   { key: 'missedMessagesPerWeek', label: 'Texts & DMs answered over an hour late, per week' },
   { key: 'bookPct', label: 'Missed leads who would have booked (%)', max: 100, hint: 'Our conservative assumption. Use your own close rate if you know it.' },
@@ -47,57 +57,67 @@ const ROI_FIELDS = [
 const DEFAULT_FORM = Object.fromEntries(Object.entries(DEFAULT_INPUTS).map(([k, v]) => [k, String(v)]));
 
 function RoiCalculator({ headingAs: Heading }) {
-  const [form, setForm] = useState(DEFAULT_FORM);
+  const [form, setForm] = useState(() => loadRoiForm(DEFAULT_FORM));
   const { missedLeads, lostBookings, lostRevenue, lostRevenueLow } = estimateLeak(form);
   const breakEven = bookingsToBreakEven(form.treatmentValue);
 
-  const field = 'mt-1.5 w-full rounded-xl border border-line bg-card px-4 py-3 font-mono text-ink focus:outline-2 focus:outline-accent';
+  // DESIGN.md inputs: bg2 fill, a constant 1px line border, 48px, 16px text; focus comes from the global ring.
+  const field = 'mt-1.5 w-full min-h-12 rounded-inner border border-field bg-bg2 px-4 font-mono text-base text-ink tabular-nums';
 
   return (
-    <div className="bg-card border border-line rounded-[18px] p-6 md:p-8">
-      <Heading className="text-[1.8rem] mb-1">What missed leads cost you</Heading>
-      <p className="text-mut text-[0.9rem] mb-6">Put in your own numbers. The defaults are a starting point.</p>
+    <div className="bg-card border border-line rounded-card p-6 md:p-10">
+      {/* No heading prop: the surrounding Section already carries the head and intro (/pricing). */}
+      {Heading && (
+        <>
+          <Heading className="text-title mb-1">What missed leads cost you</Heading>
+          <p className="text-mut text-sm mb-6">Put in your own numbers. The defaults are a starting point.</p>
+        </>
+      )}
 
       <div className="grid gap-4 sm:grid-cols-2 mb-6">
         {ROI_FIELDS.map(({ key, label, max, hint }) => (
-          <label key={key} className="text-[0.9rem] font-medium text-ink">
+          <label key={key} className={`text-sm font-semibold text-ink ${key === 'treatmentValue' ? 'sm:col-span-2' : ''}`}>
             {label}
             <input
               type="number" inputMode="numeric" min="0" max={max}
               value={form[key]}
               onChange={(e) => {
                 if (!roiEdited) { roiEdited = true; track('roi_edit'); }
-                setForm((f) => ({ ...f, [key]: e.target.value }));
+                setForm((f) => { const next = { ...f, [key]: e.target.value }; saveRoiForm(next); return next; });
               }}
               className={field}
             />
-            {hint && <span className="block mt-1 text-[0.78rem] font-normal text-mut">{hint}</span>}
+            {hint && <span className="block mt-1 text-sm font-normal text-mut">{hint}</span>}
           </label>
         ))}
       </div>
 
-      {/* Break-even leads (plan 8.13 S2): it rests on one number the owner knows. The range is context underneath. */}
-      <div className="rounded-xl bg-bg2 border border-line p-5">
+      {/* Break-even leads (plan 8.13 S2): it rests on one number the owner knows. The range is context underneath.
+          DESIGN.md: only the numeral is mono; the words are sans, so the line never wraps mid-figure. */}
+      <div className="rounded-inner bg-bg2 p-5">
         {/* Only the two headline numbers are announced on each edit; the explanation below stays quiet. */}
         <div aria-live="polite" aria-atomic="true">
           {breakEven ? (
             <>
-              <p className="text-[0.85rem] text-mut">At {usd(MONTHLY_PRICE)}/mo, the plan pays for itself at</p>
-              <p className="font-mono text-[2.4rem] leading-tight text-ink">{breakEven} booking{breakEven > 1 ? 's' : ''} a month</p>
+              <p className="text-sm text-mut">At {usd(MONTHLY_PRICE)}/mo, the plan pays for itself at</p>
+              <p className="text-title text-ink">
+                <span className="font-mono text-[3.5rem] leading-none align-[-0.08em] tabular-nums">{breakEven}</span>{' '}
+                booking{breakEven > 1 ? 's' : ''} a month
+              </p>
             </>
           ) : (
-            <p className="text-[0.92rem] text-ink">Enter a treatment value to compare it with the {usd(MONTHLY_PRICE)}/mo plan.</p>
+            <p className="text-ink">Enter a treatment value to compare it with the {usd(MONTHLY_PRICE)}/mo plan.</p>
           )}
-          <p className="mt-4 text-[0.85rem] text-mut">Estimated revenue lost to missed leads now</p>
-          <p className="font-mono text-[1.4rem] text-ink">
-            <span className="whitespace-nowrap">{usd(lostRevenueLow)}</span> – <span className="whitespace-nowrap">{usd(lostRevenue)}</span> <span className="text-[0.9rem] text-mut">/ month</span>
+          <p className="mt-5 text-sm text-mut">Estimated revenue lost to missed leads, per month</p>
+          <p className="font-mono text-[1.4rem] text-ink tabular-nums">
+            <span className="whitespace-nowrap">{usd(lostRevenueLow)}</span> to <span className="whitespace-nowrap">{usd(lostRevenue)}</span>
           </p>
         </div>
-        <p className="mt-1 text-[0.85rem] text-mut">
+        <p className="mt-1 text-sm text-mut">
           About {missedLeads} missed leads a month, {lostBookings} of whom would have booked. The low end assumes half of missed leads are existing patients getting back in touch.
         </p>
-        <p className="mt-3 text-[0.75rem] text-mut">
-          How it's worked out: (calls × unanswered % + late texts & DMs) × 4.3 weeks × booking % × treatment value.
+        <p className="mt-3 text-sm text-mut">
+          How it’s worked out: (calls × unanswered % + late texts & DMs) × 4.3 weeks × booking % × treatment value.
         </p>
       </div>
       <Link
@@ -111,63 +131,95 @@ function RoiCalculator({ headingAs: Heading }) {
   );
 }
 
+const TITLE = 'One plan. No lock-in.';
+// The price sits in the intro so it is still read first when the calculator leads on phones (D3).
+const INTRO = `${usd(MONTHLY_PRICE)} a month for everything below, one flat price. Cancel any month.`;
+
 export default function PricingSection({ titleAs = 'h2' }) {
   // One level below the section title, so /pricing (h1) doesn't skip to h3.
-  const SubHeading = titleAs === 'h1' ? 'h2' : 'h3';
+  // On /pricing: a short page head with the action, the price card, then the calculator as its own
+  // section with a real section head (h2 at --text-section), so the heading ladder reads h1 > h2.
+  if (titleAs === 'h1') {
+    return (
+      <>
+        <section className="pt-12 md:pt-16 pb-14 md:pb-20">
+          <div className="container-page">
+            <h1 className="text-display-s max-w-[20ch] mb-5">{TITLE}</h1>
+            <p className="text-lead text-mut max-w-[60ch] mb-8">{INTRO}</p>
+            <Link to="/booking" data-cta="pricing" className="btn-primary">Book a 15-min ROI audit</Link>
+          </div>
+        </section>
+        <section id="pricing" className="pb-12 md:pb-[72px] scroll-mt-20">
+          <div className="container-page"><div className="max-w-[720px]"><PriceCard /></div></div>
+        </section>
+        <Section id="calculator" alt title="What missed leads cost you" intro="Put in your own numbers. The defaults are a starting point.">
+          <div className="max-w-[720px]"><RoiCalculator /></div>
+        </Section>
+      </>
+    );
+  }
   return (
-    <Section
-      id="pricing"
-      eyebrow="Pricing"
-      titleAs={titleAs}
-      title="One plan. No lock-in."
-      intro="Everything below, for one flat monthly price. Cancel any month."
-    >
-      <div className="grid gap-5 lg:grid-cols-2 items-start">
-        <div className="bg-card border border-line rounded-[18px] p-6 md:p-8">
-          <p className="font-mono text-[0.72rem] uppercase tracking-wide text-accent mb-3">
-            {FOUNDING_SEATS_LEFT < FOUNDING_SEATS
-              ? `Founding Partner pricing · ${FOUNDING_SEATS_LEFT} of ${FOUNDING_SEATS} left`
-              : `Founding Partner pricing · first ${FOUNDING_SEATS} clinics`}
-          </p>
+    <Section id="pricing" titleAs={titleAs} title={TITLE} intro={INTRO}>
+      <PricingGrid SubHeading="h3" />
+    </Section>
+  );
+}
+
+// Home: the price card and the calculator side by side under one section head.
+function PricingGrid({ SubHeading }) {
+  return (
+    <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 items-start">
+      {/* Phones (under 1024px): the calculator comes first, so the break-even line isn't 1,100px down (design review D3). */}
+      <div className="order-2 lg:order-1 min-w-0"><PriceCard /></div>
+      <div className="order-1 lg:order-2 min-w-0"><RoiCalculator headingAs={SubHeading} /></div>
+    </div>
+  );
+}
+
+function PriceCard() {
+  const offer = foundingOffer(FOUNDING_SEATS_LEFT, FOUNDING_SEATS);
+  return (
+        <div className="bg-card border border-line rounded-card p-6 md:p-10">
+          {offer && <p className="text-sm font-semibold text-accent mb-3">{offer}</p>}
           <div className="flex items-baseline gap-2 flex-wrap">
-            <span className="font-mono text-[3rem] leading-none text-ink">{usd(MONTHLY_PRICE)}</span>
+            <span className="font-mono text-[3rem] leading-none text-ink tabular-nums">{usd(MONTHLY_PRICE)}</span>
             <span className="text-mut">/mo after {TRIAL_DAYS} days free, starting the day you go live</span>
           </div>
-          <p className="mt-2 text-[0.95rem]">
-            <s className="text-mut">$497 setup</s> <span className="text-accent font-semibold">waived for our first 3 clinics</span>
+          {/* Once the founding seats are gone the fee is real, so it stops being struck through (D8). */}
+          <p className="mt-2">
+            {offer
+              ? <><s className="text-mut">{usd(SETUP_FEE)} setup</s> <span className="text-accent font-semibold">waived for our first {FOUNDING_SEATS} clinics</span></>
+              : <span className="text-ink">{usd(SETUP_FEE)} one-time setup</span>}
           </p>
 
-          <SubHeading className="mt-6 mb-3 font-body font-semibold text-[1rem]">Included</SubHeading>
+          <p className="mt-8 mb-3 font-semibold">Included</p>
           <ul className="space-y-3">
             {FEATURES.map((f) => (
-              <li key={f} className="flex gap-3 text-ink text-[0.95rem]">
+              <li key={f} className="flex gap-3 text-ink">
                 <Check className="h-5 w-5 text-good shrink-0" aria-hidden="true" />
                 {f}
               </li>
             ))}
           </ul>
 
-          <SubHeading className="mt-6 mb-3 font-body font-semibold text-[1rem]">Not included</SubHeading>
+          <p className="mt-8 mb-3 font-semibold">Not included</p>
           <ul className="space-y-3">
             {NOT_INCLUDED.map((f) => (
-              <li key={f} className="flex gap-3 text-mut text-[0.95rem]">
+              <li key={f} className="flex gap-3 text-mut">
                 <X className="h-5 w-5 text-mut shrink-0" aria-hidden="true" />
                 {f}
               </li>
             ))}
           </ul>
 
-          {/* D7: soft fair-use line; no minutes cap published. */}
-          <p className="mt-6 mb-8 rounded-xl bg-bg2 border border-line p-3.5 text-[0.88rem] text-ink">
-            Covers a typical single-location spa. If your volume ever goes over, we'll tell you first. We never surprise-bill.
+          {/* D7: soft fair-use line; no minutes cap published. A well, not a bordered box inside the card. */}
+          <p className="mt-8 mb-8 rounded-inner bg-bg2 p-4 text-sm text-ink">
+            Covers a typical single-location spa. If your volume ever goes over, we’ll tell you first. We never surprise-bill.
           </p>
 
-          <Link to="/booking" data-cta="pricing" className="btn-primary w-full text-base">Book a 15-min ROI audit</Link>
-          <p className="text-center text-[0.8rem] text-mut mt-3">No lock-in. Cancel any month.</p>
+          {/* Secondary: the calculator’s button (which carries the owner’s numbers) is the one filled primary here. */}
+          <Link to="/booking" data-cta="pricing" className="btn-secondary w-full">Book a 15-min ROI audit</Link>
+          <p className="text-center text-sm text-mut mt-3">No lock-in. Cancel any month.</p>
         </div>
-
-        <RoiCalculator headingAs={SubHeading} />
-      </div>
-    </Section>
   );
 }

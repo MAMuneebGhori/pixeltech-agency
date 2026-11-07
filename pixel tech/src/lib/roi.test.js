@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   estimateLeak, bookingsToBreakEven, DEFAULT_INPUTS,
-  callsBucket, CALL_VOLUMES, toRoiParams, fromRoiParams, formatRoiEstimate,
+  callsBucket, CALL_VOLUMES, toRoiParams, fromRoiParams, formatRoiEstimate, restoreRoiForm,
 } from './roi.js';
 
 test('estimateLeak with the default inputs', () => {
@@ -85,4 +85,13 @@ test('formatRoiEstimate states the range and the inputs behind it', () => {
   );
   // A typed 150% is computed at 100%; the lead must say what the math used.
   assert.match(formatRoiEstimate({ ...DEFAULT_INPUTS, missedPct: 150, bookPct: 120 }), /missed 100%.*booking 100%/);
+});
+
+test('restoreRoiForm keeps saved numbers and rejects anything else', () => {
+  const saved = JSON.stringify({ callsPerWeek: '120', missedPct: '40', missedMessagesPerWeek: '', bookPct: '30', treatmentValue: '650' });
+  assert.deepEqual(restoreRoiForm(saved), { callsPerWeek: '120', missedPct: '40', missedMessagesPerWeek: '', bookPct: '30', treatmentValue: '650' });
+  // A blank field the owner cleared stays blank; a hostile or missing value falls back to its default.
+  const mixed = restoreRoiForm(JSON.stringify({ callsPerWeek: '<img>', missedPct: 37, treatmentValue: '9'.repeat(20) }));
+  assert.deepEqual(mixed, { callsPerWeek: '80', missedPct: '37', missedMessagesPerWeek: '10', bookPct: '25', treatmentValue: '500' });
+  for (const bad of [null, '', 'not json', '[]', '"x"', '42']) assert.equal(restoreRoiForm(bad), null, String(bad));
 });
