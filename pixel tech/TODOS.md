@@ -16,20 +16,6 @@
 - **Priority:** P2
 - **Depends on:** Phase 0 demo passing, and client #1 live for 30 days.
 
-## Rate-limit the public lead endpoint
-- **What:** a per-IP rate limit on `POST /api/leads` (e.g. 5 per 10 minutes), plus a hidden honeypot field on the booking form.
-- **Why:** the endpoint is public with open `cors()` (`backend/server.js:16`) and no limit, so a bot can flood the lead inbox and fire hundreds of email and WhatsApp alerts.
-- **Pros:**
-  - Protects the alert channels the business relies on, including E4's demo-line alerts.
-  - Cheap to add.
-- **Cons:**
-  - A shared office IP could hit the limit. Keep it generous.
-  - Needs a small dependency (e.g. `express-rate-limit`) or about 20 lines of in-memory code.
-- **Context:** found in the CEO review security section (§8.5 item 3, decision Q8). Task 1 of that review adds a field whitelist, which limits what spam can set but not how much arrives. Start in `backend/server.js` at the `app.post('/api/leads', ...)` route.
-- **Effort:** human S, CC S
-- **Priority:** P2
-- **Depends on:** nothing. It can ship with task 1 or on its own.
-
 ## Decide the deposit and state it on the pricing card
 - **What:** decide whether founding clinics pay a deposit (SRD §6 day 1: "Contract + deposit cleared") and, if so, show it next to the price.
 - **Why:** the site says "7 days free, starting the day you go live" and never mentions a deposit, so a required deposit would surprise the clinic at contract time.
