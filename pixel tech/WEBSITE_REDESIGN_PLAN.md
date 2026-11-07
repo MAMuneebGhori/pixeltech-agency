@@ -1,6 +1,6 @@
 # Website Redesign Plan v2 — Booked Solid System
 
-**Status (2026-11-07):** Approved. Slices 1–5 and T1–T8, T10–T17 are merged to main (PRs #9–#18). Slice 6: Google Fonts made non-blocking; Lighthouse re-run still owed (needs a machine with free RAM). Open: T0 key rotation, T9 demo recording, then the Retell demo line (`VITE_DEMO_PHONE`) last.
+**Status (2026-11-07, end of day):** Approved and built. Merged to main: slices 1–5, T1–T8, T10–T17 (PRs #9–#18), non-blocking fonts (#19), design upgrade v3 (#20: tabbed clinic inbox hero, bento, flow diagram, spec-sheet table, ledger ROI) and security hardening (#21: CSP and headers, CORS allowlist, admin login rate limit, npm audit 0 on the backend). The Retell demo line is live (`VITE_DEMO_PHONE`, D1) ahead of the Phase 0 battery, by owner decision. T0: owner reported the leaked keys rotated (not independently verified). Open: the Phase 0 20-call battery, T9 demo recording, `VITE_CALENDLY_URL` (free Calendly plan chosen) and a Calendly check under the CSP, a mobile Lighthouse run from pagespeed.web.dev (local runs are unreliable; desktop home was 87).
 
 ## 0. Implementation status (checked 2026-11-06)
 
