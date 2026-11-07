@@ -160,6 +160,8 @@ Done:
 
 Still open:
 - **44c (Reflex) on `/pricing`, `/booking` and `/about`:** the head does not fill the first screen. This is deliberate, so the price card and the form show without scrolling. It cannot be waived, because its guard needs a Banner hero posture and the stamp's one posture is the home page's.
-- **A real iPhone pass:** not run. The demo player only matters once the S3 recording ships.
+- **A real iPhone pass:** not run. It is the owner’s step, in the S3 commit that sets `HAS_RECORDING = true`, checking that the player shows and the transcript highlight resets. Closest proxy, run 2026-11-07: WebKit 18 (Playwright) at the iPhone 13 profile, 20/20. Five routes render with no overflow past 390px and no JS errors; the menu opens on tap; the calculator updates; inputs are 16px. This does not reproduce iOS media or autoplay policy.
 
-Also done since the first pass: `Admin.jsx` migrated (0 FAIL), and `framer-motion` removed from the project.
+Also done since the first pass:
+- `Admin.jsx` migrated (0 FAIL), and `framer-motion` removed from the project.
+- `/booking` tested end to end with the network mocked, 22/22 at 320, 375 and 1280px: the lead with its ROI estimate and empty honeypot, the calls/week prefill, Calendly reaching ready from its own message, `calendly_booked`, the blocked-script and 10-second fallbacks, and the API-error state. Calendly’s real service is not covered; it needs `VITE_CALENDLY_URL`.
