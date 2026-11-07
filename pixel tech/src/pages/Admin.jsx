@@ -250,11 +250,17 @@ export default function Admin() {
                               <MessageSquare className="w-3.5 h-3.5" /> {lead.phone}
                             </a>
                           )}
-                          {lead.website && (
-                            <a href={lead.website} target="_blank" rel="noreferrer" className="text-mut hover:text-accent transition-colors flex items-center gap-xs text-[0.8rem]">
+                          {/* The website field is free text from the public form: only an http(s) URL becomes a link
+                              (no javascript:, data: or other schemes); anything else, like "@yourclinic", stays plain text. */}
+                          {lead.website && (/^https?:\/\//i.test(lead.website) ? (
+                            <a href={lead.website} target="_blank" rel="noopener noreferrer" className="text-mut hover:text-accent transition-colors flex items-center gap-xs text-[0.8rem]">
                               <LinkIcon className="w-3.5 h-3.5" /> {lead.website}
                             </a>
-                          )}
+                          ) : (
+                            <span className="text-mut flex items-center gap-xs text-[0.8rem]">
+                              <LinkIcon className="w-3.5 h-3.5" /> {lead.website}
+                            </span>
+                          ))}
                         </div>
                       </td>
                       <td className="px-lg py-lg max-w-[300px]">

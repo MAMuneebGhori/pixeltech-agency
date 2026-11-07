@@ -64,7 +64,7 @@ const sendLeadNotifications = async (leadData) => {
               <tr><td style="padding:10px 12px; font-weight:bold;">Source</td><td style="padding:10px 12px;">${esc(leadData.source)}</td></tr>
             </table>
             <p style="margin-top: 24px; color: #888; font-size: 13px;">
-              Log in to your <a href="https://pixeltech-agency.onrender.com" style="color:#6c63ff;">Admin Portal</a> to manage this lead.
+              Log in to your <a href="https://pixeltech-agency.vercel.app/admin" style="color:#6c63ff;">Admin Portal</a> to manage this lead.
             </p>
           </div>
         `
