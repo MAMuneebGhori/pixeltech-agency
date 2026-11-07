@@ -122,18 +122,20 @@ const COMPARE_ROWS = [
 export function ComparisonSection() {
   return (
     <Section id="compare" alt title="Why practices switch to us.">
-      {/* A spec sheet. Desktop: the head row sticks under the nav (77px: 44px nav button + 2 x 16px padding + 1px rule) while the rows scroll past. Phones: the
-          table scrolls sideways inside its own box with the first column pinned. Our column is the deeper well
+      {/* A spec sheet. From 1024px: the head row sticks under the nav (77px: 44px nav button + 2 x 16px padding + 1px rule) while the rows scroll past. Below 1024px
+          the table scrolls sideways inside its own box, the first column pinned, and fixed widths (8rem + 3 x 10rem)
+          keep one whole column in view beside it even at 320px. The box has no left padding: the pinned cells carry the
+          gutter, so scrolled text can't show in a strip to their left; the need column may break after a slash. Our column is the deeper well
           with a bronze rule on top. */}
-      <p className="mb-md text-sm text-mut md:hidden">Swipe the table sideways to compare.</p>
-      <div className="-mx-(--gutter) overflow-x-auto px-(--gutter) md:mx-0 md:overflow-visible md:px-0">
-        <table className="w-full min-w-[46rem] border-collapse text-left">
+      <p className="mb-md text-sm text-mut lg:hidden">Swipe the table sideways to compare.</p>
+      <div className="-mx-(--gutter) overflow-x-auto pr-(--gutter) lg:mx-0 lg:overflow-visible lg:pr-0">
+        <table className="table-fixed w-[calc(38rem+var(--gutter))] lg:table-auto lg:w-full border-collapse text-left">
           <caption className="sr-only">Booked Solid compared with a traditional answering service and an in-house front desk alone</caption>
           <thead>
             <tr>
-              <th scope="col" className="sticky left-0 z-20 md:top-[77px] bg-bg2 border-b border-ink/20 py-md pr-md text-sm font-semibold text-mut w-[9rem] md:w-[22%]">Front-desk need</th>
+              <th scope="col" className="sticky left-0 z-20 lg:top-[77px] bg-bg2 border-b border-ink/20 py-md pr-md pl-(--gutter) lg:pl-0 text-sm font-semibold text-mut w-[calc(8rem+var(--gutter))] lg:w-[22%]">Front-desk need</th>
               {COMPARE_COLS.map((c, i) => (
-                <th key={c} scope="col" className={`md:sticky md:top-[77px] z-10 border-b border-ink/20 py-md px-md text-sm font-semibold ${
+                <th key={c} scope="col" className={`lg:sticky lg:top-[77px] z-10 w-[10rem] lg:w-auto border-b border-ink/20 py-md px-md text-sm font-semibold ${
                   i === 0 ? 'bg-bg3 text-ink border-t-2 border-t-gold' : 'bg-bg2 text-mut'
                 }`}>{c}</th>
               ))}
@@ -142,7 +144,7 @@ export function ComparisonSection() {
           <tbody>
             {COMPARE_ROWS.map(([need, answering, inHouse, ours]) => (
               <tr key={need} className="border-b border-line last:border-0 align-top">
-                <th scope="row" className="sticky left-0 z-10 bg-bg2 py-md pr-md font-semibold text-ink">{need}</th>
+                <th scope="row" className="sticky left-0 z-10 bg-bg2 py-md pr-md pl-(--gutter) lg:pl-0 font-semibold text-ink">{need.replaceAll('/', '/\u200b')}</th>
                 {[ours, answering, inHouse].map((c, i) => (
                   <td key={i} className={`py-md px-md leading-relaxed ${i === 0 ? 'text-ink bg-bg3' : 'text-mut'}`}>{c}</td>
                 ))}
