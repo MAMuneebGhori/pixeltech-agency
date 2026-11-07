@@ -9,7 +9,8 @@
     "build": "vite build",
     "lint": "eslint .",
     "test": "node --test \"src/lib/*.test.js\"",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "check:mobile": "vite build && node scripts/mobile-check.mjs"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.0",
