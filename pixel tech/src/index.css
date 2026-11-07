@@ -4,6 +4,9 @@
 /* Hallmark · waive 77 · the runbook, the digest email and the FAQ hold a 65ch to 820px measure · these read as lists, so the narrow measure is the point, not a thin section */
 /* Hallmark · waive 59 · pricing page: 80px between the page head and the price card that it names · the head and the price card are one reading unit on the pricing page */
 /* Hallmark · dismissed 59 · the home page keeps the eleven sections approved in WEBSITE_REDESIGN_PLAN.md section 4; merging them is a content decision for the design review */
+/* Hallmark · waive 24b · margin-top: -10px on the WebKit ledger slider thumb · (22px thumb minus 2px track) / 2 centres the thumb on its track, which is geometry, not a spacing step */
+/* Hallmark · dismissed F25 · at 375 the comparison pins its first column (sticky left) and puts our column straight after it, so the need and our answer are both in view; a swipe hint sits above the table */
+/* Hallmark · waive 72 · ul.rounded-inner in the call and thread logs, text 22px and 73px past the bottom · every measured line sits in a closed <details> row, laid out but never painted; an open row keeps 12px padding */
 @import "tailwindcss";
 
 /* Size-matched fallbacks so text keeps its footprint when Google Fonts swaps in (home CLS fix).
@@ -47,22 +50,22 @@
 }
 
 @theme {
-  /* DESIGN.md v2 is the rule; values and contrast ratios are listed there. gold is decorative only (2.2:1 on bg). */
-  --color-bg: oklch(97.8% 0.006 75);
-  --color-bg2: oklch(95.2% 0.010 75);
+  /* DESIGN.md v2 is the rule; values and contrast ratios are listed there. gold is decorative only (3.0:1 on bg). */
+  --color-bg: oklch(98.0% 0.005 78); /* #FAF8F5 warm alabaster */
+  --color-bg2: oklch(95.4% 0.008 74); /* #F3EFEA soft cashmere */
   --color-bg3: oklch(92.4% 0.014 72);
   --color-card: oklch(99.3% 0.003 80);
-  --color-line: oklch(90.5% 0.012 76);
+  --color-line: oklch(90.8% 0.012 80); /* #E5E0D8 architectural hairline */
   --color-field: oklch(62% 0.016 70); /* input edges: 3:1 or better on card, bg and bg2 (WCAG 1.4.11) */
-  --color-ink: oklch(19.5% 0.006 70);
+  --color-ink: oklch(18.7% 0.003 68); /* #141312 deep espresso */
   --color-ink2: oklch(33% 0.010 70);
-  --color-mut: oklch(50% 0.018 70);
+  --color-mut: oklch(46.2% 0.011 78); /* #5C5852 muted slate */
   --color-accent: oklch(48.5% 0.080 62);
-  --color-accent2: oklch(74% 0.085 75);
-  --color-gold: oklch(74% 0.085 75);
+  --color-accent2: oklch(65.9% 0.085 61);
+  --color-gold: oklch(65.9% 0.085 61); /* #B8865B champagne bronze: rules and marks, or text on ink (3.0:1 on bg fails as text) */
   --color-focus: oklch(52% 0.150 60);
-  --color-accent-ink: oklch(97.8% 0.006 75);
-  --color-good: oklch(48.7% 0.100 150);
+  --color-accent-ink: oklch(98.0% 0.005 78);
+  --color-good: oklch(47.1% 0.097 157); /* #1E6B45 clinical emerald: status text */
   --color-bad: oklch(50.1% 0.178 29);
 
   --font-display: "Instrument Serif", "Instrument Serif Fallback", Georgia, serif;
@@ -288,6 +291,87 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+
+  /* Architectural seam: a hairline with a + mark at each end (DESIGN.md "Grid seams"). Marks are 11px, drawn
+     with two 1px bars, so no gradient and no glyph. The parent carries position: relative. */
+  .cross {
+    position: absolute;
+    width: 11px;
+    height: 11px;
+    pointer-events: none;
+  }
+  .cross::before, .cross::after {
+    content: "";
+    position: absolute;
+    background-color: var(--color-gold);
+  }
+  .cross::before { left: 0; right: 0; top: 5px; height: 1px; }
+  .cross::after { top: 0; bottom: 0; left: 5px; width: 1px; }
+
+  /* Section reveal: the section gets data-shown on entering view (useReveal); its [data-reveal] parts settle in
+     order of --reveal-i. Hidden only once the inline script has set html.js, so content shows with scripting off,
+     and never under reduced motion. Transform and opacity only. */
+  @media (prefers-reduced-motion: no-preference) {
+    .js [data-reveal] {
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity var(--dur-long) var(--ease-out), transform var(--dur-long) var(--ease-out);
+      transition-delay: calc(var(--reveal-i, 0) * 90ms);
+    }
+    .js [data-shown] [data-reveal] {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* Hover lift for interactive simulation wells (transform only). */
+  .lift {
+    transition: transform var(--dur-short) var(--ease-out);
+  }
+  @media (hover: hover) {
+    .lift:hover { transform: translateY(-2px); }
+  }
+
+  /* Ledger slider: a 44px hit area, a 2px ink track, a 22px card thumb with an ink ring. */
+  .ledger-range {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 44px;
+    background: transparent;
+    cursor: pointer;
+  }
+  .ledger-range::-webkit-slider-runnable-track {
+    height: 2px;
+    background-color: var(--color-field);
+  }
+  .ledger-range::-moz-range-track {
+    height: 2px;
+    background-color: var(--color-field);
+  }
+  .ledger-range::-moz-range-progress {
+    height: 2px;
+    background-color: var(--color-ink);
+  }
+  .ledger-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 22px;
+    height: 22px;
+    margin-top: -10px;
+    border-radius: var(--radius-pill);
+    background-color: var(--color-card);
+    border: 2px solid var(--color-ink);
+    transition: transform var(--dur-micro) var(--ease-out);
+  }
+  .ledger-range::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: var(--radius-pill);
+    background-color: var(--color-card);
+    border: 2px solid var(--color-ink);
+  }
+  .ledger-range:active::-webkit-slider-thumb { transform: scale(1.12); }
+  .ledger-range:focus-visible { outline-offset: 0; }
 
   /* Custom Scrollbar */
   .custom-scrollbar::-webkit-scrollbar {

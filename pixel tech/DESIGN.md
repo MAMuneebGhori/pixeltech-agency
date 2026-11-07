@@ -27,20 +27,20 @@ OKLCH is canonical; hex is the sRGB conversion for tools that need it. Token nam
 
 | Token (`--color-*`) | OKLCH | Hex | Role | Contrast |
 |---|---|---|---|---|
-| `bg` | `oklch(97.8% 0.006 75)` | `#FAF7F3` | Page paper (alabaster) | n/a |
-| `bg2` | `oklch(95.2% 0.010 75)` | `#F3EEE8` | Wells, inputs, alternate bands, footer | n/a |
+| `bg` | `oklch(98.0% 0.005 78)` | `#FAF8F5` | Page paper (warm alabaster) | n/a |
+| `bg2` | `oklch(95.4% 0.008 74)` | `#F3EFEA` | Wells, inputs, alternate bands, footer (soft cashmere) | n/a |
 | `bg3` *(new)* | `oklch(92.4% 0.014 72)` | `#ECE5DC` | Deep well: the caller's bubble, chips | n/a |
 | `card` | `oklch(99.3% 0.003 80)` | `#FEFDFA` | Raised surfaces: dialogs, the clinic's bubble | n/a |
-| `line` | `oklch(90.5% 0.012 76)` | `#E4DFD7` | Hairlines and the one card border | 1.24:1 (decorative) |
+| `line` | `oklch(90.8% 0.012 80)` | `#E5E0D8` | Hairlines, grid seams and the one card border | 1.24:1 (decorative) |
 | `field` *(new)* | `oklch(62% 0.016 70)` | `#8D857C` | Input, select and textarea edges | 3.6 on `card`, 3.4 on `bg`, 3.2 on `bg2` (WCAG 1.4.11 needs 3:1) |
-| `ink` | `oklch(19.5% 0.006 70)` | `#171412` | Body text, headings, primary fill | 17.2:1 on `bg` |
+| `ink` | `oklch(18.7% 0.003 68)` | `#141312` | Body text, headings, primary fill (deep espresso) | 17.5:1 on `bg` |
 | `ink2` *(new)* | `oklch(33% 0.010 70)` | `#393530` | Secondary heads, strong captions | 10.6:1 on `bg2` |
-| `mut` | `oklch(50% 0.018 70)` | `#6A6258` | Captions, helper text, placeholders | 5.6 on `bg`, 4.8 on `bg3` |
+| `mut` | `oklch(46.2% 0.011 78)` | `#5C5852` | Captions, helper text, placeholders (muted slate) | 6.7 on `bg`, 6.2 on `bg2`, 5.7 on `bg3` |
 | `accent` | `oklch(48.5% 0.080 62)` | `#7F542C` | Bronze signal: links, primary hover | 6.1:1 on `bg`; `bg` on it 6.1:1 |
-| `accent-ink` *(new)* | `oklch(97.8% 0.006 75)` | `#FAF7F3` | Text on an `accent` fill (the primary on hover) | 6.1:1 on `accent` |
-| `gold` (`accent2`) | `oklch(74% 0.085 75)` | `#CBA36D` | Champagne. Decorative only, or text on `ink` | 2.2 on `bg` (fails), 7.9 on `ink` |
+| `accent-ink` *(new)* | `oklch(98.0% 0.005 78)` | `#FAF8F5` | Text on an `accent` fill (the primary on hover) | 6.2:1 on `accent` |
+| `gold` (`accent2`) | `oklch(65.9% 0.085 61)` | `#B8865B` | Champagne bronze: seam crosses, the comparison column rule, diagram arrows. Decorative only, or text on `ink` | 3.0 on `bg` (fails as text), 5.8 on `ink` |
 | `focus` *(new)* | `oklch(52% 0.150 60)` | `#A44D00` | Focus ring only | 5.4:1 on `bg` |
-| `good` | `oklch(48.7% 0.100 150)` | `#2F6F40` | Success text | 5.7:1 on `bg` |
+| `good` | `oklch(47.1% 0.097 157)` | `#1E6B45` | Clinical emerald: outcome chips ("Booked", "Replied in 0:38"), the guardrail label | 6.1:1 on `bg`, 5.2 on `bg3` |
 | `bad` | `oklch(50.1% 0.178 29)` | `#B3261D` | Errors | 6.1:1 on `bg` |
 
 - Contrast computed with WCAG 2.x from the hex values above. Body text needs 4.5:1; every text pairing listed passes.
@@ -78,6 +78,14 @@ Three weights in total: serif 400, sans 400 and 600. Mono is one outlier role, f
 - **Overflow:** `overflow-x: clip` on `html` and `body`, never `hidden` or `100vw`. `npm run check:mobile` (320 and 375px) must pass on every change.
 - **Surface ladder:** whitespace, then a hairline, then a tinted well (`bg2`, no border), then a card (`card` fill plus a `line` border, no shadow) for content that is independently interactive. Climb one rung per seam.
 
+## Grid seams and the bento
+
+- **Seams:** every home section opens on a 1px `line` hairline across the content width, with an 11px `gold` cross (`.cross`, two 1px bars, no glyph, no gradient) at each end. The bento grid carries a cross on each outer corner.
+- **Bento:** an asymmetric 12-column grid, 7/5 over 5/7 from 1024px, one column below. Cells are ruled by 1px hairlines (a `gap-px` over a `line` fill) on page paper; they are not cards, so each simulation well inside stays the only surface. Wells sit straight under their copy, never pushed to the bottom of the cell.
+- **Spec-sheet table:** our column comes first after the need column, on the `bg3` well with a 2px `gold` rule on its head. From 768px the head row sticks under the 77px nav; below that the table scrolls sideways in its own box with the need column pinned and a swipe hint above.
+- **Ledger:** the ROI calculator pairs each slider (44px hit area, 2px `field` track, 22px `card` thumb with a 2px `ink` ring) with a number box for the exact figure. The result is a receipt: sans words left, mono figures right, totals under a 3px double rule. Only the range and the break-even line are announced (`aria-live`).
+- **Tabs and toggles:** real controls on a `bg3` chip group (`--radius-inner`, 4px padding, 8px inner radius), the selected one on `card`. Tabs follow the WAI-ARIA pattern (`lib/tabKeys.js`: arrows wrap, Home and End jump, roving tabindex); two-option toggles use `aria-pressed`. Labels stay on one line at 320px.
+
 ## Controls
 
 - **Primary:** `ink` fill, `bg` text, `--radius-pill`, 52px tall (48px on phones, full width under 640px), sans 600 16px. Hover: fill steps to `accent` (colour only, no lift). One filled primary per viewport; a second action on the same screen is secondary.
@@ -114,7 +122,8 @@ The cards that show the product working: call transcripts, the unified inbox, re
 
 ## Motion
 
-- **Character:** calm. One reveal per page at most (the hero simulation settling 8px up with opacity over 0.6s), visible by default without scripting.
+- **Character:** calm and choreographed. The hero simulation settles 8px up over 0.6s. Each section below the hero settles once as it enters view: its head first, then its content 90ms later (12px, opacity, 420ms, `useReveal` + `[data-reveal]`). Content is hidden only after an inline script sets `html.js`, so it shows with scripting off, and never under reduced motion. The hero headline never animates (it is the LCP element).
+- **Micro-interactions:** tab and toggle fills change colour in 120ms; a switched panel fades in (`animate-fade-in`); bento simulations lift 2px on hover (`.lift`, hover devices only); a call-log row's chevron turns 180° when it opens.
 - **Easing and duration:** `--ease-out cubic-bezier(0.22, 1, 0.36, 1)` for arrivals, `--ease-in cubic-bezier(0.55, 0, 1, 0.45)` for exits. Durations: micro 120ms (press, colour), short 220ms (hover, chips, the transcript highlight), long 420ms (dialog, accordion). Only `transform` and `opacity`.
 - **Reduced motion:** under `prefers-reduced-motion: reduce` every reveal shows its end state at once; nothing loops.
 
@@ -123,6 +132,15 @@ The cards that show the product working: call transcripts, the unified inbox, re
 - **Code:** `src/index.css` `@theme` (Tailwind v4). Names above map one to one: `--color-bg3`, `--color-ink2`, `--color-focus`, `--font-body: "Instrument Sans", "Instrument Sans Fallback", sans-serif`, plus the `--space-*`, `--text-*`, `--radius-*`, `--shadow-*` and easing tokens.
 - **Spacing classes:** components write the named steps (`p-lg`, `gap-xl`, `mt-2xl`, `-mx-lg`), from `--spacing-*` in `@theme` over the `:root` `--space-*` scale; 32px column gaps are `gap-(--gap-columns)`. Numeric classes remain only for values this file names off the scale: bubble `px-3.5`, chip `px-2.5`, the hero's 48px `gap-12`, the 44px menu button `p-2.5 -m-2.5` and the hamburger's drawn bars. Never write `max-w-sm/md/lg/xl` (or `w-`/`min-w-` with those names): Tailwind reads `--spacing-*` before `--container-*`, so `max-w-md` would be 16px. Use `max-w-96`, `max-w-112` or a `--container-*` var.
 - **Check:** `npm run check:mobile` for layout; Hallmark's `sloplint.mjs src index.html --genre editorial` for the bans above.
+
+## Design upgrade (2026-11-07, branch `design-upgrade-v3`)
+
+- Palette nudged to the "luxury clinical editorial" values above; bronze `#B8865B` is decorative only, links keep `accent`.
+- Hero: a tabbed clinic inbox (call, 60-second text-back, Instagram DM with the F-10 line) and one guardrail line; the audio player and waveform stay behind `HAS_RECORDING` with `preload="none"`.
+- How It Works: the four-cell bento (after-hours call log, one inbox, recall and CSV reactivation, reschedule-first no-show shield).
+- Integrations: a four-step tabbed flow diagram (SRD §1); only Calendly and Google Calendar are named as working.
+- Comparison: the spec-sheet table above. Pricing: the ledger calculator.
+- Sloplint, rendered tier on `/`: 0 FAIL, 0 REFLEX, 0 WARN (waivers 24b and 72, dismissal F25, stamped in `src/index.css`).
 
 ## Migration status (2026-11-06)
 

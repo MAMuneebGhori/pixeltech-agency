@@ -17,6 +17,7 @@ const saveRoiForm = (form) => {
 
 // roi_edit fires once per page load, not on every keystroke.
 let roiEdited = false;
+const markRoiEdited = () => { if (!roiEdited) { roiEdited = true; track('roi_edit'); } };
 
 // Set by hand as seats fill; never a fake countdown (plan D2). At 3 the label shows no count (plan 8.3 R4).
 const FOUNDING_SEATS = 3;
@@ -43,26 +44,42 @@ const NOT_INCLUDED = [
 ];
 
 const ROI_FIELDS = [
-  { key: 'callsPerWeek', label: 'Inbound calls per week' },
+  { key: 'callsPerWeek', label: 'Inbound calls per week', max: 300, step: 5 },
   {
-    key: 'missedPct', label: 'Calls that go unanswered (%)', max: 100,
+    key: 'missedPct', label: 'Calls that go unanswered (%)', max: 100, step: 1,
     hint: <>Default is the salon & spa average, <a href="https://www.zenoti.com/thecheckin/how-track-salon-call-conversion-rate" target="_blank" rel="noopener noreferrer" className="text-accent underline underline-offset-2 whitespace-nowrap">Zenoti, 2026</a>.</>,
   },
-  { key: 'missedMessagesPerWeek', label: 'Texts & DMs answered over an hour late, per week' },
-  { key: 'bookPct', label: 'Missed leads who would have booked (%)', max: 100, hint: 'Our conservative assumption. Use your own close rate if you know it.' },
-  { key: 'treatmentValue', label: 'Average first-treatment value ($)' },
+  { key: 'missedMessagesPerWeek', label: 'Texts & DMs answered over an hour late, per week', max: 60, step: 1 },
+  { key: 'bookPct', label: 'Missed leads who would have booked (%)', max: 100, step: 1, hint: 'Our conservative assumption. Use your own close rate if you know it.' },
+  { key: 'treatmentValue', label: 'Average first-treatment value ($)', max: 2000, step: 25 },
 ];
 
 // Inputs stay strings so a field can be cleared while typing; roi.js treats blanks as 0.
 const DEFAULT_FORM = Object.fromEntries(Object.entries(DEFAULT_INPUTS).map(([k, v]) => [k, String(v)]));
 
+// One ledger line: words in sans on the left, the figure in mono on the right.
+function LedgerRow({ label, children, strong }) {
+  return (
+    <div className={`flex items-baseline justify-between gap-md py-xs ${strong ? 'text-ink font-semibold' : 'text-mut'}`}>
+      <dt>{label}</dt>
+      <dd className="font-mono text-ink tabular-nums text-right">{children}</dd>
+    </div>
+  );
+}
+
 function RoiCalculator({ headingAs: Heading }) {
   const [form, setForm] = useState(() => loadRoiForm(DEFAULT_FORM));
-  const { missedLeads, lostBookings, lostRevenue, lostRevenueLow } = estimateLeak(form);
+  const { missedCalls, missedMessages, missedLeads, lostBookings, lostRevenue, lostRevenueLow } = estimateLeak(form);
   const breakEven = bookingsToBreakEven(form.treatmentValue);
+  const pctShown = (key) => Math.min(Number(form[key]) || 0, 100);
 
-  // DESIGN.md inputs: bg2 fill, a constant 1px line border, 48px, 16px text; focus comes from the global ring.
-  const field = 'mt-xs w-full min-h-12 rounded-inner border border-field bg-bg2 px-md font-mono text-base text-ink tabular-nums';
+  const update = (key, value) => {
+    markRoiEdited();
+    setForm((f) => { const next = { ...f, [key]: value }; saveRoiForm(next); return next; });
+  };
+
+  // DESIGN.md inputs: bg2 fill, a constant 1px field border, 48px, 16px text; focus comes from the global ring.
+  const field = 'w-28 shrink-0 min-h-12 rounded-inner border border-field bg-bg2 px-sm font-mono text-base text-ink tabular-nums text-right';
 
   return (
     <div className="bg-card border border-line rounded-card p-lg md:p-xl">
@@ -70,53 +87,73 @@ function RoiCalculator({ headingAs: Heading }) {
       {Heading && (
         <>
           <Heading className="text-title mb-2xs">What missed leads cost you</Heading>
-          <p className="text-mut text-sm mb-lg">Put in your own numbers. The defaults are a starting point.</p>
+          <p className="text-mut text-sm mb-lg">Drag or type your own numbers. The defaults are a starting point.</p>
         </>
       )}
 
-      <div className="grid gap-md sm:grid-cols-2 mb-lg">
-        {ROI_FIELDS.map(({ key, label, max, hint }) => (
-          <label key={key} className={`text-sm font-semibold text-ink ${key === 'treatmentValue' ? 'sm:col-span-2' : ''}`}>
-            {label}
-            <input
-              type="number" inputMode="numeric" min="0" max={max}
-              value={form[key]}
-              onChange={(e) => {
-                if (!roiEdited) { roiEdited = true; track('roi_edit'); }
-                setForm((f) => { const next = { ...f, [key]: e.target.value }; saveRoiForm(next); return next; });
-              }}
-              className={field}
-            />
-            {hint && <span className="block mt-2xs text-sm font-normal text-mut">{hint}</span>}
-          </label>
-        ))}
+      {/* Each input is a slider for feel and a number box for the exact figure; both edit the same value. */}
+      <div className="flex flex-col gap-md mb-lg">
+        {ROI_FIELDS.map(({ key, label, max, step, hint }) => {
+          const id = `roi-${key}`;
+          return (
+            <div key={key}>
+              <div className="flex items-end justify-between gap-md">
+                <label htmlFor={id} className="text-sm font-semibold text-ink pb-xs">{label}</label>
+                <input
+                  id={id}
+                  type="number" inputMode="numeric" min="0" max={max === 100 ? 100 : undefined}
+                  value={form[key]}
+                  onChange={(e) => update(key, e.target.value)}
+                  className={field}
+                />
+              </div>
+              <input
+                type="range" min="0" max={max} step={step}
+                aria-label={label}
+                value={Math.min(Number(form[key]) || 0, max)}
+                onChange={(e) => update(key, e.target.value)}
+                className="ledger-range"
+              />
+              {hint && <span className="block text-sm text-mut">{hint}</span>}
+            </div>
+          );
+        })}
       </div>
 
-      {/* Break-even leads (plan 8.13 S2): it rests on one number the owner knows. The range is context underneath.
-          DESIGN.md: only the numeral is mono; the words are sans, so the line never wraps mid-figure. */}
+      {/* Receipt: the arithmetic in order, each figure on its own line, totals under a double rule.
+          Only the two headline figures are announced on each edit (aria-live); the lines above stay quiet. */}
       <div className="rounded-inner bg-bg2 p-lg">
-        {/* Only the two headline numbers are announced on each edit; the explanation below stays quiet. */}
-        <div aria-live="polite" aria-atomic="true">
+        <div className="flex items-baseline justify-between gap-md mb-xs">
+          <p className="text-sm font-semibold text-ink">Monthly revenue recovery</p>
+          <p className="text-sm text-mut">Estimate</p>
+        </div>
+        <dl className="border-t border-line">
+          <LedgerRow label="Unanswered calls">{missedCalls}</LedgerRow>
+          <LedgerRow label="Late texts & DMs">{missedMessages}</LedgerRow>
+          <LedgerRow label="Missed leads">{missedLeads}</LedgerRow>
+          <LedgerRow label={<>Would have booked, at <span className="font-mono">{pctShown('bookPct')}%</span></>}>{lostBookings}</LedgerRow>
+          <LedgerRow label="Times first-treatment value">{usd(Number(form.treatmentValue) > 0 ? Number(form.treatmentValue) : 0)}</LedgerRow>
+        </dl>
+        <div className="border-t-[3px] border-double border-ink/40 mt-xs pt-sm" aria-live="polite" aria-atomic="true">
+          <p className="text-sm text-mut">Revenue lost to missed leads, per month</p>
+          <p className="font-mono text-[1.4rem] text-ink tabular-nums">
+            <span className="whitespace-nowrap">{usd(lostRevenueLow)}</span> to <span className="whitespace-nowrap">{usd(lostRevenue)}</span>
+          </p>
+          {/* Break-even leads (plan 8.13 S2): it rests on one number the owner knows. DESIGN.md: only the numeral is mono. */}
           {breakEven ? (
             <>
-              <p className="text-sm text-mut">At {usd(MONTHLY_PRICE)}/mo, the plan pays for itself at</p>
+              <p className="mt-md text-sm text-mut">At {usd(MONTHLY_PRICE)}/mo, the plan pays for itself at</p>
               <p className="text-title text-ink">
                 <span className="font-mono text-[3.5rem] leading-none align-[-0.08em] tabular-nums">{breakEven}</span>{' '}
                 booking{breakEven > 1 ? 's' : ''} a month
               </p>
             </>
           ) : (
-            <p className="text-ink">Enter a treatment value to compare it with the {usd(MONTHLY_PRICE)}/mo plan.</p>
+            <p className="mt-md text-ink">Enter a treatment value to compare it with the {usd(MONTHLY_PRICE)}/mo plan.</p>
           )}
-          <p className="mt-lg text-sm text-mut">Estimated revenue lost to missed leads, per month</p>
-          <p className="font-mono text-[1.4rem] text-ink tabular-nums">
-            <span className="whitespace-nowrap">{usd(lostRevenueLow)}</span> to <span className="whitespace-nowrap">{usd(lostRevenue)}</span>
-          </p>
         </div>
-        <p className="mt-2xs text-sm text-mut">
-          About {missedLeads} missed leads a month, {lostBookings} of whom would have booked. The low end assumes half of missed leads are existing patients getting back in touch.
-        </p>
-        <p className="mt-sm text-sm text-mut">
+        <p className="mt-md text-sm text-mut">
+          The low end assumes half of missed leads are existing patients getting back in touch.
           How it’s worked out: (calls × unanswered % + late texts & DMs) × 4.3 weeks × booking % × treatment value.
         </p>
       </div>

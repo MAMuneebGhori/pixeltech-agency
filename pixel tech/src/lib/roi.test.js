@@ -8,13 +8,13 @@ import {
 test('estimateLeak with the default inputs', () => {
   // (80 calls x 37% + 10 messages) = 39.6 missed/week; x 4.3 = 170.28/mo; x 25% = 42.57 bookings; x $500
   // Low end halves it (EXISTING_PATIENT_SHARE = 0.5): 10642.5 rounds to 10643.
-  assert.deepEqual(estimateLeak(DEFAULT_INPUTS), { missedLeads: 170, lostBookings: 43, lostRevenue: 21285, lostRevenueLow: 10643 });
+  assert.deepEqual(estimateLeak(DEFAULT_INPUTS), { missedCalls: 127, missedMessages: 43, missedLeads: 170, lostBookings: 43, lostRevenue: 21285, lostRevenueLow: 10643 });
 });
 
 test('estimateLeak accepts the string values inputs give it', () => {
   assert.deepEqual(
     estimateLeak({ callsPerWeek: '20', missedPct: '50', missedMessagesPerWeek: '0', bookPct: '100', treatmentValue: '100' }),
-    { missedLeads: 43, lostBookings: 43, lostRevenue: 4300, lostRevenueLow: 2150 },
+    { missedCalls: 43, missedMessages: 0, missedLeads: 43, lostBookings: 43, lostRevenue: 4300, lostRevenueLow: 2150 },
   );
 });
 
@@ -22,7 +22,7 @@ test('estimateLeak treats empty, negative and NaN input as 0', () => {
   assert.equal(estimateLeak({ ...DEFAULT_INPUTS, treatmentValue: '' }).lostRevenue, 0);
   assert.equal(estimateLeak({ ...DEFAULT_INPUTS, bookPct: -5 }).lostRevenue, 0);
   const noMissed = estimateLeak({ ...DEFAULT_INPUTS, callsPerWeek: 'abc', missedMessagesPerWeek: '' });
-  assert.deepEqual(noMissed, { missedLeads: 0, lostBookings: 0, lostRevenue: 0, lostRevenueLow: 0 });
+  assert.deepEqual(noMissed, { missedCalls: 0, missedMessages: 0, missedLeads: 0, lostBookings: 0, lostRevenue: 0, lostRevenueLow: 0 });
 });
 
 test('estimateLeak clamps percentages to 100', () => {
@@ -94,4 +94,13 @@ test('restoreRoiForm keeps saved numbers and rejects anything else', () => {
   const mixed = restoreRoiForm(JSON.stringify({ callsPerWeek: '<img>', missedPct: 37, treatmentValue: '9'.repeat(20) }));
   assert.deepEqual(mixed, { callsPerWeek: '80', missedPct: '37', missedMessagesPerWeek: '10', bookPct: '25', treatmentValue: '500' });
   for (const bad of [null, '', 'not json', '[]', '"x"', '42']) assert.equal(restoreRoiForm(bad), null, String(bad));
+});
+
+test('estimateLeak breaks missed leads into monthly calls and messages for the receipt', () => {
+  const r = estimateLeak(DEFAULT_INPUTS);
+  // 80 calls x 37% x 4.3 = 127.28; 10 messages x 4.3 = 43
+  assert.equal(r.missedCalls, 127);
+  assert.equal(r.missedMessages, 43);
+  assert.equal(r.missedLeads, 170);
+  assert.equal(estimateLeak({}).missedCalls, 0);
 });

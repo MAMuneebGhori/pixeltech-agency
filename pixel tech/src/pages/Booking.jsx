@@ -131,7 +131,7 @@ export default function Booking() {
 
       <div className="max-w-[560px] w-full mx-auto px-lg">
         <div className="text-center mb-xl">
-          <h1 className="text-display-s mb-sm">Book your free 15-minute ROI audit.</h1>
+          <h1 className="text-display-s mb-sm">Book your free <span className="whitespace-nowrap">15-minute</span> ROI audit.</h1>
           <p className="text-mut max-w-[420px] mx-auto">
             We’ll look at where your calls and DMs go unanswered, and what fixing it is worth to your clinic. We’ll also walk you through a real demo call.
           </p>
