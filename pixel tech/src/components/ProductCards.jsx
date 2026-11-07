@@ -4,8 +4,8 @@
 // One surface: a borderless well. The header names what it is; a time, when given, is a mono figure.
 function Mock({ title, time, children }) {
   return (
-    <figure className="min-w-0 bg-bg2 rounded-well p-4 sm:p-6">
-      <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 mb-4">
+    <figure className="min-w-0 bg-bg2 rounded-well p-md sm:p-lg">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-sm gap-y-2xs mb-md">
         <p className="text-sm font-semibold text-ink">{title}</p>
         {time && <time className="font-mono text-[13px] text-mut">{time}</time>}
       </div>
@@ -17,8 +17,8 @@ function Mock({ title, time, children }) {
 // The clinic's side (Ava) on card fill at the left; the patient on the deeper well at the right.
 function Bubble({ who, caller, children }) {
   return (
-    <li className={`rounded-inner px-3.5 py-3 max-w-[92%] sm:max-w-[85%] ${caller ? 'bg-bg3 ml-auto' : 'bg-card'}`}>
-      <span className="block text-[13px] font-semibold text-mut mb-0.5">{who}</span>
+    <li className={`rounded-inner px-3.5 py-sm max-w-[92%] sm:max-w-[85%] ${caller ? 'bg-bg3 ml-auto' : 'bg-card'}`}>
+      <span className="block text-[13px] font-semibold text-mut mb-3xs">{who}</span>
       <span className="text-ink">{children}</span>
     </li>
   );
@@ -26,19 +26,19 @@ function Bubble({ who, caller, children }) {
 
 // Text only, never a dot; reads as status, not as a button.
 const Chip = ({ children }) => (
-  <span className="inline-block rounded-full bg-bg3 px-2.5 py-1 text-[13px] text-ink">{children}</span>
+  <span className="inline-block rounded-full bg-bg3 px-2.5 py-2xs text-[13px] text-ink">{children}</span>
 );
 
 // SRD F-10: the deflection line is the scripted one, word for word. Never show the AI answering a safety question.
 export function CallCard() {
   return (
     <Mock title="Call with Glow Med Spa">
-      <ol className="flex flex-col gap-2">
+      <ol className="flex flex-col gap-xs">
         <Bubble who="Caller" caller>Is lip filler safe while I’m breastfeeding?</Bubble>
         <Bubble who="Ava">That’s best answered by our clinician — I’ll book you a consultation and flag your question. I have Thursday at 2 PM or Friday at 10 AM. Which works better?</Bubble>
         <Bubble who="Caller" caller>Yes, Thursday’s good.</Bubble>
       </ol>
-      <div className="mt-4 flex flex-wrap gap-2">
+      <div className="mt-md flex flex-wrap gap-xs">
         <Chip>Consult booked, Thu <span className="font-mono">2 PM</span></Chip>
         <Chip>Flagged for clinician</Chip>
       </div>
@@ -57,14 +57,14 @@ export function InboxCard() {
     <Mock title="Every channel in one inbox">
       <ul className="rounded-inner bg-card divide-y divide-line">
         {THREADS.map((t) => (
-          <li key={t.ch} className="min-w-0 px-3.5 py-3">
-            <div className="flex items-baseline justify-between gap-3 mb-1">
+          <li key={t.ch} className="min-w-0 px-3.5 py-sm">
+            <div className="flex items-baseline justify-between gap-sm mb-2xs">
               <p className="min-w-0 truncate text-ink">
                 <span className="font-semibold">{t.ch}</span> {t.name}
               </p>
               <time className="shrink-0 font-mono text-[13px] text-mut">{t.time}</time>
             </div>
-            <p className="truncate text-mut mb-2">{t.msg}</p>
+            <p className="truncate text-mut mb-xs">{t.msg}</p>
             <Chip>Replied in <span className="font-mono">{t.replied}</span></Chip>
           </li>
         ))}
@@ -77,15 +77,15 @@ export function InboxCard() {
 export function ReminderCard() {
   return (
     <Mock title="Reminders for a lip filler consult">
-      <ol className="flex flex-col gap-2">
+      <ol className="flex flex-col gap-xs">
         <Bubble who="24 hours before">
           Reminder: your lip filler consult is tomorrow at 11 AM at Glow Med Spa.
-          <span className="block mt-1 text-mut">Quick replies: Confirm, Reschedule, Cancel</span>
+          <span className="block mt-2xs text-mut">Quick replies: Confirm, Reschedule, Cancel</span>
         </Bubble>
         <Bubble who="2 hours before">See you at 11 AM today. Reply R if you need to reschedule.</Bubble>
       </ol>
-      <div className="mt-4 rounded-inner bg-card px-3.5 py-3">
-        <p className="text-[13px] font-semibold text-ink2 mb-1">No-show risk</p>
+      <div className="mt-md rounded-inner bg-card px-3.5 py-sm">
+        <p className="text-[13px] font-semibold text-ink2 mb-2xs">No-show risk</p>
         <p className="text-ink">Sat 9 AM booking hasn’t replied to either reminder. Flagged for your front desk.</p>
       </div>
     </Mock>
@@ -103,18 +103,18 @@ const RECALL = [
 export function RecallCard() {
   return (
     <Mock title="Botox recall, 90 days after the last visit">
-      <ol className="border-l border-line ml-1 flex flex-col gap-3">
+      <ol className="border-l border-line ml-2xs flex flex-col gap-sm">
         {RECALL.map(([when, what]) => (
-          <li key={when} className="pl-4">
+          <li key={when} className="pl-md">
             <span className="block font-mono text-[13px] text-mut">{when}</span>
             <span className="text-ink">{what}</span>
           </li>
         ))}
       </ol>
-      <p className="mt-4 text-ink">
+      <p className="mt-md text-ink">
         Result: <span className="font-mono tabular-nums">18</span> replied, <span className="font-mono tabular-nums">7</span> booked, <span className="font-mono tabular-nums">3</span> opted out.
       </p>
-      <p className="mt-2 text-sm text-mut">Every message includes “Reply STOP to opt out”. Only sent to clients who already have a relationship with your clinic.</p>
+      <p className="mt-xs text-sm text-mut">Every message includes “Reply STOP to opt out”. Only sent to clients who already have a relationship with your clinic.</p>
     </Mock>
   );
 }

@@ -15,7 +15,7 @@ const CALENDLY_TIMEOUT_MS = 10000;
 
 const label = 'text-sm font-semibold text-ink';
 // DESIGN.md inputs: constant 1px border, 48px, 16px text (no iOS zoom); focus is the global outline ring.
-const input = 'w-full min-h-12 bg-bg2 border border-field rounded-inner px-3 py-2.5 text-base text-ink placeholder-mut';
+const input = 'w-full min-h-12 bg-bg2 border border-field rounded-inner px-sm py-sm text-base text-ink placeholder-mut';
 const Req = () => <span className="text-bad" aria-hidden="true">*</span>;
 
 const EMPTY = { firstName: '', lastName: '', email: '', phone: '', company: '', website: '', callsPerWeek: '', bookingSoftware: '', goal: '', fax: '' };
@@ -67,10 +67,10 @@ function Scheduler({ name, email }) {
 
   return (
     <div>
-      <h2 className="text-3xl mb-2 text-center">Pick a time for your audit</h2>
-      <p className="text-mut text-center mb-4">Your details are saved. Choose a slot and you’re booked.</p>
+      <h2 className="text-3xl mb-xs text-center">Pick a time for your audit</h2>
+      <p className="text-mut text-center mb-md">Your details are saved. Choose a slot and you’re booked.</p>
       {state === 'failed' ? (
-        <p className="text-center text-mut leading-relaxed py-6" role="status">
+        <p className="text-center text-mut leading-relaxed py-lg" role="status">
           The scheduler didn’t load.{' '}
           <a href={CALENDLY_URL} target="_blank" rel="noopener noreferrer" className="text-accent underline">Pick a time on Calendly</a>
           , or we’ll email you to set a time.
@@ -78,7 +78,7 @@ function Scheduler({ name, email }) {
       ) : (
         <>
           {/* The scheduler's 680px is held from the start, so nothing jumps when Calendly arrives (D9). */}
-          <div className="relative -mx-5 md:mx-0 h-[680px]">
+          <div className="relative -mx-lg md:mx-0 h-[680px]">
             {state === 'loading' && (
               <p className="absolute inset-0 grid place-items-center rounded-inner bg-bg2 text-mut" role="status">Loading the scheduler…</p>
             )}
@@ -126,32 +126,32 @@ export default function Booking() {
   };
 
   return (
-    <main className="pt-[100px] lg:pt-[120px] pb-[80px] bg-bg">
+    <main className="pt-3xl lg:pt-3xl pb-3xl bg-bg">
       <SEO title="Book a 15-min ROI audit" description="Book a free 15-minute call. We’ll show you where your med spa is losing leads and what fixing it is worth." url="/booking" />
 
-      <div className="max-w-[560px] w-full mx-auto px-5">
-        <div className="text-center mb-8">
-          <h1 className="text-display-s mb-3">Book your free 15-minute ROI audit.</h1>
+      <div className="max-w-[560px] w-full mx-auto px-lg">
+        <div className="text-center mb-xl">
+          <h1 className="text-display-s mb-sm">Book your free 15-minute ROI audit.</h1>
           <p className="text-mut max-w-[420px] mx-auto">
             We’ll look at where your calls and DMs go unanswered, and what fixing it is worth to your clinic. We’ll also walk you through a real demo call.
           </p>
         </div>
 
-        <div className="bg-card border border-line rounded-[18px] p-5 md:p-7">
+        <div className="bg-card border border-line rounded-[18px] p-lg md:p-lg">
           {status === 'sent' ? (
             CALENDLY_URL ? (
               <Scheduler name={`${form.firstName} ${form.lastName}`.trim()} email={form.email} />
             ) : (
-              <div className="text-center py-10" role="status">
-                <h2 className="text-3xl mb-3">Request received</h2>
+              <div className="text-center py-xl" role="status">
+                <h2 className="text-3xl mb-sm">Request received</h2>
                 <p className="text-mut leading-relaxed">We’ll email you to set a time for your audit.</p>
               </div>
             )
           ) : (
-            <form className="grid gap-4" onSubmit={handleSubmit}>
+            <form className="grid gap-md" onSubmit={handleSubmit}>
               {CALENDLY_URL && <p className="text-sm text-mut">Step 1 of 2: your details. Step 2: pick a time.</p>}
               {roiInputs && (
-                <p className="rounded-lg border border-line bg-bg2 p-3 text-[0.85rem] text-mut">
+                <p className="rounded-lg border border-line bg-bg2 p-sm text-[0.85rem] text-mut">
                   We’ll bring your calculator numbers to the call: {formatRoiRange(roiInputs)} in missed revenue.
                 </p>
               )}
@@ -160,50 +160,50 @@ export default function Booking() {
                 <label htmlFor="fax">Fax</label>
                 <input id="fax" name="fax" value={form.fax} onChange={onInput} tabIndex={-1} autoComplete="off" />
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-                <div className="grid gap-1.5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-md">
+                <div className="grid gap-xs">
                   <label htmlFor="firstName" className={label}>First name <Req /></label>
                   <input id="firstName" required name="firstName" value={form.firstName} onChange={onInput} className={input} autoComplete="given-name" />
                 </div>
-                <div className="grid gap-1.5">
+                <div className="grid gap-xs">
                   {/* Required: the Lead schema rejects a lead without one. */}
                   <label htmlFor="lastName" className={label}>Last name <Req /></label>
                   <input id="lastName" required name="lastName" value={form.lastName} onChange={onInput} className={input} autoComplete="family-name" />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-                <div className="grid gap-1.5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-md">
+                <div className="grid gap-xs">
                   <label htmlFor="email" className={label}>Email <Req /></label>
                   <input id="email" required type="email" name="email" value={form.email} onChange={onInput} className={input} autoComplete="email" />
                 </div>
-                <div className="grid gap-1.5">
+                <div className="grid gap-xs">
                   <label htmlFor="phone" className={label}>Phone / WhatsApp <Req /></label>
                   <input id="phone" required type="tel" name="phone" value={form.phone} onChange={onInput} className={input} autoComplete="tel" placeholder="+1 (555) 000-0000" />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-                <div className="grid gap-1.5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-md">
+                <div className="grid gap-xs">
                   <label htmlFor="company" className={label}>Clinic name</label>
                   <input id="company" name="company" value={form.company} onChange={onInput} className={input} autoComplete="organization" />
                 </div>
-                <div className="grid gap-1.5">
+                <div className="grid gap-xs">
                   {/* Optional plain text (plan 8.13 S1): "glowspa.com" or an Instagram handle is fine. */}
                   <label htmlFor="website" className={label}>Website or Instagram</label>
                   <input id="website" name="website" value={form.website} onChange={onInput} className={input} autoComplete="url" placeholder="yourclinic.com or @yourclinic" />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-                <div className="grid gap-1.5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-md">
+                <div className="grid gap-xs">
                   <label htmlFor="callsPerWeek" className={label}>Calls per week</label>
                   <select id="callsPerWeek" name="callsPerWeek" value={form.callsPerWeek} onChange={onInput} className={input}>
                     <option value="">Choose…</option>
                     {CALL_VOLUMES.map((v) => <option key={v} value={v}>{v}</option>)}
                   </select>
                 </div>
-                <div className="grid gap-1.5">
+                <div className="grid gap-xs">
                   <label htmlFor="bookingSoftware" className={label}>Booking software</label>
                   <select id="bookingSoftware" name="bookingSoftware" value={form.bookingSoftware} onChange={onInput} className={input}>
                     <option value="">Choose…</option>
@@ -212,19 +212,19 @@ export default function Booking() {
                 </div>
               </div>
 
-              <div className="grid gap-1.5">
+              <div className="grid gap-xs">
                 <label htmlFor="goal" className={label}>Anything we should know?</label>
                 <textarea id="goal" name="goal" value={form.goal} onChange={onInput} rows={3} className={`${input} resize-none`} />
               </div>
 
               {status === 'error' && (
-                <p role="alert" className="rounded-lg border border-bad/40 bg-bad/5 p-3 text-sm text-ink">
+                <p role="alert" className="rounded-lg border border-bad/40 bg-bad/5 p-sm text-sm text-ink">
                   We couldn’t send your request. Please try again, or email us at{' '}
                   <a href="mailto:info@pixeltech.agency" className="text-accent underline">info@pixeltech.agency</a>.
                 </p>
               )}
 
-              <button type="submit" disabled={status === 'sending'} className="btn-primary w-full mt-1 text-base disabled:opacity-60">
+              <button type="submit" disabled={status === 'sending'} className="btn-primary w-full mt-2xs text-base disabled:opacity-60">
                 {/* Honest about what this button does: it saves details; the time is picked next (design review D7). */}
                 {status === 'sending' ? 'Sending…' : CALENDLY_URL ? 'Continue to pick a time' : 'Send my details'}
               </button>

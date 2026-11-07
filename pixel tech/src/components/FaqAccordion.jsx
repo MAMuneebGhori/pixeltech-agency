@@ -50,11 +50,11 @@ export default function FaqAccordion() {
       <div className="max-w-[820px] border-b border-line">
         {FAQS.map((faq) => (
           <details key={faq.q} className="group border-t border-line [&_summary::-webkit-details-marker]:hidden">
-            <summary className="flex items-center justify-between gap-4 py-5 font-semibold cursor-pointer hover:text-accent transition-colors duration-[220ms] ease-out">
+            <summary className="flex items-center justify-between gap-md py-lg font-semibold cursor-pointer hover:text-accent transition-colors duration-[220ms] ease-out">
               {faq.q}
               <span aria-hidden="true" className="text-[1.4rem] leading-none text-mut transition-transform duration-[220ms] ease-out group-open:rotate-45">+</span>
             </summary>
-            <p className="pb-6 pr-8 text-mut leading-relaxed max-w-[65ch]">{faq.a}</p>
+            <p className="pb-lg pr-xl text-mut leading-relaxed max-w-[65ch]">{faq.a}</p>
           </details>
         ))}
       </div>

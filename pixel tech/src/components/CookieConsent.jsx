@@ -46,26 +46,26 @@ export default function CookieConsent() {
             aria-label="Cookie consent"
             // Phones: a full-width bar at the bottom, one line plus Accept and Manage (Reject is one tap away in Manage),
             // so it covers far less of the hero (design review D4). From md up: the card in the corner.
-            className="animate-slide-in-up motion-reduce:animate-none fixed z-[100] bg-card shadow-raised inset-x-0 bottom-0 px-4 py-3 flex items-center gap-3 md:inset-x-auto md:bottom-4 md:right-4 md:max-w-sm md:rounded-card md:p-5 md:flex-col md:items-stretch md:gap-4"
+            className="animate-slide-in-up motion-reduce:animate-none fixed z-[100] bg-card shadow-raised inset-x-0 bottom-0 px-md py-sm flex items-center gap-sm md:inset-x-auto md:bottom-4 md:right-4 md:max-w-96 md:rounded-card md:p-lg md:flex-col md:items-stretch md:gap-md"
           >
             <div className="min-w-0 flex-1">
-              <h3 className="hidden md:block font-semibold text-ink text-sm mb-1">We value your privacy</h3>
+              <h3 className="hidden md:block font-semibold text-ink text-sm mb-2xs">We value your privacy</h3>
               <p className="text-sm text-mut leading-snug md:leading-relaxed">
                 <span className="md:hidden">We use cookies to remember your choices.</span>
                 <span className="hidden md:inline">We use cookies and local storage to enhance your browsing experience and remember your preferences.</span>
               </p>
             </div>
 
-            <div className="flex shrink-0 gap-2 md:grid md:grid-cols-3 md:mt-1">
-              <button type="button" onClick={handleAcceptAll} className="btn-primary !min-h-11 !px-3 text-sm">
+            <div className="flex shrink-0 gap-xs md:grid md:grid-cols-3 md:mt-2xs">
+              <button type="button" onClick={handleAcceptAll} className="btn-primary !min-h-11 !px-sm text-sm">
                 Accept<span className="hidden md:inline">&nbsp;all</span>
               </button>
               <span className="hidden md:contents">
-                <button type="button" onClick={handleRejectAll} className="btn-secondary !min-h-11 !px-3 text-sm">
+                <button type="button" onClick={handleRejectAll} className="btn-secondary !min-h-11 !px-sm text-sm">
                   Reject all
                 </button>
               </span>
-              <button type="button" onClick={() => setShowPreferences(true)} className="btn-secondary !min-h-11 !px-3 text-sm">
+              <button type="button" onClick={() => setShowPreferences(true)} className="btn-secondary !min-h-11 !px-sm text-sm">
                 Manage
               </button>
             </div>
@@ -75,33 +75,33 @@ export default function CookieConsent() {
       {/* Preferences Modal */}
         {showPreferences && (
           <div
-            className="animate-fade-in motion-reduce:animate-none fixed inset-0 z-[150] flex items-center justify-center bg-ink/40 p-4"
+            className="animate-fade-in motion-reduce:animate-none fixed inset-0 z-[150] flex items-center justify-center bg-ink/40 p-md"
           >
             <div
               role="dialog"
               aria-modal="true"
               aria-labelledby="cookie-prefs-title"
-              className="animate-pop-in motion-reduce:animate-none w-full max-w-md bg-card rounded-card overflow-hidden shadow-raised flex flex-col"
+              className="animate-pop-in motion-reduce:animate-none w-full max-w-112 bg-card rounded-card overflow-hidden shadow-raised flex flex-col"
             >
-              <div className="flex items-center justify-between p-5 border-b border-line">
-                <h2 id="cookie-prefs-title" className="text-lg font-semibold text-ink flex items-center gap-2">
+              <div className="flex items-center justify-between p-lg border-b border-line">
+                <h2 id="cookie-prefs-title" className="text-lg font-semibold text-ink flex items-center gap-xs">
                   <ShieldCheck className="w-5 h-5 text-accent" />
                   Privacy preferences
                 </h2>
                 <button type="button"
                   onClick={() => setShowPreferences(false)}
                   aria-label="Close privacy preferences"
-                  className="text-mut hover:text-ink p-1 rounded-md hover:bg-ink/5 transition-colors"
+                  className="text-mut hover:text-ink p-2xs rounded-md hover:bg-ink/5 transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
               
-              <div className="p-5 space-y-6 overflow-y-auto max-h-[60vh] custom-scrollbar">
+              <div className="p-lg space-y-lg overflow-y-auto max-h-[60vh] custom-scrollbar">
                 
                 {/* Essential Cookies */}
                 <div>
-                  <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center justify-between mb-xs">
                     <h3 className="font-semibold text-ink text-sm">Strictly necessary cookies</h3>
                     <span className="text-xs font-semibold text-accent">Always active</span>
                   </div>
@@ -114,7 +114,7 @@ export default function CookieConsent() {
 
                 {/* Functional Cookies */}
                 <div>
-                  <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center justify-between mb-xs">
                     <h3 className="font-semibold text-ink text-sm">Functional cookies</h3>
                     
                     {/* Custom Toggle Switch */}
@@ -136,7 +136,7 @@ export default function CookieConsent() {
                 
               </div>
 
-              <div className="p-5 border-t border-line bg-bg2 flex flex-col sm:flex-row gap-3">
+              <div className="p-lg border-t border-line bg-bg2 flex flex-col sm:flex-row gap-sm">
                 <button type="button"
                   onClick={handleRejectAll}
                   className="btn-secondary w-full !min-h-11 text-sm"

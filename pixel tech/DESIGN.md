@@ -121,6 +121,7 @@ The cards that show the product working: call transcripts, the unified inbox, re
 ## Exports
 
 - **Code:** `src/index.css` `@theme` (Tailwind v4). Names above map one to one: `--color-bg3`, `--color-ink2`, `--color-focus`, `--font-body: "Instrument Sans", "Instrument Sans Fallback", sans-serif`, plus the `--space-*`, `--text-*`, `--radius-*`, `--shadow-*` and easing tokens.
+- **Spacing classes:** components write the named steps (`p-lg`, `gap-xl`, `mt-2xl`, `-mx-lg`), from `--spacing-*` in `@theme` over the `:root` `--space-*` scale; 32px column gaps are `gap-(--gap-columns)`. Numeric classes remain only for values this file names off the scale: bubble `px-3.5`, chip `px-2.5`, the hero's 48px `gap-12`, the 44px menu button `p-2.5 -m-2.5` and the hamburger's drawn bars. Never write `max-w-sm/md/lg/xl` (or `w-`/`min-w-` with those names): Tailwind reads `--spacing-*` before `--container-*`, so `max-w-md` would be 16px. Use `max-w-96`, `max-w-112` or a `--container-*` var.
 - **Check:** `npm run check:mobile` for layout; Hallmark's `sloplint.mjs src index.html --genre editorial` for the bans above.
 
 ## Migration status (2026-11-06)

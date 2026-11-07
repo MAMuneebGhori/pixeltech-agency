@@ -86,6 +86,20 @@
   --radius-well: 20px; /* same size as a card, named by role: a well is a tinted fill with no border */
   --radius-inner: 12px;
   --radius-pill: 999px; /* buttons, pills, chips (rounded-pill) */
+
+  /* Named spacing utilities over the :root scale: p-lg, gap-xl, mt-2xl. Tailwind's numeric steps
+     (p-4) still work. w-, min-w- and max-w- read --spacing-* before --container-*, so never write
+     max-w-sm/md/lg/xl here: use max-w-96 (24rem), max-w-112 (28rem) or a --container-* var. */
+  --spacing-3xs: var(--space-3xs);
+  --spacing-2xs: var(--space-2xs);
+  --spacing-xs: var(--space-xs);
+  --spacing-sm: var(--space-sm);
+  --spacing-md: var(--space-md);
+  --spacing-lg: var(--space-lg);
+  --spacing-xl: var(--space-xl);
+  --spacing-2xl: var(--space-2xl);
+  --spacing-3xl: var(--space-3xl);
+  --spacing-4xl: var(--space-4xl);
   --shadow-card: none;
   --shadow-raised: 0 1px 2px oklch(20% 0.01 70 / 0.05), 0 12px 32px oklch(20% 0.01 70 / 0.06);
   --container-page: 90rem;

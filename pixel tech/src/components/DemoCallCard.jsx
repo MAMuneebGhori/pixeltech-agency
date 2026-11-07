@@ -26,8 +26,8 @@ export default function DemoCallCard() {
 
   return (
     // DESIGN.md simulation well: one surface, no border or shadow; bubbles carry no borders.
-    <figure className="bg-bg2 rounded-well p-4 sm:p-6 text-left">
-      <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 mb-4">
+    <figure className="bg-bg2 rounded-well p-md sm:p-lg text-left">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-sm gap-y-2xs mb-md">
         <p className="text-sm font-semibold text-ink">Call with Glow Med Spa</p>
         <time className="font-mono text-[13px] text-mut">9:42 PM</time>
       </div>
@@ -41,31 +41,31 @@ export default function DemoCallCard() {
           onError={() => { setHasAudio(false); setTime(-1); }}
           onTimeUpdate={(e) => setTime(e.currentTarget.currentTime)}
           onEnded={() => setTime(-1)}
-          className="w-full mb-4"
+          className="w-full mb-md"
         />
       )}
 
       {/* While audio plays, the spoken line stays at full opacity and the rest fade to 0.5 (opacity only). */}
-      <ol className="flex flex-col gap-2">
+      <ol className="flex flex-col gap-xs">
         {TRANSCRIPT.map((line, i) => (
           <li
             key={i}
             aria-current={i === active ? 'true' : undefined}
-            className={`rounded-inner px-3.5 py-3 max-w-[92%] sm:max-w-[85%] transition-opacity duration-[220ms] ease-out ${
+            className={`rounded-inner px-3.5 py-sm max-w-[92%] sm:max-w-[85%] transition-opacity duration-[220ms] ease-out ${
               line.who === 'Caller' ? 'bg-bg3 ml-auto' : 'bg-card'
             } ${active >= 0 && i !== active ? 'opacity-50' : 'opacity-100'}`}
           >
-            <span className="block text-[13px] font-semibold text-mut mb-0.5">{line.who}</span>
+            <span className="block text-[13px] font-semibold text-mut mb-3xs">{line.who}</span>
             <span className="text-ink">{line.text}</span>
           </li>
         ))}
       </ol>
 
-      <div className="mt-4 rounded-inner bg-card px-3.5 py-3">
-        <p className="text-[13px] font-semibold text-good mb-0.5">Text sent to the caller</p>
+      <div className="mt-md rounded-inner bg-card px-3.5 py-sm">
+        <p className="text-[13px] font-semibold text-good mb-3xs">Text sent to the caller</p>
         <p className="text-ink">Glow Med Spa: You’re booked for lip filler consult, Sat 11:00 AM. Reply C to confirm or R to reschedule.</p>
       </div>
-      <figcaption className="mt-4 text-sm text-mut">An example call. Glow Med Spa is a fictional clinic.</figcaption>
+      <figcaption className="mt-md text-sm text-mut">An example call. Glow Med Spa is a fictional clinic.</figcaption>
     </figure>
   );
 }

@@ -14,21 +14,21 @@ export default function TopNavBar() {
 
   return (
     <header className="sticky top-0 z-50 bg-bg border-b border-line w-full">
-      <div className="container-page flex items-center justify-between py-[15px]">
-        <Link to="/" className="flex items-center gap-2 font-semibold text-[1.1rem] shrink-0">
+      <div className="container-page flex items-center justify-between py-md">
+        <Link to="/" className="flex items-center gap-xs font-semibold text-[1.1rem] shrink-0">
           <img src="/logo-128.png" alt="PixelTech Logo" width="34" height="34" className="h-[34px] w-[34px] object-contain" />
           <span className="hidden sm:inline">Pixeltech Agency</span>
         </Link>
         
         {/* Desktop Navigation */}
-        <nav className="hidden lg:flex items-center gap-1">
+        <nav className="hidden lg:flex items-center gap-2xs">
           {navLinks.map((link) => {
             const isActive = location.pathname + location.hash === link.path;
             return (
               <Link
                 key={link.path}
                 to={link.path}
-                className={`text-sm px-3.5 py-2 rounded-lg transition-colors duration-[220ms] ease-out ${
+                className={`text-sm px-md py-xs rounded-lg transition-colors duration-[220ms] ease-out ${
                   isActive
                     ? 'text-accent bg-accent/10'
                     : 'text-mut hover:text-ink hover:bg-ink/5'
@@ -40,9 +40,9 @@ export default function TopNavBar() {
           })}
         </nav>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-md">
           {/* Outlined, so the hero's filled primary stays the one filled button on the first screen. */}
-          <Link to="/booking" data-cta="nav" className="btn-secondary !min-h-11 !px-5 text-sm whitespace-nowrap">
+          <Link to="/booking" data-cta="nav" className="btn-secondary !min-h-11 !px-md text-sm whitespace-nowrap">
             Book a 15-min ROI audit
           </Link>
 
@@ -67,7 +67,7 @@ export default function TopNavBar() {
       {/* Mobile menu: mounted when open, faded in with opacity only (no height animation). */}
       {mobileOpen && (
       <div id="mobile-menu" className="lg:hidden animate-fade-in">
-        <nav className="container-page pb-6 pt-2 flex flex-col gap-1 border-t border-line">
+        <nav className="container-page pb-lg pt-xs flex flex-col gap-2xs border-t border-line">
           {navLinks.map((link) => {
             const isActive = location.pathname + location.hash === link.path;
             return (
@@ -75,7 +75,7 @@ export default function TopNavBar() {
                 key={link.path}
                 to={link.path}
                 onClick={() => setMobileOpen(false)}
-                className={`px-4 py-3 rounded-inner transition-colors duration-[220ms] ease-out ${
+                className={`px-md py-sm rounded-inner transition-colors duration-[220ms] ease-out ${
                   isActive
                     ? 'text-accent bg-accent/10'
                     : 'text-mut hover:text-ink hover:bg-ink/5'
@@ -85,7 +85,7 @@ export default function TopNavBar() {
               </Link>
             );
           })}
-          <div className="mt-3 pt-3 border-t border-line">
+          <div className="mt-sm pt-sm border-t border-line">
             <Link
               to="/booking"
               data-cta="nav"
