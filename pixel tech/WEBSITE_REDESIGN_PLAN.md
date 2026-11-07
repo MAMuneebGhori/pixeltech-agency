@@ -1181,14 +1181,19 @@ Parallelization: sequential, no parallelization opportunity (T5–T8 are done; T
 - The `FAQS` array (`FaqAccordion.jsx`).
 
 ### 11.7 Implementation tasks (design review)
-- [ ] **T10 (P2, human ~30m / CC ~3m):** pricing. D3 calculator first below 1024px. Files: `src/components/PricingSection.jsx`. Verify: 375px screenshot, `npm run check:mobile`.
-- [ ] **T11 (P2, human ~1h / CC ~10m):** consent. D4 bar under 768px. Files: `src/components/CookieConsent.jsx`. Verify: 375px first-visit screenshot, 44px targets, the Manage path still offers Reject.
-- [ ] **T12 (P3, human ~30m / CC ~3m):** SEO. D5 FAQPage JSON-LD. Files: `src/components/FaqAccordion.jsx`. Verify: the JSON parses, and its question count equals the `FAQS` length.
-- [ ] **T13 (P2, human ~10m / CC ~2m):** hero. D6 line. Files: `src/components/HeroSection.jsx`. Verify: lint (58), 12 words.
-- [ ] **T14 (P1, human ~20m / CC ~3m):** booking. D7 label and step line. Files: `src/pages/Booking.jsx`. Verify: the booking E2E (labels updated).
-- [ ] **T15 (P2, human ~30m / CC ~5m):** pricing. D8 zero-seat state, with a test. Files: `src/components/PricingSection.jsx` (+ a test). Verify: `npm test`.
-- [ ] **T16 (P2, human ~30m / CC ~5m):** booking. D9 reserved 680px. Files: `src/pages/Booking.jsx`. Verify: the booking E2E, plus no layout shift at load.
-- [ ] **T17 (P2, human ~45m / CC ~5m):** pricing. D10 `sessionStorage`. Files: `src/components/PricingSection.jsx`. Verify: edit, go to `/booking`, go Back, and the numbers are kept; storage blocked falls back to defaults.
+- [x] **T10 (P2, human ~30m / CC ~3m):** pricing. D3 calculator first below 1024px. Files: `src/components/PricingSection.jsx`. Verify: 375px screenshot, `npm run check:mobile`.
+- [x] **T11 (P2, human ~1h / CC ~10m):** consent. D4 bar under 768px. Files: `src/components/CookieConsent.jsx`. Verify: 375px first-visit screenshot, 44px targets, the Manage path still offers Reject.
+- [x] **T12 (P3, human ~30m / CC ~3m):** SEO. D5 FAQPage JSON-LD. Files: `src/components/FaqAccordion.jsx`. Verify: the JSON parses, and its question count equals the `FAQS` length.
+- [x] **T13 (P2, human ~10m / CC ~2m):** hero. D6 line. Files: `src/components/HeroSection.jsx`. Verify: lint (58), 12 words.
+- [x] **T14 (P1, human ~20m / CC ~3m):** booking. D7 label and step line. Files: `src/pages/Booking.jsx`. Verify: the booking E2E (labels updated).
+- [x] **T15 (P2, human ~30m / CC ~5m):** pricing. D8 zero-seat state, with a test. Files: `src/components/PricingSection.jsx` (+ a test). Verify: `npm test`.
+- [x] **T16 (P2, human ~30m / CC ~5m):** booking. D9 reserved 680px. Files: `src/pages/Booking.jsx`. Verify: the booking E2E, plus no layout shift at load.
+- [x] **T17 (P2, human ~45m / CC ~5m):** pricing. D10 `sessionStorage`. Files: `src/components/PricingSection.jsx`. Verify: edit, go to `/booking`, go Back, and the numbers are kept; storage blocked falls back to defaults.
+
+Built on `design-migration` in `d82fa05` (PR #15). Verified:
+- Mocked booking E2E 28/28 (D7 label and step line, D9 the 680px held before Calendly reports).
+- Design-fix check 9/9 (D3 calculator order at 375 and 1280px; D4 a 68px bar with two 44px buttons; D5 JSON-LD with 6 of 6 FAQs; D6 the hero line; D10 numbers kept across Back and defaults when storage is blocked).
+- `npm test` 14/14 (`foundingOffer` at 3, 1 and 0; `restoreRoiForm`), `check:mobile` 10/10, rendered Hallmark tier 0 FAIL.
 
 ## Design Review Completion Summary
 ```
