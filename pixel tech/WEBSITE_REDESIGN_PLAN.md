@@ -1110,18 +1110,131 @@ Parallelization: sequential, no parallelization opportunity (T5–T8 are done; T
 - Parallelization: 0 lanes, sequential
 - Lake Score: 4/4 (D1, D2, D3 and D6 scored; all picked the 10/10 option)
 
+## 11. Design review (2026-11-06 to 2026-11-07)
+
+**Target:** this plan, rated against the site as built on `design-migration` (PR #15, DESIGN.md v2 applied).
+- **Evidence:**
+  - Screenshots at 375 and 1280px.
+  - The Hallmark rendered tier: 0 FAIL.
+  - The booking E2E (22/22) and the WebKit iPhone-profile check (20/20).
+- **Calibrated against:** `DESIGN.md` v2 (PR #14).
+- **Mockups:** none. The designer has no image API key, so this review is text-only.
+- **Outside design voice:** a native Claude subagent completed (13 findings). Codex is unavailable (not installed).
+
+### 11.1 Ratings
+| Pass | Before | After approved fixes | What changed |
+|---|---|---|---|
+| Step 0 impression | 6 | n/a | The plan named content and components but not hierarchy, mobile order, the ROI result's type or the loading/error states |
+| 1 Information architecture | 6 | 9 | D3 calculator first on phones, D4 consent bar, D5 FAQ data, D6 product name in the hero |
+| 2 States | 7 | 9 | D7 honest submit label and step line, D8 seats at 0, D9 reserved scheduler space |
+| 3 Journey | 7 | 9 | D7 fixes the "booked?" break; D10 keeps the owner's numbers on Back |
+| 4 AI slop | 8 | 9 | The migration removed eyebrows, nested cards, mono labels and shadows; D6 adds the product name |
+| 5 Design system | 9 | 9 | Lint 0 FAIL; 44c open on inner pages (deliberate, see `DESIGN.md`) |
+| 6 Responsive and a11y | 8 | 9 | D4; field edges at 3:1; WebKit 20/20; 44px targets |
+
+**Overall** (the lowest rated pass): 6 → 9.
+
+### 11.2 Journey storyboard (phone, first visit)
+| Step | Owner does | Owner feels | Plan specifies |
+|---|---|---|---|
+| 1 | Lands on `/` | "Is this for me?" | Headline names Botox and filler and voicemail; D6 puts the product name in the line; D4 keeps the consent bar off the hero |
+| 2 | Scrolls the demo call | "It sounds real" | Simulation well; the transcript stays static until S3, then the audio player (HAS_RECORDING) |
+| 3 | Reaches pricing | "Is it worth $297?" | D3 puts the calculator first on phones; the break-even numeral in mono |
+| 4 | Taps the audit button | "What happens next?" | D7: "Step 1 of 2" line and "Continue to pick a time" |
+| 5 | Waits for Calendly | Impatience | D9 reserves 680px; the 10s link fallback |
+| 6 | Picks a time | Relief, committed | `calendly_booked` fires; the lead is already saved |
+| 7 | Hits Back to re-check | "Did I get that right?" | D10 restores their calculator numbers |
+
+### 11.3 Litmus (after the migration)
+- Brand in the first screen: NO → YES with D6.
+- One visual anchor: YES, the call simulation.
+- Scannable by headlines: YES.
+- One job per section: YES; on `/pricing`, the page head, the card and the calculator are now separate.
+- Cards necessary: YES; only interactive surfaces are cards.
+- Motion improves hierarchy: YES; one 8px settle on the hero simulation.
+- Premium without shadows: YES; card shadows are gone.
+- Hard rejections: none.
+
+### 11.4 Decisions (all answered; each recommendation taken)
+- **D3:** below 1024px the calculator stacks above the price card (CSS `order`; desktop unchanged). The price stays in the section intro.
+- **D4:** under 768px the consent card becomes a full-width bottom bar of about 64px: one line plus Accept and Manage. Reject lives in Manage. Desktop is unchanged.
+- **D5:** `FaqAccordion` renders FAQPage JSON-LD generated from the same `FAQS` array.
+- **D6:** the hero line becomes "Booked Solid answers every call, text and DM, then books the patient." (12 words).
+- **D7:**
+  - With Calendly set, the submit reads "Continue to pick a time"; without it, "Send my details".
+  - A line above the form: "Step 1 of 2: your details. Step 2: pick a time."
+  - This one button is a recorded exception to plan §4.1's one-label rule.
+- **D8:** at `FOUNDING_SEATS_LEFT = 0`, the founding line is hidden and the $497 setup shows without strike-through or "waived". A test covers 3, 1 and 0.
+- **D9:** while Calendly loads, the scheduler area is a 680px `bg2` well with "Loading the scheduler…" centred. The widget fades in; the 10s fallback is unchanged.
+- **D10:** the five calculator inputs persist in `sessionStorage`, wrapped in try/catch, falling back to defaults when storage is blocked. Cleared when the tab closes.
+
+### 11.5 NOT in scope
+- **Form length:** settled by CEO S1 (three required fields).
+- **The static transcript before S3:** settled by R2/S3, with PR #9 held until the recording exists.
+- **Blank ROI fields showing "$0 to $0":** truthful arithmetic, and the break-even line already has a blank state.
+- **Mockups:** the designer needs an image key (`$D setup --provider gemini`).
+
+### 11.6 What already exists
+- `.btn-primary` and `.btn-secondary`, the `Section` component, `container-page`.
+- The tokens in `src/index.css`.
+- `CALL_VOLUMES`, `fromRoiParams` and `toRoiParams` (`roi.js`), `track()`, the Scheduler state machine.
+- The `FAQS` array (`FaqAccordion.jsx`).
+
+### 11.7 Implementation tasks (design review)
+- [ ] **T10 (P2, human ~30m / CC ~3m):** pricing. D3 calculator first below 1024px. Files: `src/components/PricingSection.jsx`. Verify: 375px screenshot, `npm run check:mobile`.
+- [ ] **T11 (P2, human ~1h / CC ~10m):** consent. D4 bar under 768px. Files: `src/components/CookieConsent.jsx`. Verify: 375px first-visit screenshot, 44px targets, the Manage path still offers Reject.
+- [ ] **T12 (P3, human ~30m / CC ~3m):** SEO. D5 FAQPage JSON-LD. Files: `src/components/FaqAccordion.jsx`. Verify: the JSON parses, and its question count equals the `FAQS` length.
+- [ ] **T13 (P2, human ~10m / CC ~2m):** hero. D6 line. Files: `src/components/HeroSection.jsx`. Verify: lint (58), 12 words.
+- [ ] **T14 (P1, human ~20m / CC ~3m):** booking. D7 label and step line. Files: `src/pages/Booking.jsx`. Verify: the booking E2E (labels updated).
+- [ ] **T15 (P2, human ~30m / CC ~5m):** pricing. D8 zero-seat state, with a test. Files: `src/components/PricingSection.jsx` (+ a test). Verify: `npm test`.
+- [ ] **T16 (P2, human ~30m / CC ~5m):** booking. D9 reserved 680px. Files: `src/pages/Booking.jsx`. Verify: the booking E2E, plus no layout shift at load.
+- [ ] **T17 (P2, human ~45m / CC ~5m):** pricing. D10 `sessionStorage`. Files: `src/components/PricingSection.jsx`. Verify: edit, go to `/booking`, go Back, and the numbers are kept; storage blocked falls back to defaults.
+
+## Design Review Completion Summary
+```
+  +====================================================================+
+  |         DESIGN PLAN REVIEW — COMPLETION SUMMARY                    |
+  +====================================================================+
+  | System Audit         | DESIGN.md v2 present; UI scope: 4 sections  |
+  | Step 0               | 6/10; all 7 passes; mockups unavailable     |
+  | Pass 1  (Info Arch)  | 6/10 → 9/10 after fixes                     |
+  | Pass 2  (States)     | 7/10 → 9/10 after fixes                     |
+  | Pass 3  (Journey)    | 7/10 → 9/10 after fixes                     |
+  | Pass 4  (AI Slop)    | 8/10 → 9/10 after fixes                     |
+  | Pass 5  (Design Sys) | 9/10 → 9/10 after fixes                     |
+  | Pass 6  (Responsive) | 8/10 → 9/10 after fixes                     |
+  | Pass 7  (Decisions)  | 8 resolved, 0 deferred                      |
+  +--------------------------------------------------------------------+
+  | NOT in scope         | written (4 items)                           |
+  | What already exists  | written                                     |
+  | TODOS.md updates     | 0 items proposed                            |
+  | Approved Mockups     | 0 generated, 0 approved                     |
+  | Decisions made       | 8 added to plan                             |
+  | Decisions deferred   | 0                                           |
+  | Overall design score | 6/10 → 9/10                                 |
+  +====================================================================+
+```
+Every rated pass is 8 or above once the fixes land. Run `/design-review` after T10 to T17 for visual QA.
+
+### Unresolved Decisions
+None.
+
 ## GSTACK REVIEW REPORT
 
 | Review | Trigger | Why | Runs | Status | Findings |
 |--------|---------|-----|------|--------|----------|
 | CEO Review | `/plan-ceo-review` | Scope & strategy | 2 | ISSUES OPEN | 8 proposals, 7 accepted, 1 deferred; build check: 2 findings, both resolved (§8.14) |
-| Outside Review | native Claude subagent (codex not installed) | Independent 2nd opinion | 3 | completed (eng pass 2); unavailable (eng pass 1); completed (CEO) | eng pass 2: 12 findings, all dispositioned (§10.5); CEO: 23 findings, 23 resolved |
+| Outside Review | native Claude subagent (codex not installed) | Independent 2nd opinion | 4 | completed (design); completed (eng pass 2); unavailable (eng pass 1); completed (CEO) | design: 13 findings, folded into §11; eng pass 2: 12, all dispositioned (§10.5); CEO: 23, 23 resolved |
 | Eng Review | `/plan-eng-review` | Architecture & tests (required) | 2 | ISSUES OPEN | pass 2: 11 issues, 0 critical gaps, all fixed on PR #9/#13; pass 1: 9 issues + leaked secrets (T0–T4) |
-| Design Review | `/plan-design-review` | UI/UX gaps | 0 | — | — |
+| Design Review | `/plan-design-review` | UI/UX gaps | 1 | CLEAR | score: 6/10 → 9/10, 8 decisions (§11; tasks T10–T17) |
 | DX Review | `/plan-devex-review` | Developer experience gaps | 0 | — | — |
 
-- **OUTSIDE COVERAGE:** eng pass 2: a native Claude Plan subagent completed inside the five-minute limit, with 12 findings checked by the parent reviewer. Eng pass 1: unavailable (stopped at the limit). CEO: native subagent completed. No completed external (non-Claude) review.
-- **CROSS-MODEL:** not applicable. Only native Claude reviewers completed, so there is no cross-model comparison.
-- **VERDICT:** No review is CLEAR. Eng review passes 1 and 2 have ISSUES OPEN with every finding mapped to a task. Pass 2's code fixes are built (PR #13 ready; PR #9 still held for S3/T9). Remaining owner work: T0 (rotate keys), T9 (recording + iPhone check).
+- **OUTSIDE COVERAGE:**
+  - Design phase: a native Claude subagent completed (13 findings); codex unavailable (not installed).
+  - Eng pass 2: native subagent completed. Eng pass 1: unavailable.
+  - CEO: native subagent completed.
+  - No completed external (non-Claude) review.
+- **CROSS-MODEL:** not applicable. Only native Claude reviewers completed.
+- **VERDICT:** DESIGN CLEARED (plan; T10 to T17 to build). Eng review is not CLEAR (ISSUES OPEN, every finding mapped to tasks), so an eng review is required. Remaining owner work: T0 (rotate keys), T9 (recording + iPhone check).
 
 NO UNRESOLVED DECISIONS
